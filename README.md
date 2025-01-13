@@ -48,3 +48,37 @@ export default tseslint.config({
   },
 })
 ```
+
+```plaintext
+project-root/
+├── public/                # Static assets (không qua xử lý của Vite)
+│   ├── favicon.ico
+│   └── images/
+├── src/                   # Thư mục chính chứa mã nguồn
+│   ├── assets/            # Tài nguyên tĩnh như ảnh, font, v.v.
+│   ├── components/        # Các component tái sử dụng
+│   │   ├── Button.jsx
+│   │   └── Header.jsx
+│   ├── pages/             # Các trang chính trong ứng dụng
+│   │   ├── Home.jsx
+│   │   └── About.jsx
+│   ├── layouts/           # Các layout chung
+│   │   └── MainLayout.jsx
+│   ├── hooks/             # Custom hooks
+│   │   └── useAuth.js
+│   ├── context/           # React Context API
+│   │   └── AuthContext.jsx
+│   ├── utils/             # Hàm tiện ích chung
+│   │   └── formatDate.js
+│   ├── styles/            # File CSS hoặc Tailwind (nếu có)
+│   │   ├── index.css
+│   │   └── variables.css
+│   ├── App.jsx            # Component gốc của ứng dụng
+│   ├── main.jsx           # File entry chính
+│   └── vite-env.d.ts      # Khai báo types cho Vite (nếu dùng TypeScript)
+├── .gitignore             # Danh sách các file/thư mục không đẩy lên git
+├── index.html             # Template chính của ứng dụng
+├── package.json           # Thông tin về dự án và dependencies
+├── vite.config.js         # Cấu hình Vite
+└── README.md              # Hướng dẫn và mô tả dự án
+```
