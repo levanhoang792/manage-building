@@ -2,11 +2,13 @@ import bgImage from "@/assets/bg-image.jpg";
 import {cn} from "@/lib/utils.ts";
 import {Button, Checkbox, Field, Input, Label} from "@headlessui/react";
 import {CheckIcon, LockClosedIcon, UserIcon} from "@heroicons/react/20/solid";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {Controller, useForm} from "react-hook-form";
 import {z, ZodType} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {DevTool} from "@hookform/devtools";
+import {ROUTES} from "@/utils/routes";
+import FieldError from "@/components/FieldError";
 
 type FormData = {
     username: string;
@@ -21,7 +23,9 @@ const FormSchema: ZodType<FormData> = z.object({
 })
 
 function Login() {
-    const {control, handleSubmit} = useForm<FormData>({
+    const navigate = useNavigate();
+
+    const {control, handleSubmit, formState} = useForm<FormData>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
             username: "",
@@ -29,9 +33,11 @@ function Login() {
             isRemember: false,
         }
     })
+    const {errors} = formState;
 
     const onSubmit = handleSubmit((data) => {
-        console.log(data)
+        console.log(data);
+        navigate(ROUTES.HOME);
     })
 
     return (
@@ -62,11 +68,13 @@ function Login() {
                                         )}
                                         placeholder="Username"
                                     />
-                                    <UserIcon className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4")}/>
+                                    <UserIcon
+                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}/>
                                 </div>
                             </Field>
                         )}
                     />
+                    <FieldError error={errors?.username}/>
 
                     <Controller
                         control={control}
@@ -86,11 +94,12 @@ function Login() {
                                         placeholder="Password"
                                     />
                                     <LockClosedIcon
-                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4")}/>
+                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}/>
                                 </div>
                             </Field>
                         )}
                     />
+                    <FieldError error={errors?.password}/>
 
                     <div className={cn("mt-5 flex gap-4 justify-between items-center")}>
                         <Controller
@@ -120,7 +129,7 @@ function Login() {
                                 "inline-flex items-center justify-center gap-2 bg-white py-1.5 px-3 text-sm/6 w-full rounded-full",
                                 "font-semibold text-gray-800 shadow-inner shadow-white/10 focus:outline-none transition-all",
                                 "data-[focus]:outline-1 data-[focus]:outline-white",
-                                "data-[hover]:bg-gray-600 data-[open]:bg-gray-700",
+                                "data-[hover]:bg-purple-600 data-[open]:bg-purple-600",
                                 "data-[hover]:text-neutral-200 data-[open]:text-neutral-200"
                             )}
                         >
@@ -132,7 +141,8 @@ function Login() {
 
             <DevTool control={control}/>
         </div>
-    );
+    )
+        ;
 }
 
 export default Login;

@@ -5,14 +5,26 @@ import {cn} from "@/lib/utils.ts";
 import {MainLayoutProvider} from "@/layouts/main-layout/provider/MainLayoutProvider.tsx";
 import {ReactNode} from "react";
 
-function MainLayout({children}: { children: ReactNode }) {
+type MainLayoutProps = {
+    children: ReactNode
+    className?: string
+}
+
+function MainLayout({children, className}: MainLayoutProps) {
     return (
         <MainLayoutProvider>
             <Headers/>
 
             <LeftToolbar/>
 
-            <div id="main-content" className={cn("")}>
+            <div id="main-content"
+                 className={cn(
+                     "overflow-auto pt-2 pl-2",
+                     "max-h-dvh h-[calc(100dvh-var(--header-height))] mt-[var(--header-height)]",
+                     "max-w-full h-[calc(100%-var(--left-toolbar-width))] ml-[var(--left-toolbar-width)]",
+                     className || ""
+                 )}
+            >
                 {children}
             </div>
 

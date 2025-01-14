@@ -1,14 +1,11 @@
-import Headers from "@/layouts/main-layout/components/Headers.tsx";
-import LeftToolbar from "@/layouts/main-layout/components/LeftToolbar.tsx";
+import MainLayout from "@/layouts/main-layout/MainLayout";
 
 function Home() {
     return (
-        <>
-            <Headers/>
-
-            <LeftToolbar/>
-        </>
-    )
+        <MainLayout>
+            <p>asd</p>
+        </MainLayout>
+    );
 }
 
 export default Home;

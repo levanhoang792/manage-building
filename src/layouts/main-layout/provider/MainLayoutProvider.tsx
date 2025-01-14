@@ -1,23 +1,26 @@
-import React, {createContext, ReactNode, useState} from 'react';
+import {createContext, ReactNode} from 'react';
+import {useNavigate} from "react-router-dom";
+import {ROUTES} from "@/utils/routes";
 
 interface MainLayoutProviderProps {
     children: ReactNode;
 }
 
 interface MainLayoutContextProps {
-    // Define the context properties here
-    exampleState: string;
-    setExampleState: React.Dispatch<React.SetStateAction<string>>;
+    logout: () => void;
 }
 
 const MainLayoutContext = createContext<MainLayoutContextProps | undefined>(undefined);
 
 const MainLayoutProvider = ({children}: MainLayoutProviderProps) => {
-    const [exampleState, setExampleState] = useState<string>('default value');
+    const navigate = useNavigate();
+
+    const logout = () => {
+        navigate(ROUTES.LOGIN);
+    }
 
     const value = {
-        exampleState,
-        setExampleState,
+        logout
     }
 
     return (
