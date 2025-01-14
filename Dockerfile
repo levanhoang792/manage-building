@@ -13,6 +13,6 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 30000
+EXPOSE 3000
 
-CMD ["serve", "-s", "dist", "-l", "30000"]
+CMD ["serve", "-s", "dist"]
