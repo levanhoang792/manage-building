@@ -1,0 +1,29 @@
+.setting-item {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    padding: .5rem .75rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+
+    &:hover {
+        background-color: #f3f4f6;
+        cursor: pointer;
+    }
+
+    &:not(:last-child) {
+        border-bottom-width: 0;
+    }
+
+    &:first-child {
+        border-top-left-radius: .5rem;
+        border-top-right-radius: .5rem;
+    }
+
+    &:last-child {
+        border-bottom-left-radius: .5rem;
+        border-bottom-right-radius: .5rem;
+    }
+}

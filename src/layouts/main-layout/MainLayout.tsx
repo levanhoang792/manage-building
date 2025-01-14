@@ -4,6 +4,7 @@ import Footer from "@/layouts/main-layout/components/Footer.tsx";
 import {cn} from "@/lib/utils.ts";
 import {MainLayoutProvider} from "@/layouts/main-layout/provider/MainLayoutProvider.tsx";
 import {ReactNode} from "react";
+import {ToastContainer} from "react-toastify";
 
 type MainLayoutProps = {
     children: ReactNode
@@ -29,6 +30,8 @@ function MainLayout({children, className}: MainLayoutProps) {
             </div>
 
             <Footer/>
+
+            <ToastContainer stacked position="bottom-left" autoClose={8000}/>
         </MainLayoutProvider>
     );
 }

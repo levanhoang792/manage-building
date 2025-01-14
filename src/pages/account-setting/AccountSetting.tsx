@@ -1,33 +1,38 @@
+import styles from "./AccountSetting.module.scss";
 import MainLayout from "@/layouts/main-layout/MainLayout";
 import {cn} from "@/lib/utils";
 import {ChevronRightIcon} from "@heroicons/react/20/solid";
+import {Button} from "@headlessui/react";
+import ChangePasswordDialog, {ChangePasswordDialogRef} from "@/pages/account-setting/components/ChangePasswordDialog";
+import {useRef} from "react";
 
 function AccountSetting() {
+    const dialogRef = useRef<ChangePasswordDialogRef>(null);
+
+    const openChangePasswordDialog = () => {
+        dialogRef.current?.openDialog();
+    };
+
     return (
         <MainLayout>
-            <div className={cn("max-w-[500px] w-full m-auto")}>
-                <h2 className={cn("text-xl font-bold")}>Mật khẩu</h2>
+            <div className={cn("max-w-[500px] w-full m-auto mt-6")}>
+                <h2 className={cn("text-xl font-bold")}>Password</h2>
                 <div className={cn("mt-4")}>
-                    <div
-                        className={cn(
-                            "border border-gray-300 py-2 px-3 flex items-center justify-between gap-2",
-                            "hover:bg-gray-100 cursor-pointer"
-                        )}
+                    <Button
+                        className={cn(styles["setting-item"])}
+                        onClick={openChangePasswordDialog}
                     >
                         Change password
                         <ChevronRightIcon className={cn("size-6")}/>
-                    </div>
-                    <div
-                        className={cn(
-                            "border border-gray-300 py-2 px-3 flex items-center justify-between gap-2",
-                            "hover:bg-gray-100 cursor-pointer"
-                        )}
-                    >
+                    </Button>
+                    <Button className={cn(styles["setting-item"])}>
                         Two-factor authentication
                         <ChevronRightIcon className={cn("size-6")}/>
-                    </div>
+                    </Button>
                 </div>
             </div>
+
+            <ChangePasswordDialog ref={dialogRef}/>
         </MainLayout>
     );
 }

@@ -8,7 +8,7 @@ export type FieldErrorProps = {
 
 function FieldError({error, className}: FieldErrorProps) {
     return error?.message && (
-        <div className={cn("text-red-500 text-[12px] pl-4 italic", className || "")}>
+        <div className={cn("text-red-500 text-[12px] italic", className || "")}>
             {error.message}
         </div>
     );

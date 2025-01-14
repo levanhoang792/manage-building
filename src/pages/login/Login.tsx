@@ -57,7 +57,7 @@ function Login() {
                         name="username"
                         render={({field}) => (
                             <Field>
-                                <Label className="text-sm/6 font-medium text-white hidden">Name</Label>
+                                <Label className="hidden">Name</Label>
                                 <div className={cn("relative")}>
                                     <Input
                                         {...field}
@@ -74,14 +74,14 @@ function Login() {
                             </Field>
                         )}
                     />
-                    <FieldError error={errors?.username}/>
+                    <FieldError error={errors?.username} className={cn("pl-4")}/>
 
                     <Controller
                         control={control}
                         name="password"
                         render={({field}) => (
                             <Field className={cn("mt-5")}>
-                                <Label className="text-sm/6 font-medium text-white hidden">Password</Label>
+                                <Label className="hidden">Password</Label>
                                 <div className={cn("relative")}>
                                     <Input
                                         {...field}
@@ -99,7 +99,7 @@ function Login() {
                             </Field>
                         )}
                     />
-                    <FieldError error={errors?.password}/>
+                    <FieldError error={errors?.password} className={cn("pl-4")}/>
 
                     <div className={cn("mt-5 flex gap-4 justify-between items-center")}>
                         <Controller
