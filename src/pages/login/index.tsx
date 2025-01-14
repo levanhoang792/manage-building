@@ -1,6 +1,7 @@
 import bgImage from "@/assets/bg-image.jpg";
 import {cn} from "@/lib/utils.ts";
 import {Field, Input, Label} from "@headlessui/react";
+import {UserIcon} from "@heroicons/react/20/solid";
 
 function Login() {
     return (
@@ -14,15 +15,29 @@ function Login() {
             >
                 <h1 className={cn("text-3xl font-bold text-white text-center")}>Login</h1>
 
-                <div className="w-full">
+                <div className="w-full mt-5">
                     <Field>
                         <Label className="text-sm/6 font-medium text-white hidden">Name</Label>
+                        <div className={cn("relative")}>
+                            <Input
+                                className={cn(
+                                    "block w-full rounded-full border-0 bg-white/5 text-white py-2 px-4 text-sm/6",
+                                    "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
+                                )}
+                                placeholder="Username"
+                            />
+                            <UserIcon className={cn("size-5 absolute top-1/2 -translate-y-1/2")}/>
+                        </div>
+                    </Field>
+                    <Field className={cn("mt-5")}>
+                        <Label className="text-sm/6 font-medium text-white hidden">Name</Label>
                         <Input
+                            type="password"
                             className={cn(
-                                'mt-3 block w-full rounded-lg border-none bg-white/5 text-sm/6 text-white',
-                                'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                                "block w-full rounded-full border-0 bg-white/5 text-white py-2 px-4 text-sm/6",
+                                "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
                             )}
-                            placeholder="Username"
+                            placeholder="Password"
                         />
                     </Field>
                 </div>
