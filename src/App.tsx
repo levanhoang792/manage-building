@@ -1,6 +1,6 @@
 import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom';
-import Home from "@/pages/home";
-import Login from "@/pages/login";
+import Login from "@/pages/login/Login.tsx";
+import Home from "@/pages/home/Home.tsx";
 
 function App() {
     return (
@@ -11,8 +11,6 @@ function App() {
                 <Route path="/home" element={<Navigate to="/"/>}/>
 
                 <Route path="/login" element={<Login/>}/>
-
-
 
                 {/* Catch-all route for 404 */}
                 {/*<Route path="*" element={<NotFoundPage/>}/>*/}
