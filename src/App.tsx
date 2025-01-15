@@ -5,25 +5,32 @@ import Home from "@/pages/home/Home.tsx";
 import AccountSetting from "@/pages/account-setting/AccountSetting";
 import NotFound from "@/pages/not-found/NotFound";
 import {AuthProvider} from "@/context/AuthProvider";
+import {ToastContainer} from "react-toastify";
+import PrivateRoute from "@/components/PrivateRoute";
 
 function App() {
     return (
-        <AuthProvider>
-            <Router>
+        <Router>
+            <AuthProvider>
                 <Routes>
-                    {/* Define your routes */}
-                    <Route path={ROUTES.HOME} element={<Home/>}/>
-                    <Route path="/home" element={<Navigate to={ROUTES.HOME}/>}/>
-
+                    {/* Define your public routes */}
                     <Route path={ROUTES.LOGIN} element={<Login/>}/>
 
-                    <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting/>}/>
+                    {/* Define your private routes */}
+                    <Route element={<PrivateRoute/>}>
+                        <Route path={ROUTES.HOME} element={<Home/>}/>
+                        <Route path="/home" element={<Navigate to={ROUTES.HOME}/>}/>
+
+                        <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting/>}/>
+                    </Route>
 
                     {/* Catch-all route for 404 */}
                     <Route path="*" element={<NotFound/>}/>
                 </Routes>
-            </Router>
-        </AuthProvider>
+            </AuthProvider>
+
+            <ToastContainer stacked position="bottom-left" autoClose={8000}/>
+        </Router>
     )
 }
 

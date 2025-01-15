@@ -3,7 +3,6 @@ import LeftToolbar from "@/layouts/main-layout/components/LeftToolbar.tsx";
 import Footer from "@/layouts/main-layout/components/Footer.tsx";
 import {cn} from "@/lib/utils.ts";
 import {ReactNode} from "react";
-import {ToastContainer} from "react-toastify";
 import {MainLayoutProvider} from "@/layouts/main-layout/context/MainLayoutProvider";
 
 type MainLayoutProps = {
@@ -30,8 +29,6 @@ function MainLayout({children, className}: MainLayoutProps) {
             </div>
 
             <Footer/>
-
-            <ToastContainer stacked position="bottom-left" autoClose={8000}/>
         </MainLayoutProvider>
     );
 }

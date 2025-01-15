@@ -1,12 +1,12 @@
 import {cn} from "@/lib/utils.ts";
 import {ArrowLeftStartOnRectangleIcon, Cog6ToothIcon, UserCircleIcon} from "@heroicons/react/20/solid";
 import {Button, Menu, MenuButton, MenuItem, MenuItems} from "@headlessui/react";
-import useMainLayout from "@/layouts/main-layout/hooks/useMainLayout";
 import {Link} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
+import {useAuth} from "@/hooks/useAuth";
 
 function Headers() {
-    const {logout} = useMainLayout();
+    const {logout} = useAuth();
 
     return (
         <div
