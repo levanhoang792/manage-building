@@ -5,4 +5,5 @@ export const ROUTES = {
     FORGOT_PASSWORD: "/forgot-password",
     CONFIRM_OTP: "/confirm-otp",
     CHANGE_PASSWORD: "/change-password",
+    SIGN_UP: "/sign-up",
 };

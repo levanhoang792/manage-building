@@ -10,6 +10,7 @@ import {DevTool} from "@hookform/devtools";
 import FieldError from "@/components/FieldError";
 import {LoginFormData} from "@/types/login";
 import {useAuth} from "@/hooks/useAuth";
+import { ROUTES } from "@/routes/routes";
 
 const FormSchema: ZodType<LoginFormData> = z.object({
     username: z.string().nonempty("Username is required"),
@@ -107,7 +108,7 @@ function Login() {
                                 </Field>
                             )}
                         />
-                        <Link to="/forgot-password" className={cn("text-sm text-white hover:underline italic")}>
+                        <Link to={ROUTES.FORGOT_PASSWORD} className={cn("text-sm text-white hover:underline italic")}>
                             Forgot password?
                         </Link>
                     </div>
@@ -125,14 +126,14 @@ function Login() {
                         >
                             Login
                         </Button>
+                        
                     </div>
                 </form>
             </div>
 
             <DevTool control={control}/>
         </div>
-    )
-        ;
+    );
 }
 
 export default Login;

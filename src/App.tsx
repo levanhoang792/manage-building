@@ -10,6 +10,7 @@ import PrivateRoute from "@/components/PrivateRoute";
 import ForgotPassword from './pages/forgot-password/ForgotPassword';
 import ConfrimOtp from './pages/forgot-password/ConfirmOtp';
 import ChangePassword from './pages/forgot-password/ChangePassword';
+import SignUp from './pages/sign-up/SignUp';
 
 function App() {
     return (
@@ -21,6 +22,8 @@ function App() {
                     <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword/>}/>
                     <Route path={ROUTES.CONFIRM_OTP} element={<ConfrimOtp/>}/>
                     <Route path={ROUTES.CHANGE_PASSWORD} element={<ChangePassword/>}/>
+
+                    <Route path={ROUTES.SIGN_UP} element={<SignUp/>}/>
 
                     {/* Define your private routes */}
                     <Route element={<PrivateRoute/>}>
