@@ -111,3 +111,8 @@ project-root/
 - React Query (Data Fetching)
     - [React Query](https://react-query.tanstack.com/)
     - [React Query - Examples](https://www.freecodecamp.org/news/react-query-tutorial/)
+
+- Build Bundle
+    - NodeJS: `v22.11.0`
+    - `npm install`
+    - `npm run build`
