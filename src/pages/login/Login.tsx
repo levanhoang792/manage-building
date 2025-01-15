@@ -2,30 +2,25 @@ import bgImage from "@/assets/bg-image.jpg";
 import {cn} from "@/lib/utils.ts";
 import {Button, Checkbox, Field, Input, Label} from "@headlessui/react";
 import {CheckIcon, LockClosedIcon, UserIcon} from "@heroicons/react/20/solid";
-import {Link, useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import {Controller, useForm} from "react-hook-form";
 import {z, ZodType} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {DevTool} from "@hookform/devtools";
-import {ROUTES} from "@/utils/routes";
 import FieldError from "@/components/FieldError";
+import {LoginFormData} from "@/types/login";
+import {useAuth} from "@/hooks/useAuth";
 
-type FormData = {
-    username: string;
-    password: string;
-    isRemember: boolean;
-}
-
-const FormSchema: ZodType<FormData> = z.object({
+const FormSchema: ZodType<LoginFormData> = z.object({
     username: z.string().nonempty("Username is required"),
     password: z.string().nonempty("Password is required"),
     isRemember: z.boolean(),
 })
 
 function Login() {
-    const navigate = useNavigate();
+    const {login} = useAuth();
 
-    const {control, handleSubmit, formState} = useForm<FormData>({
+    const {control, handleSubmit, formState} = useForm<LoginFormData>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
             username: "",
@@ -34,11 +29,6 @@ function Login() {
         }
     })
     const {errors} = formState;
-
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
-        navigate(ROUTES.HOME);
-    })
 
     return (
         <div
@@ -51,7 +41,7 @@ function Login() {
             >
                 <h1 className={cn("text-3xl font-bold text-white text-center")}>Login</h1>
 
-                <form className="w-full mt-5" onSubmit={onSubmit}>
+                <form className="w-full mt-5" onSubmit={handleSubmit(login)}>
                     <Controller
                         control={control}
                         name="username"

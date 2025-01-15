@@ -90,6 +90,15 @@ project-root/
 │   ├── styles/
 │   │   ├── index.css
 │   │   └── variables.css
+│   ├── api/               # Thư mục quản lý API và React Query
+│   │   ├── client.ts      # Cấu hình axios/fetch hoặc các client gọi API
+│   │   ├── queryClient.ts # Cấu hình React Query Client
+│   │   ├── hooks/        # Hooks sử dụng React Query
+│   │   │   ├── useUserData.ts
+│   │   │   └── useProductData.ts
+│   │   └── services/     # Các service API
+│   │       ├── userService.ts
+│   │       └── productService.ts
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── vite-env.d.ts
