@@ -15,7 +15,7 @@ type FormData = {
 }
 
 const FormSchema: ZodType<FormData> = z.object({
-    email: z.string().nonempty("Email is required"),
+    email: z.string().nonempty("Email is required").email("Please provide a valid email"),
 })
 
 function ForgotPassword() {
