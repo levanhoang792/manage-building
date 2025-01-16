@@ -113,7 +113,7 @@ function Login() {
                         </Link>
                     </div>
 
-                    <div className={cn("mt-5")}>
+                    <div className={cn("mt-5 flex items-center justify-around gap-2")}>
                         <Button
                             type="submit"
                             className={cn(
@@ -126,6 +126,18 @@ function Login() {
                         >
                             Login
                         </Button>
+
+                        <Link 
+                            to={ROUTES.SIGN_UP}  
+                            className={cn(
+                                "inline-flex items-center justify-center gap-2 bg-white py-1.5 px-3 text-sm/6 w-full rounded-full",
+                                "font-semibold text-gray-800 shadow-inner shadow-white/10 focus:outline-none transition-all",
+                                "data-[focus]:outline-1 data-[focus]:outline-white",
+                                "data-[hover]:bg-purple-600 data-[open]:bg-purple-600",
+                                "data-[hover]:text-neutral-200 data-[open]:text-neutral-200"
+                            )}>
+                            SignUp
+                        </Link>
 
                     </div>
                 </form>
