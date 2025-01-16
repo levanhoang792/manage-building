@@ -1,13 +1,10 @@
 import {cn} from "@/lib/utils.ts";
 import {ArrowLeftStartOnRectangleIcon, Cog6ToothIcon, UserCircleIcon} from "@heroicons/react/20/solid";
-import {Button, Menu, MenuButton, MenuItem, MenuItems} from "@headlessui/react";
+import {Menu, MenuButton, MenuItem, MenuItems} from "@headlessui/react";
 import {Link} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
-import {useAuth} from "@/hooks/useAuth";
 
 function Headers() {
-    const {logout} = useAuth();
-
     return (
         <div
             className={cn("flex justify-between items-center bg-gray-100 py-1 px-4 h-[var(--header-height)] w-[calc(100%-var(--left-toolbar-width))] fixed top-0 right-0")}>
@@ -29,30 +26,28 @@ function Headers() {
                         )}
                     >
                         <MenuItem>
-                            <Link to={ROUTES.ACCOUNT_SETTING}>
-                                <Button
-                                    className={cn(
-                                        "group flex w-full items-center gap-2 rounded-lg",
-                                        "py-1.5 px-3 data-[focus]:bg-white/10"
-                                    )}
-                                    onClick={logout}
-                                >
-                                    <Cog6ToothIcon className="size-4 fill-black"/>
-                                    Account Setting
-                                </Button>
+                            <Link
+                                to={ROUTES.ACCOUNT_SETTING}
+                                className={cn(
+                                    "group flex w-full items-center gap-2 py-1.5 px-3",
+                                    "hover:bg-gray-200 w-full rounded-lg"
+                                )}
+                            >
+                                <Cog6ToothIcon className="size-4 fill-black"/>
+                                Account Setting
                             </Link>
                         </MenuItem>
                         <MenuItem>
-                            <Button
+                            <Link
+                                to={ROUTES.LOGOUT}
                                 className={cn(
-                                    "group flex w-full items-center gap-2 rounded-lg",
-                                    "py-1.5 px-3 data-[focus]:bg-white/10"
+                                    "group flex w-full items-center gap-2 py-1.5 px-3",
+                                    "hover:bg-gray-200 w-full rounded-lg"
                                 )}
-                                onClick={logout}
                             >
                                 <ArrowLeftStartOnRectangleIcon className="size-4 fill-black"/>
                                 Logout
-                            </Button>
+                            </Link>
                         </MenuItem>
                     </MenuItems>
                 </Menu>

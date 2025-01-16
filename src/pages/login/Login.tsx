@@ -10,7 +10,7 @@ import {DevTool} from "@hookform/devtools";
 import FieldError from "@/components/FieldError";
 import {LoginFormData} from "@/types/login";
 import {useAuth} from "@/hooks/useAuth";
-import { ROUTES } from "@/routes/routes";
+import {ROUTES} from "@/routes/routes";
 
 const FormSchema: ZodType<LoginFormData> = z.object({
     username: z.string().nonempty("Username is required"),
@@ -33,7 +33,7 @@ function Login() {
 
     return (
         <div
-            className="h-screen flex items-center justify-center bg-center"
+            className={cn("h-screen flex items-center justify-center bg-center bg-no-repeat bg-cover")}
             style={{backgroundImage: `url(${bgImage})`}}
         >
             <div
@@ -126,7 +126,7 @@ function Login() {
                         >
                             Login
                         </Button>
-                        
+
                     </div>
                 </form>
             </div>

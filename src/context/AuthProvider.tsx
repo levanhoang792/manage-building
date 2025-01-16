@@ -1,4 +1,4 @@
-import {createContext, ReactNode, useEffect, useState} from 'react';
+import {createContext, ReactNode, useCallback, useEffect, useState} from 'react';
 import {useLocation, useNavigate} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import {LoginFormData} from "@/types/login";
@@ -18,30 +18,37 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
 
     const [token, setToken] = useState<string | undefined>(localStorage.getItem(LOCAL_STORAGE_KEY.TOKEN) || undefined);
 
-    const login = (data: LoginFormData) => {
+    const initializeToken = useCallback((token: string) => {
+        setToken(token);
+        localStorage.setItem(LOCAL_STORAGE_KEY.TOKEN, token);
+    }, []);
+
+    const clearToken = useCallback(() => {
+        setToken(undefined);
+        localStorage.removeItem(LOCAL_STORAGE_KEY.TOKEN);
+    }, []);
+
+    const login = useCallback((data: LoginFormData) => {
         console.log(data);
 
         const token = "token";
 
-        setToken(token);
-        localStorage.setItem(LOCAL_STORAGE_KEY.TOKEN, token);
+        initializeToken(token);
         navigate(ROUTES.HOME);
-    };
+    }, [initializeToken, navigate]);
 
-    const logout = () => {
-        if (location.pathname !== ROUTES.LOGIN) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY.TOKEN);
-            navigate(ROUTES.LOGIN);
-        }
-    }
+    const logout = useCallback(() => {
+        clearToken();
+        navigate(ROUTES.LOGIN);
+    }, [clearToken, navigate]);
 
     useEffect(() => {
         if (!token) {
-            logout();
+            if (location.pathname !== ROUTES.LOGIN) navigate(ROUTES.LOGIN);
         } else if (location.pathname === ROUTES.LOGIN) {
             navigate(ROUTES.HOME);
         }
-    }, []);
+    }, [clearToken, location.pathname, navigate, token]);
 
     const value: AuthContextType = {
         // variable

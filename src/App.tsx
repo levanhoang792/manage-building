@@ -11,6 +11,7 @@ import ForgotPassword from './pages/forgot-password/ForgotPassword';
 import ConfrimOtp from './pages/forgot-password/ConfirmOtp';
 import ChangePassword from './pages/forgot-password/ChangePassword';
 import SignUp from './pages/sign-up/SignUp';
+import Logout from "@/pages/logout/Logout";
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
                 <Routes>
                     {/* Define your public routes */}
                     <Route path={ROUTES.LOGIN} element={<Login/>}/>
+                    <Route path={ROUTES.LOGOUT} element={<Logout/>}/>
                     <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword/>}/>
                     <Route path={ROUTES.CONFIRM_OTP} element={<ConfrimOtp/>}/>
                     <Route path={ROUTES.CHANGE_PASSWORD} element={<ChangePassword/>}/>
