@@ -19,13 +19,15 @@ function AccountSetting() {
                 <h2 className={cn("text-xl font-bold")}>Password</h2>
                 <div className={cn("mt-4")}>
                     <Button
-                        className={cn(styles["setting-item"])}
+                        className={cn(styles.settingItem)}
                         onClick={openChangePasswordDialog}
                     >
                         Change password
                         <ChevronRightIcon className={cn("size-6")}/>
                     </Button>
-                    <Button className={cn(styles["setting-item"])}>
+                    <Button
+                        className={cn(styles.settingItem)}
+                    >
                         Two-factor authentication
                         <ChevronRightIcon className={cn("size-6")}/>
                     </Button>
