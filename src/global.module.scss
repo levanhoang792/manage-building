@@ -1,0 +1,106 @@
+.modelCol {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.modelGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.modelTitle {
+    color: #111827;
+    font-weight: 600;
+    line-height: 1.5rem;
+}
+
+.modelList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    a {
+        color: #4B5563;
+        font-weight: 400;
+        line-height: 1.5rem;
+    }
+}
+
+.paginationItem {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.375rem;
+    background: #F6F6F6;
+
+    transition-property: color, background-color;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+    transition-duration: .15s;
+
+    &:hover {
+        color: #FFFFFF;
+        background: #7D3200;
+        box-shadow: 1px 1px 4px 0 rgba(255, 255, 255, 0.20) inset, 0 2px 4px 0 rgba(0, 0, 0, 0.10);
+    }
+}
+
+.paginationItemActive {
+    color: #FFFFFF;
+    background: #7D3200;
+    box-shadow: 1px 1px 4px 0 rgba(255, 255, 255, 0.20) inset, 0 2px 4px 0 rgba(0, 0, 0, 0.10);
+}
+
+.paginationItemChevron {
+    color: #7D3200;
+}
+
+.paginationItemChevronDisabled {
+    &:hover {
+        color: #7D3200;
+        background: #F6F6F6;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+}
+
+.formField {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    color: #000000CC;
+}
+
+.formFieldLabel {
+    font-weight: 500;
+}
+
+.formFieldInput,
+.formFieldSelect {
+    height: 48px;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #E0E0E0;
+    background: rgba(245, 245, 245, 0.90);
+    outline: none;
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+}
+
+.formFieldInput {
+    &::placeholder {
+        color: #00000066;
+    }
+}
+
+.formFieldSelect {
+    padding-right: 2.5rem;
+
+    &:hover {
+        cursor: pointer;
+    }
+}

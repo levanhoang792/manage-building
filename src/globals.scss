@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --font-source-serif-4: "Source Serif 4", "Source Serif 4 Fallback", serif;
+
+    --background: #ffffff;
+    --foreground: #171717;
+
+    --neutral-black: #131313;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /*--background: #0a0a0a;*/
+        /*--foreground: #ededed;*/
+    }
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    color: var(--foreground);
+    background: var(--background);
+    font-family: var(--font-source-serif-4), Arial, Helvetica, sans-serif;
+}
+
+h2 {
+    color: #111827;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 2.5rem;
+}
+
+h5 {
+    color: #111827;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 2rem
+}

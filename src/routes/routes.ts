@@ -7,4 +7,8 @@ export const ROUTES = {
     CONFIRM_OTP: "/confirm-otp",
     CHANGE_PASSWORD: "/change-password",
     SIGN_UP: "/sign-up",
+
+    MODELS: "/models",
+    MODELS_CREATE: "/models/create",
+    MODELS_DETAIL: "/models/:id",
 };

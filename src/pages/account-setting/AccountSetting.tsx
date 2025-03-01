@@ -1,5 +1,4 @@
 import styles from "./AccountSetting.module.scss";
-import MainLayout from "@/layouts/main-layout/MainLayout";
 import {cn} from "@/lib/utils";
 import {ChevronRightIcon} from "@heroicons/react/20/solid";
 import {Button} from "@headlessui/react";
@@ -14,7 +13,7 @@ function AccountSetting() {
     };
 
     return (
-        <MainLayout>
+        <>
             <div className={cn("max-w-[500px] w-full m-auto mt-6")}>
                 <h2 className={cn("text-xl font-bold")}>Password</h2>
                 <div className={cn("mt-4")}>
@@ -35,7 +34,7 @@ function AccountSetting() {
             </div>
 
             <ChangePasswordDialog ref={dialogRef}/>
-        </MainLayout>
+        </>
     );
 }
 
