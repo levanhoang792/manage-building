@@ -1,8 +1,7 @@
-"use client";
 
 import {Checkbox as CheckboxHeadlessUI} from "@headlessui/react";
 import {cn} from "@/lib/utils";
-import styles from "@/app/models/page.module.scss";
+import styles from "@/pages/models/page.module.scss";
 import {CheckIcon} from "@heroicons/react/20/solid";
 import {useEffect, useState} from "react";
 

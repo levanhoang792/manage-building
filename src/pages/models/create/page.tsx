@@ -1,29 +1,39 @@
 import {cn} from "@/lib/utils";
-import Image from "next/image";
-import AdsBanner from "@/app/components/AdsBanner";
-import FormUploadModel from "@/app/models/create/components/FormUploadModel";
-import {fetchCategories} from "@/hooks/category/useCategory";
-import {fetchPlatforms} from "@/hooks/platforms/usePlatforms";
-import {fetchRenders} from "@/hooks/renders/useRenders";
-import {fetchTags} from "@/hooks/tags/useTags";
-import {fetchColors} from "@/hooks/colors/useColors";
-import {fetchMaterials} from "@/hooks/materials/useMaterials";
+import {useFetchCategories} from "@/hooks/category/useCategory";
+import {useFetchPlatforms} from "@/hooks/platforms/usePlatforms";
+import {useFetchRenders} from "@/hooks/renders/useRenders";
+import {useFetchTags} from "@/hooks/tags/useTags";
+import {useFetchColors} from "@/hooks/colors/useColors";
+import {useFetchMaterials} from "@/hooks/materials/useMaterials";
+import FormUploadModel from "./components/FormUploadModel";
+import { ResCategory } from "@/hooks/category/model";
+import { ResPlatform } from "@/hooks/platforms/model";
+import { ResRender } from "@/hooks/renders/model";
+import { ResMaterial } from "@/hooks/materials/model";
+import { ResColor } from "@/hooks/colors/model";
+import { ResTag } from "@/hooks/tags/model";
 
-async function Create3DModelPage() {
-    const categories = await fetchCategories({limit: 100});
-    const platforms = await fetchPlatforms();
-    const renders = await fetchRenders();
-    const materials = await fetchMaterials();
-    const colors = await fetchColors();
-    const tags = await fetchTags();
+function Create3DModelPage() {
+    const categories = useFetchCategories({limit: 100});
+    const platforms = useFetchPlatforms();
+    const renders = useFetchRenders();
+    const materials = useFetchMaterials();
+    const colors = useFetchColors();
+    const tags = useFetchTags();
+
+    const categoryData = categories.data || {} as ResCategory;
+    const platformsData = platforms.data || {} as ResPlatform;
+    const rendersData = renders.data || {} as ResRender;
+    const materialsData = materials.data || {} as ResMaterial; 
+    const colorsData = colors.data || {} as ResColor;
+    const tagsData = tags.data || {} as ResTag;
 
     return (
         <div className={cn("container mx-auto")}>
-            <AdsBanner/>
 
             <div className={cn("mt-6 flex flex-col gap-12 max-w-[1328px] mx-auto px-4 xxl:px-0")}>
                 <div className={cn("flex gap-6 items-center")}>
-                    <Image
+                    <img
                         src="/images/avatar.png"
                         alt="Avatar"
                         width={80}
@@ -43,17 +53,16 @@ async function Create3DModelPage() {
                     <h2 className={cn("text-5xl leading-[3.5rem] text-[#222]")}>Upload model</h2>
 
                     <FormUploadModel
-                        categories={categories}
-                        platforms={platforms}
-                        renders={renders}
-                        materials={materials}
-                        colors={colors}
-                        tags={tags}
+                        categories={categoryData}
+                        platforms={platformsData}
+                        renders={rendersData}
+                        materials={materialsData}
+                        colors={colorsData}
+                        tags={tagsData}
                     />
                 </div>
             </div>
         </div>
     );
 }
-
 export default Create3DModelPage;

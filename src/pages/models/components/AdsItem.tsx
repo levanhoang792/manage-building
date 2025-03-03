@@ -9,7 +9,7 @@ interface AdsItemProps {
     data: Res3dModelDataData;
 }
 
-function AdsItem({data: {image_path}}: AdsItemProps) {
+function AdsItem({data: {thumbnail} }: AdsItemProps) {
     return (
         <div className={cn("text-[#222] flex flex-col gap-5")}>
             <div
@@ -21,7 +21,7 @@ function AdsItem({data: {image_path}}: AdsItemProps) {
                 <img
                     className={cn("object-contain")}
                     // fill
-                    src={image_path}
+                    src={thumbnail}
                     alt="Logo page"
                     sizes="100%"
                 />

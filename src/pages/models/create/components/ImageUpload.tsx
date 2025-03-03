@@ -1,14 +1,12 @@
-"use client";
 
 import {cn} from "@/lib/utils";
 import {Button, Input} from "@headlessui/react";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useUploadImage} from "@/hooks/files/useUpload";
-import Image from "next/image";
 import {PencilSquareIcon} from "@heroicons/react/20/solid";
 import ImagePreview from "@/assets/icons/image-preview.svg"
 import {toast} from "sonner";
 import Spinner from "@/components/commons/Spinner";
+import { useUploadImage } from "@/hooks/files/useFiles";
 
 type ImagePreviewUploadProps = {
     children?: React.ReactNode;
@@ -176,14 +174,14 @@ function ImageUpload({children, onChange, onError, maxSize, maxFiles = 1, classN
                                 image?.className
                             )}
                         >
-                            <Image
+                            <img
                                 src={fileUploaded?.[i]?.imgSrc || URL.createObjectURL(file)}
                                 alt="Preview"
                                 className={cn("object-contain")}
-                                fill
+                                // fill
                                 sizes="100%"
-                                placeholder="blur"
-                                blurDataURL={URL.createObjectURL(fileSelected?.[0])}
+                                // placeholder="blur"
+                                // blurDataURL={URL.createObjectURL(fileSelected?.[0])}
                             />
 
                             {!fileUploaded?.[i]?.imgSrc ? (

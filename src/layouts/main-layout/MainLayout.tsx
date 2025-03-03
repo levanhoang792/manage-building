@@ -16,7 +16,7 @@ function MainLayout() {
                 id="main-content"
                 className={cn(
                     "overflow-auto pt-2 pl-2",
-                    "max-h-dvh h-[calc(100dvh-var(--header-height))] mt-[var(--header-height)]",
+                    "h-[calc(100dvh-var(--header-height))] mt-[var(--header-height)]",
                     "max-w-full h-[calc(100%-var(--left-toolbar-width))] ml-[var(--left-toolbar-width)]",
                 )}
             >

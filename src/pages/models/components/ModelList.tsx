@@ -12,7 +12,7 @@ function ModelList() {
 
     // Con này không dùng await nhé, nextjs mới dung thấy cú pháp này thì convert qua dùng hook
     const model3d = useFetch3dModel({
-        limit: 5,
+        limit: 15,
         page: curPage,
     }); // Fetch từ server trước khi render
 
@@ -25,7 +25,7 @@ function ModelList() {
 
     return (
         <>
-            <div className={cn("grid grid-cols-2 xl:grid-cols-5 xxl:grid-cols-5 gap-4")}>
+            <div className={cn("flex flex-col gap-4 mb-7")}>
                 {data?.map((item, index) =>
                     item.is_ads ? <AdsItem key={index} data={item} /> : <ProductItem key={index} data={item} />,
                 )}

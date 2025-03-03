@@ -17,6 +17,7 @@ import MainLayout from "./layouts/main-layout/MainLayout";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from "./utils/api";
+import Create3DModelPage from "./pages/models/create/page";
 
 function App() {
     return (
@@ -41,6 +42,7 @@ function App() {
 
                                 <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting />} />
                                 <Route path={ROUTES.MODELS} element={<Model3D />} />
+                                <Route path={ROUTES.MODELS_CREATE} element={<Create3DModelPage />} />
                             </Route>
                         </Route>
 

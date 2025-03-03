@@ -1,19 +1,11 @@
-"use client";
 
 import {cn} from "@/lib/utils";
 import {Button, Field, Fieldset, Input, Label} from "@headlessui/react";
-import stylesGlobal from "@/app/global.module.scss";
-import InputFileUpload from "@/components/commons/InputFileUpload";
+import stylesGlobal from "@/global.module.scss";
 import Checkbox from "@/components/commons/Checkbox";
-import Link from "next/link";
 import {Controller, useForm, useWatch} from "react-hook-form";
-import Select from "@/components/commons/Select";
-import Form from "next/form";
-import ColorsComponent from "@/app/components/Colors";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import ErrorMessage from "@/components/commons/ErrorMessage";
-import ImageUpload from "@/app/models/create/components/ImageUpload";
 import {ResCategory} from "@/hooks/category/model";
 import {ResPlatform} from "@/hooks/platforms/model";
 import {ResRender} from "@/hooks/renders/model";
@@ -23,13 +15,18 @@ import {Material, ResMaterial} from "@/hooks/materials/model";
 import {Req3dModelCreate} from "@/hooks/models/model";
 import {useEffect, useState} from "react";
 import {use3dModelCreate} from "@/hooks/models/use3dModel";
-import {useRouter} from "next/navigation";
-import {ROUTES} from "@/routes/client";
+import {ROUTES} from "@/routes/routes";
 import {API_RESPONSE_CODE} from "@/routes/api";
 import {toast} from "sonner";
 import {ENV} from "@/utils/env";
-import Combobox from "@/components/commons/Combobox";
 import {PlusIcon} from "@heroicons/react/20/solid";
+import ImageUpload from "./ImageUpload";
+import { Form, Link, useNavigate } from "react-router-dom";
+import ColorsComponents from "@/components/Colors";
+import Combobox from "@/components/commons/Combobox";
+import ErrorMessage from "@/components/commons/ErrorMessage";
+import Select from "@/components/commons/Select";
+import InputFileUpload from "@/components/commons/InputFileUpload";
 
 type FormUploadModelProps = {
     categories: ResCategory;
@@ -73,7 +70,7 @@ const uploadModelSchema: z.ZodType<Req3dModelCreateProps> = z.object({
 });
 
 function FormUploadModel({categories, platforms, renders, materials, colors, tags}: FormUploadModelProps) {
-    const router = useRouter();
+    const router = useNavigate();
 
     const create3dModelMutation = use3dModelCreate();
 
@@ -111,7 +108,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
         create3dModelMutation.mutate(data, {
             onSuccess: ({r, msg}) => {
                 if (r === API_RESPONSE_CODE.SUCCESS) {
-                    router.push(ROUTES.MODELS.path);
+                    router(ROUTES.MODELS);
                     toast.success(msg);
                 } else {
                     toast.error(msg);
@@ -144,10 +141,6 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                 <div className={cn("flex-grow")}>
                     <Combobox
                         isClearable={true}
-                        defaultValue={{
-                            id: 1,
-                            value: "AA"
-                        }}
                         options={
                             listMaterial.map(material => ({
                                 id: material.id,
@@ -293,7 +286,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                 control={control}
                                 name="color_ids"
                                 render={({field}) => (
-                                    <ColorsComponent
+                                    <ColorsComponents
                                         colors={colors.data.map(color => color.hex_code)}
                                         max={3}
                                         onChange={(value) => {
@@ -468,7 +461,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                             <Label className="text-[#000000CC] text-base/6 hover:cursor-pointer">
                                 I’ve accepted {" "}
                                 <Link
-                                    href=""
+                                    to=""
                                     className={cn("text-[#4676ED] underline")}
                                 >
                                     Terms of use fo authors
