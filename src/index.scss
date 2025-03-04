@@ -30,3 +30,16 @@ html {
     :root {
     }
 }
+
+.default-table {
+    min-width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+
+    tr {
+        th, td {
+            padding: .5rem 1rem;
+            border-bottom: 1px solid #e4e4e4;
+        }
+    }
+}

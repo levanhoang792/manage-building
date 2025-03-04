@@ -19,7 +19,8 @@ export type Res3dModelDataData = {
     thumbnail: string
     created_at: string
     updated_at: string
-    status: String
+    status: string
+    user_id: number
 }
 
 export type Res3dModelDetailData = {
