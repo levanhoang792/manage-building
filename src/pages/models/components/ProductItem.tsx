@@ -15,7 +15,7 @@ const formatDate = (dateString: moment.MomentInput) => {
     return moment(dateString).format("DD/MM/YYYY HH:mm:ss");
 };
 
-function ProductItem({data: {id, name, thumbnail, created_at}}: ProductItemProps) {
+function ProductItem({data: {id, name, status, created_at, updated_at}}: ProductItemProps) {
     return (
         <div className={cn("w-full text-[#222] flex flex-wrap gap-5 border-b border-gray-200")}>
             {/* <div className={cn("relative bg-[#F8F8F8] h-[300px] flex justify-center items-center overflow-hidden")}>
@@ -31,16 +31,27 @@ function ProductItem({data: {id, name, thumbnail, created_at}}: ProductItemProps
                     />
                 </Link>
             </div> */}
+            <div className={cn("flex items-center justify-start gap-4 w-5/6")}>
+                <p className={cn("text-xl leading-8 font-semibold w-[5%]")}>ID</p>
+                <p className={cn("text-xl leading-8 font-semibold w-[40%]")}>Name</p>
+                <p className={cn("text-xl leading-8 font-semibold w-[20%]")}>Created</p>
+                <p className={cn("text-xl leading-8 font-semibold w-[20%]")}>Updated</p>
+                <p className={cn("text-xl leading-8 font-semibold w-[15%]")}>Status</p>
+            </div>
 
             <div className={cn("flex flex-wrap items-center justify-between gap-3 w-full")}>
                 
-                <Link className={cn("flex justify-between items-start gap-4 w-2/4")} 
+                <Link className={cn("flex justify-start items-start gap-4 w-5/6")} 
                         to={ROUTES.MODELS_DETAIL.replace(":id", String(id))}>
-                    <p className={cn("text-xl leading-8 font-semibold line-clamp-2")}>ID: {id}</p>
-                    <h2 className={cn("text-xl leading-8 font-semibold line-clamp-2")}>
-                        Name: {name}
+                    <p className={cn("text-lg leading-8 font-normal line-clamp-2 w-[5%]")}>{id}</p>
+                    <h2 className={cn("text-lg leading-8 font-normal line-clamp-2 w-[40%]")}>
+                        {name}
                     </h2>
-                    <p className={cn("text-xl leading-8 font-semibold line-clamp-2")}>Created: {formatDate(created_at)}</p>
+                    <p className={cn("text-lg leading-8 font-normal line-clamp-2 w-[20%]")}>{formatDate(updated_at)}</p>
+                    <p className={cn("text-lg leading-8 font-normal line-clamp-2 w-[20%]")}>{formatDate(created_at)}</p>
+                    <p className={cn("text-lg leading-8 font-normal line-clamp-2 w-[15%]")}>
+                        {status}
+                    </p>
                 </Link>
                 
                 <div className={cn("flex justify-start gap-2")}>

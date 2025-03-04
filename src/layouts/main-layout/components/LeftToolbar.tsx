@@ -18,7 +18,12 @@ function LeftToolbar() {
             </div>
 
             <div className={cn("menu text-black px-2")}>
-                <Disclosure as="div">
+                <Link to={ROUTES.MODELS}>
+                    <p className="text-lg font-medium text-gray-500 pl-6 pr-2 py-2 hover:bg-gray-200">
+                        Models Detail
+                    </p>
+                </Link>
+                {/* <Disclosure as="div">
                     <DisclosureButton
                         className="group px-2 py-2 flex w-full items-center justify-between hover:bg-gray-200">
                         <span className="text-sm/6 font-medium text-left line-clamp-1">
@@ -31,7 +36,7 @@ function LeftToolbar() {
                             Models Detail
                         </DisclosurePanel>
                     </Link>
-                </Disclosure>
+                </Disclosure> */}
                 {/* <Disclosure as="div">
                     <DisclosureButton
                         className="group px-2 py-2 flex w-full items-center justify-between hover:bg-gray-200">

@@ -98,7 +98,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
     const materialIds = useWatch({control: control, name: "material_ids"});
 
     const [listMaterial, setListMaterial] = useState<Array<MaterialListProps>>(
-        materials.data.map(material => ({
+        materials.data?.map(material => ({
             ...material,
             disabled: false
         }))
@@ -142,7 +142,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                     <Combobox
                         isClearable={true}
                         options={
-                            listMaterial.map(material => ({
+                            listMaterial?.map(material => ({
                                 id: material.id,
                                 value: material.name
                             }))
@@ -321,7 +321,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                                 >
                                                     <option value="">Choose material</option>
                                                     {
-                                                        listMaterial.map(material =>
+                                                        listMaterial?.map(material =>
                                                                 !(material.disabled && material.id !== materialIds[0]) && (
                                                                     <option
                                                                         key={material.id}
@@ -351,7 +351,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                                 >
                                                     <option value="">Choose material</option>
                                                     {
-                                                        listMaterial.map(material =>
+                                                        listMaterial?.map(material =>
                                                                 !(material.disabled && material.id !== materialIds[1]) && (
                                                                     <option
                                                                         key={material.id}
@@ -383,7 +383,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                                     >
                                                         <option value="">Choose material</option>
                                                         {
-                                                            listMaterial.map(material =>
+                                                            listMaterial?.map(material =>
                                                                     !(material.disabled && material.id !== materialIds[2]) && (
                                                                         <option
                                                                             key={material.id}
