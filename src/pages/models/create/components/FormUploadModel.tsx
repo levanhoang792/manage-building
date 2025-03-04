@@ -1,4 +1,3 @@
-
 import {cn} from "@/lib/utils";
 import {Button, Field, Fieldset, Input, Label} from "@headlessui/react";
 import stylesGlobal from "@/global.module.scss";
@@ -21,7 +20,7 @@ import {toast} from "sonner";
 import {ENV} from "@/utils/env";
 import {PlusIcon} from "@heroicons/react/20/solid";
 import ImageUpload from "./ImageUpload";
-import { Form, Link, useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import ColorsComponents from "@/components/Colors";
 import Combobox from "@/components/commons/Combobox";
 import ErrorMessage from "@/components/commons/ErrorMessage";
@@ -121,7 +120,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
     });
 
     useEffect(() => {
-        setListMaterial(prev => prev.map(material => {
+        setListMaterial(prev => prev?.map(material => {
             if (materialIds.includes(material.id)) {
                 return {
                     ...material,
@@ -136,7 +135,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
     }, [materialIds]);
 
     return (
-        <Form action="" onSubmit={onSubmit}>
+        <form onSubmit={onSubmit}>
             <Fieldset className={cn("flex gap-[3.75rem]")}>
                 <div className={cn("flex-grow")}>
                     <Combobox
@@ -185,7 +184,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                         >
                                             <option value="">Choose category</option>
                                             {
-                                                categories.data.map(category => (
+                                                categories.data?.map(category => (
                                                     <option key={category.id} value={category.id}>
                                                         {category.name}
                                                     </option>
@@ -238,7 +237,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                         >
                                             <option value="">Choose platform</option>
                                             {
-                                                platforms.data.map(platform => (
+                                                platforms.data?.map(platform => (
                                                     <option key={platform.id} value={platform.id}>
                                                         {platform.name}
                                                     </option>
@@ -265,7 +264,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                         >
                                             <option value="">Choose render</option>
                                             {
-                                                renders.data.map(render => (
+                                                renders.data?.map(render => (
                                                     <option key={render.id} value={render.id}>
                                                         {render.name}
                                                     </option>
@@ -287,7 +286,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                 name="color_ids"
                                 render={({field}) => (
                                     <ColorsComponents
-                                        colors={colors.data.map(color => color.hex_code)}
+                                        colors={colors.data?.map(color => color.hex_code)}
                                         max={3}
                                         onChange={(value) => {
                                             field.onChange(
@@ -421,7 +420,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                         >
                                             <option value="">Choose Tags</option>
                                             {
-                                                tags.data.map(tag => (
+                                                tags.data?.map(tag => (
                                                     <option key={tag.id} value={tag.id}>
                                                         {tag.name}
                                                     </option>
@@ -525,7 +524,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                     <ErrorMessage error={errors.image_urls}/>
                 </div>
             </Fieldset>
-        </Form>
+        </form>
     )
 }
 

@@ -1,5 +1,5 @@
-import {Dialog, DialogPanel, DialogTitle, Button, DialogBackdrop, Field, Label, Input} from "@headlessui/react";
-import {useState, forwardRef, useImperativeHandle, ForwardedRef} from "react";
+import {Button, Dialog, DialogBackdrop, DialogPanel, DialogTitle, Field, Input, Label} from "@headlessui/react";
+import {ForwardedRef, forwardRef, useImperativeHandle, useState} from "react";
 import {z, ZodType} from "zod";
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -7,7 +7,7 @@ import {DevTool} from "@hookform/devtools";
 import {cn} from "@/lib/utils";
 import {UserIcon} from "@heroicons/react/20/solid";
 import FieldError from "@/components/FieldError";
-import {toast} from "react-toastify";
+import {toast} from "sonner";
 
 interface ChangePasswordDialogProps {
     onClose?: () => void;

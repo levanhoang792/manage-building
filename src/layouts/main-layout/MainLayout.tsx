@@ -8,22 +8,21 @@ import {Outlet} from "react-router-dom";
 function MainLayout() {
     return (
         <MainLayoutProvider>
-            <Headers />
+            <div className={cn("bg-gray-200 h-dvh w-full flex gap-2 p-2")}>
+                <LeftToolbar/>
 
-            <LeftToolbar />
+                <div className={cn("flex-grow flex flex-col gap-2")}>
+                    <Headers/>
 
-            <div
-                id="main-content"
-                className={cn(
-                    "overflow-auto pt-2 pl-2",
-                    "h-[calc(100dvh-var(--header-height))] mt-[var(--header-height)]",
-                    "max-w-full h-[calc(100%-var(--left-toolbar-width))] ml-[var(--left-toolbar-width)]",
-                )}
-            >
-                <Outlet />
+                    <div id="main-content" className={cn("overflow-hidden rounded-lg shadow")}>
+                        <div className={cn("overflow-auto h-full bg-white rounded-lg")}>
+                            <Outlet/>
+                        </div>
+                    </div>
+
+                    <Footer/>
+                </div>
             </div>
-
-            <Footer />
         </MainLayoutProvider>
     );
 }

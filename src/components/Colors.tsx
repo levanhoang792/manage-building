@@ -81,7 +81,7 @@ function Colors({colors, className, buttonColor, defaultValue, onChange, max, di
 
     return (
         <div className={cn("flex justify-between mt-2", className)}>
-            {colors.map((color, index) => {
+            {colors?.map((color, index) => {
                 const isSelected = selectedColor?.includes(color);
 
                 return (

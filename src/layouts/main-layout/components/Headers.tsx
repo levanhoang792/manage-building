@@ -7,8 +7,11 @@ import {ROUTES} from "@/routes/routes";
 function Headers() {
     return (
         <div
-            className={cn("flex justify-between items-center bg-gray-100 py-1 px-4 h-[var(--header-height)] w-[calc(100%-var(--left-toolbar-width))] fixed top-0 right-0")}>
-            <div></div>
+            className={cn(
+                "flex justify-end items-center bg-white py-2 px-4 rounded-lg shadow",
+                "h-[var(--header-height)] w-full"
+            )}
+        >
             <div>
                 <Menu>
                     <MenuButton

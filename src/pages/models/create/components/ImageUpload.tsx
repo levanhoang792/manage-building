@@ -1,9 +1,8 @@
-
 import {cn} from "@/lib/utils";
 import {Button, Input} from "@headlessui/react";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {PencilSquareIcon} from "@heroicons/react/20/solid";
-import ImagePreview from "@/assets/icons/image-preview.svg"
+import ImagePreview from "@/assets/icons/image-preview.svg?react"
 import {toast} from "sonner";
 import Spinner from "@/components/commons/Spinner";
 import { useUploadImage } from "@/hooks/files/useFiles";
