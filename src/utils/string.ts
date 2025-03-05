@@ -14,4 +14,9 @@ export const STATUS_LIST_MAP_COLOR: Record<typeof STATUS_LIST[keyof typeof STATU
     [STATUS_LIST.REJECT]: "#EF4444" // text-red-500
 }
 
-console.log(STATUS_LIST_MAP_COLOR[STATUS_LIST.DRAFT]); // text-gray-500
+export const STATUS_LIST_MAP_NAME: Record<typeof STATUS_LIST[keyof typeof STATUS_LIST], string> = {
+    [STATUS_LIST.DRAFT]: "Draft",
+    [STATUS_LIST.PENDING_APPROVAL]: "Pending",
+    [STATUS_LIST.APPROVED]: "Approved",
+    [STATUS_LIST.REJECT]: "Reject"
+}

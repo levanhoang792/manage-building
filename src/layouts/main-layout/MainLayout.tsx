@@ -14,7 +14,7 @@ function MainLayout() {
                 <div className={cn("flex-grow flex flex-col gap-2")}>
                     <Headers/>
 
-                    <div id="main-content" className={cn("overflow-hidden rounded-lg shadow")}>
+                    <div id="main-content" className={cn("overflow-hidden rounded-lg shadow h-full")}>
                         <div className={cn("overflow-auto h-full bg-white rounded-lg")}>
                             <Outlet/>
                         </div>

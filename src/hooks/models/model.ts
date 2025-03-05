@@ -14,13 +14,41 @@ export type Req3dModelData = {
 export type Res3dModelDataData = {
     id: number
     name: string
-    is_ads: boolean
-    is_favorite: boolean
-    thumbnail: string
+    category_id: number
+    platform_id: number
+    render_id: number
     created_at: string
     updated_at: string
-    status: string
     user_id: number
+    status: string
+    public: number
+    image_files: Array<Res3dModelDataDataFile>
+    user: Res3dModelDataDataUser
+}
+
+export type Res3dModelDataDataFile = {
+    id: number
+    file_name: string
+    file_path: string
+    created_at: string
+    updated_at: string
+    pivot: Res3dModelDataFilePivot
+}
+
+export type Res3dModelDataFilePivot = {
+    product_id: number
+    file_id: number
+    is_model: boolean
+    is_thumbnail: boolean
+}
+
+export type Res3dModelDataDataUser = {
+    id: number
+    name: string
+    email: string
+    email_verified_at: string
+    created_at: string
+    updated_at: string
 }
 
 export type Res3dModelDetailData = {
@@ -60,4 +88,9 @@ export type Req3dModelCreate = {
 export type Res3dModelCreate = {
     r: number
     msg: string
+}
+
+export type ReqChangeStatus3dModel = {
+    id: number
+    status: string
 }

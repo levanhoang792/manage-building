@@ -1,5 +1,5 @@
 export const API_ROUTES = {
-    API: "/api",
+    API: "/api/admin",
 
     LOGIN: "/login",
     LOGOUT: "/logout",
@@ -9,8 +9,9 @@ export const API_ROUTES = {
 
     CONFIG: "/config",
 
-    PRODUCTS_DETAIL: "/products/:id",
     PRODUCTS: "/products",
+    PRODUCTS_DETAIL: "/products/:id",
+    PRODUCTS_CHANGE_STATUS: "/products/:id/change-status",
 
     UPLOAD_TEMP_MODEL: "/upload-temp-model",
     UPLOAD_TEMP_IMAGES: "/upload-temp-images",

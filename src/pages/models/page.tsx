@@ -1,19 +1,29 @@
 import styles from "@/pages/models/page.module.scss";
 import {cn} from "@/lib/utils";
-import {Field, Input, Label, Menu, MenuButton, MenuItem, MenuItems,} from "@headlessui/react";
-import {EllipsisVerticalIcon, MagnifyingGlassIcon, PencilSquareIcon} from "@heroicons/react/20/solid";
+import {Button, Field, Input, Label, Menu, MenuButton, MenuItem, MenuItems,} from "@headlessui/react";
+import {
+    CheckCircleIcon,
+    EllipsisVerticalIcon,
+    MagnifyingGlassIcon,
+    PencilSquareIcon,
+    XCircleIcon
+} from "@heroicons/react/20/solid";
 import {CloudArrowUpIcon, TrashIcon} from "@heroicons/react/24/outline";
 import {Link} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import {useState} from "react";
-import {useFetch3dModel} from "@/hooks/models/use3dModel";
+import {useChangeStatus3dModel, useFetch3dModel} from "@/hooks/models/use3dModel";
 import Pagination from "@/components/commons/Pagination";
 import moment from "moment";
-import {DATE_FORMAT_DEFAULT, STATUS_LIST_MAP_COLOR} from "@/utils/string";
+import {DATE_FORMAT_DEFAULT, STATUS_LIST_MAP_COLOR, STATUS_LIST_MAP_NAME} from "@/utils/string";
+import {toast} from "sonner";
+import {API_RESPONSE_CODE} from "@/routes/api";
+import Spinner from "@/components/commons/Spinner";
 
 const limit = 10;
 
 export default function Model3D() {
+    const [listStatusChange, setListStatusChange] = useState<number[]>([]);
     const [curPage, setCurPage] = useState<number>(1);
 
     // Con này không dùng await nhé, nextjs mới dung thấy cú pháp này thì convert qua dùng hook
@@ -21,11 +31,40 @@ export default function Model3D() {
         limit: limit,
         page: curPage,
     }); // Fetch từ server trước khi render
+    const changeStatusMutation = useChangeStatus3dModel();
 
     const {data, meta} = model3d.data || {};
 
     const onChangePage = (page: number) => {
         setCurPage(page);
+    }
+
+    const toggleItemChangeStatus = (id: number) => {
+        setListStatusChange((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        );
+    };
+
+    const onChangeStatus = (id: number, status: string) => {
+        toggleItemChangeStatus(id);
+
+        changeStatusMutation.mutate({
+            id: id,
+            status: status,
+        }, {
+            onSuccess: (res) => {
+                if (res.r === API_RESPONSE_CODE.SUCCESS) {
+                    toast.success("Change status successfully");
+                } else {
+                    toast.error(res.msg);
+                }
+                toggleItemChangeStatus(id);
+            },
+            onError: (err) => {
+                toast.error(err.message);
+                toggleItemChangeStatus(id);
+            }
+        });
     }
 
     return (
@@ -62,12 +101,13 @@ export default function Model3D() {
 
             <div className="my-3 flex-grow overflow-auto">
                 <table className="default-table relative">
-                    <thead className={cn("sticky top-0 bg-white")}>
+                    <thead className={cn("sticky z-10 top-0 bg-white")}>
                     <tr>
                         <th className={cn("w-[50px]")}>ID</th>
                         <th className={cn("w-[150px]")}>Thumbnail</th>
                         <th>Name</th>
                         <th className={cn("w-[150px]")}>Upload by</th>
+                        <th className={cn("w-[100px]")}>Public</th>
                         <th className={cn("w-[220px]")}>Created</th>
                         <th className={cn("w-[220px]")}>Updated</th>
                         <th className={cn("w-[200px]")}>Status</th>
@@ -81,23 +121,75 @@ export default function Model3D() {
                             <td className={cn("flex justify-center")}>
                                 <img
                                     alt={item.name}
-                                    src={item.thumbnail}
+                                    src={item.image_files.find(item => item.pivot.is_thumbnail)?.file_path || ""}
                                     className={cn("size-16 rounded-lg")}
                                 />
                             </td>
                             <td>{item.name}</td>
-                            <td>{item.user_id}</td>
+                            <td>{item.user.name}</td>
+                            <td>
+                                <div className={cn("w-full flex justify-center")}>
+                                    {item.public
+                                        ? <CheckCircleIcon className={cn("size-10 fill-green-500")}/> :
+                                        <XCircleIcon className={cn("size-10 fill-red-500")}/>}
+                                </div>
+                            </td>
                             <td className={cn("text-center")}>{moment(item.created_at).format(DATE_FORMAT_DEFAULT)}</td>
                             <td className={cn("text-center")}>{moment(item.updated_at).format(DATE_FORMAT_DEFAULT)}</td>
                             <td className={cn("text-center")}>
-                                <p
-                                    className={cn("text-sm font-semibold text-white rounded-full py-2 px-4 line-clamp-1")}
-                                    style={{
-                                        backgroundColor: STATUS_LIST_MAP_COLOR[item.status as keyof typeof STATUS_LIST_MAP_COLOR] || "text-gray-500"
-                                    }}
-                                >
-                                    {item.status}
-                                </p>
+                                <Menu>
+                                    <MenuButton
+                                        disabled={listStatusChange.includes(item.id)}
+                                        className={cn("relative text-sm font-semibold text-white rounded-full py-2 px-4 line-clamp-1 w-full")}
+                                        style={{
+                                            backgroundColor: STATUS_LIST_MAP_COLOR[item.status as keyof typeof STATUS_LIST_MAP_COLOR] || "text-gray-500"
+                                        }}
+                                    >
+                                        <div
+                                            className={cn(
+                                                "absolute w-full h-full top-0 left-0 flex justify-center items-center",
+                                                "bg-gray-300 bg-opacity-50 rounded-full",
+                                                {"hidden": !listStatusChange.includes(item.id)}
+                                            )}
+                                        >
+                                            <Spinner isLoading={true}/>
+                                        </div>
+                                        {item.status}
+                                    </MenuButton>
+
+                                    <MenuItems
+                                        transition
+                                        anchor="bottom end"
+                                        className={cn(
+                                            "w-40 max-w-full bg-white rounded-lg border border-gray-200 shadow",
+                                            "text-sm/6 text-black transition duration-100 ease-out",
+                                            "[--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+                                        )}
+                                    >
+                                        {Object.keys(STATUS_LIST_MAP_COLOR).map((status, index) => (
+                                            <MenuItem key={index}>
+                                                <Button
+                                                    className={cn(styles.menuItem, "w-full")}
+                                                    onClick={() => {
+                                                        onChangeStatus(item.id, status as keyof typeof STATUS_LIST_MAP_COLOR);
+                                                    }}
+                                                >
+                                                    <p
+                                                        className={cn("font-bold w-full",)}
+                                                        style={{
+                                                            color: STATUS_LIST_MAP_COLOR[status as keyof typeof STATUS_LIST_MAP_COLOR] || "text-gray-500"
+                                                        }}
+                                                    >
+                                                        <span
+                                                            className={cn("line-clamp-1")}>
+                                                            {STATUS_LIST_MAP_NAME[status as keyof typeof STATUS_LIST_MAP_COLOR]}
+                                                        </span>
+                                                    </p>
+                                                </Button>
+                                            </MenuItem>
+                                        ))}
+                                    </MenuItems>
+                                </Menu>
                             </td>
                             <td className={cn("text-center")}>
                                 <Menu>

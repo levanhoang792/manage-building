@@ -2,6 +2,7 @@ import {httpGet, httpPost} from "@/utils/api";
 import {
     Req3dModelCreate,
     Req3dModelData,
+    ReqChangeStatus3dModel,
     Res3dModelCreate,
     Res3dModelDataData,
     Res3dModelDetailData
@@ -60,10 +61,33 @@ const use3dModelCreate = () => {
     });
 };
 
+const changeStatus3dModel = async (params: ReqChangeStatus3dModel) => {
+    const resp = await httpPost(
+        {
+            uri: API_ROUTES.PRODUCTS_CHANGE_STATUS.replace(":id", String(params.id)),
+            options: {body: JSON.stringify(params)}
+        },
+    )
+    return await resp.json() as ResRequest<null>;
+}
+
+const useChangeStatus3dModel = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: changeStatus3dModel,
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey]}).then(r => console.log("Re-fetching data: ", r)); // Hàm này sẽ tác động refresh hàm list
+        },
+        onError: () => {
+        }
+    });
+};
+
 export {
     useFetch3dModel,
 
     fetch3dModelDetail,
 
-    use3dModelCreate
+    use3dModelCreate,
+    useChangeStatus3dModel
 };
