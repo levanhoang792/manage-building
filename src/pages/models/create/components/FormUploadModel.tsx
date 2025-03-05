@@ -1,10 +1,12 @@
 import {cn} from "@/lib/utils";
 import {Button, Field, Fieldset, Input, Label} from "@headlessui/react";
 import stylesGlobal from "@/global.module.scss";
+import InputFileUpload from "@/components/commons/InputFileUpload";
 import Checkbox from "@/components/commons/Checkbox";
 import {Controller, useForm, useWatch} from "react-hook-form";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
+import ErrorMessage from "@/components/commons/ErrorMessage";
 import {ResCategory} from "@/hooks/category/model";
 import {ResPlatform} from "@/hooks/platforms/model";
 import {ResRender} from "@/hooks/renders/model";
@@ -14,18 +16,16 @@ import {Material, ResMaterial} from "@/hooks/materials/model";
 import {Req3dModelCreate} from "@/hooks/models/model";
 import {useEffect, useState} from "react";
 import {use3dModelCreate} from "@/hooks/models/use3dModel";
-import {ROUTES} from "@/routes/routes";
 import {API_RESPONSE_CODE} from "@/routes/api";
 import {toast} from "sonner";
 import {ENV} from "@/utils/env";
-import {PlusIcon} from "@heroicons/react/20/solid";
-import ImageUpload from "./ImageUpload";
-import {Link, useNavigate} from "react-router-dom";
-import ColorsComponents from "@/components/Colors";
 import Combobox from "@/components/commons/Combobox";
-import ErrorMessage from "@/components/commons/ErrorMessage";
-import Select from "@/components/commons/Select";
-import InputFileUpload from "@/components/commons/InputFileUpload";
+import {PlusIcon} from "@heroicons/react/20/solid";
+import Spinner from "@/components/commons/Spinner";
+import {Link, useNavigate} from "react-router-dom";
+import {ROUTES} from "@/routes/routes";
+import Colors from "@/components/Colors";
+import ImageUpload from "@/pages/models/create/components/ImageUpload";
 
 type FormUploadModelProps = {
     categories: ResCategory;
@@ -47,16 +47,16 @@ type Req3dModelCreateProps = Req3dModelCreate & {
 const uploadModelSchema: z.ZodType<Req3dModelCreateProps> = z.object({
     name: z.string().nonempty("Name is required"),
     category_id: z.number().int().positive("Category is required"),
-    platform_id: z.number().int().positive("Platform is required"),
-    render_id: z.number().int().positive("Render is required"),
+    platform_id: z.number().int(),
+    render_id: z.number().int(),
     color_ids: z.array(z.number().int().positive("Color cannot be empty"))
-        .min(1, "You must select at least 1 color") // ✅ Bắt buộc có ít nhất 1 màu
+        // .min(1, "You must select at least 1 color") // ✅ Bắt buộc có ít nhất 1 màu
         .max(3, "You can select up to 3 colors") // ✅ Không được chọn quá 3 màu
         .refine((arr) => arr.every((color) => color !== undefined), {
             message: "Colors cannot contain undefined values",
         }),
-    material_ids: z.array(z.number().int().positive("Material cannot be empty"))
-        .min(1, "You must select at least 1 material") // ✅ Bắt buộc có ít nhất 1 màu
+    material_ids: z.array(z.number().int())
+        // .min(1, "You must select at least 1 material") // ✅ Bắt buộc có ít nhất 1 màu
         .max(3, "You can select up to 3 materials") // ✅ Giới hạn trước khi transform
         .transform(arr => arr.filter(material => material !== 0)), // 🛠 Loại bỏ `0`
     file_url: z.string().url("Field is not a URL").nonempty("File Url is required"),
@@ -69,7 +69,7 @@ const uploadModelSchema: z.ZodType<Req3dModelCreateProps> = z.object({
 });
 
 function FormUploadModel({categories, platforms, renders, materials, colors, tags}: FormUploadModelProps) {
-    const router = useNavigate();
+    const navigate = useNavigate();
 
     const create3dModelMutation = use3dModelCreate();
 
@@ -107,13 +107,14 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
         create3dModelMutation.mutate(data, {
             onSuccess: ({r, msg}) => {
                 if (r === API_RESPONSE_CODE.SUCCESS) {
-                    router(ROUTES.MODELS);
+                    navigate(ROUTES.MODELS);
                     toast.success(msg);
                 } else {
                     toast.error(msg);
                 }
             },
             onError: (error) => {
+                toast.error("Create model error");
                 console.error("Create model error", error);
             }
         })
@@ -135,18 +136,9 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
     }, [materialIds]);
 
     return (
-        <form onSubmit={onSubmit}>
+        <form action="" onSubmit={onSubmit}>
             <Fieldset className={cn("flex gap-[3.75rem]")}>
                 <div className={cn("flex-grow")}>
-                    <Combobox
-                        isClearable={true}
-                        options={
-                            listMaterial?.map(material => ({
-                                id: material.id,
-                                value: material.name
-                            }))
-                        }
-                    />
                     <div className={cn("grid grid-cols-12 gap-x-6 gap-y-4")}>
                         <Field className={cn(stylesGlobal.formField, "col-span-12")}>
                             <Label className={cn(stylesGlobal.formFieldLabel)}>
@@ -176,21 +168,26 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                     control={control}
                                     name="category_id"
                                     render={({field}) => (
-                                        <Select
-                                            defaultValue={String(defaultValues?.category_id || "")}
-                                            onChange={(value) => {
-                                                field.onChange(Number(value));
-                                            }}
-                                        >
-                                            <option value="">Choose category</option>
-                                            {
-                                                categories.data?.map(category => (
-                                                    <option key={category.id} value={category.id}>
-                                                        {category.name}
-                                                    </option>
-                                                ))
+                                        <Combobox
+                                            placeholder="Choose category"
+                                            isClearable={true}
+                                            defaultValue={defaultValues?.category_id}
+                                            isParentDisabled={true}
+                                            options={
+                                                categories?.data?.map(category => ({
+                                                    id: category.id,
+                                                    value: category.name,
+                                                    children: category.children?.map(child => ({
+                                                        id: child.id,
+                                                        value: child.name
+                                                    }))
+                                                }))
                                             }
-                                        </Select>
+                                            onChange={(value) => {
+                                                const selectedItem = Array.isArray(value) ? value?.[0] : value;
+                                                field.onChange(Number(selectedItem?.id || 0));
+                                            }}
+                                        />
                                     )}
                                 />
                             </div>
@@ -224,56 +221,58 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                         </Field>
 
                         <Field className={cn(stylesGlobal.formField, "col-span-6")}>
-                            <div className="relative w-full">
-                                <Controller
-                                    control={control}
-                                    name="platform_id"
-                                    render={({field}) => (
-                                        <Select
-                                            defaultValue={String(defaultValues?.platform_id || "")}
-                                            onChange={(value) => {
-                                                field.onChange(Number(value));
-                                            }}
-                                        >
-                                            <option value="">Choose platform</option>
-                                            {
-                                                platforms.data?.map(platform => (
-                                                    <option key={platform.id} value={platform.id}>
-                                                        {platform.name}
-                                                    </option>
-                                                ))
-                                            }
-                                        </Select>
-                                    )}
-                                />
-                            </div>
+                            <Label className={cn(stylesGlobal.formFieldLabel)}>
+                                Platform
+                            </Label>
+                            <Controller
+                                control={control}
+                                name="platform_id"
+                                render={({field}) => (
+                                    <Combobox
+                                        placeholder="Choose platform"
+                                        isClearable={true}
+                                        defaultValue={defaultValues?.platform_id || undefined}
+                                        options={
+                                            platforms.data?.map(platform => ({
+                                                id: platform.id,
+                                                value: platform.name
+                                            }))
+                                        }
+                                        onChange={(value) => {
+                                            const selectedItem = Array.isArray(value) ? value?.[0] : value;
+                                            field.onChange(Number(selectedItem?.id || 0));
+                                        }}
+                                    />
+                                )}
+                            />
                             <ErrorMessage error={errors.platform_id}/>
                         </Field>
 
                         <Field className={cn(stylesGlobal.formField, "col-span-6")}>
-                            <div className="relative w-full">
-                                <Controller
-                                    control={control}
-                                    name="render_id"
-                                    render={({field}) => (
-                                        <Select
-                                            defaultValue={String(defaultValues?.render_id || "")}
-                                            onChange={(value) => {
-                                                field.onChange(Number(value));
-                                            }}
-                                        >
-                                            <option value="">Choose render</option>
-                                            {
-                                                renders.data?.map(render => (
-                                                    <option key={render.id} value={render.id}>
-                                                        {render.name}
-                                                    </option>
-                                                ))
-                                            }
-                                        </Select>
-                                    )}
-                                />
-                            </div>
+                            <Label className={cn(stylesGlobal.formFieldLabel)}>
+                                Render
+                            </Label>
+                            <Controller
+                                control={control}
+                                name="render_id"
+                                render={({field}) => (
+                                    <Combobox
+                                        placeholder="Choose render"
+                                        isClearable={true}
+                                        defaultValue={defaultValues?.render_id || undefined}
+                                        options={
+                                            renders.data?.map(render => ({
+                                                id: render.id,
+                                                value: render.name
+                                            }))
+                                        }
+                                        onChange={(value) => {
+                                            const selectedItem = Array.isArray(value) ? value?.[0] : value;
+                                            field.onChange(Number(selectedItem?.id || 0));
+                                        }}
+                                    />
+                                )}
+                            />
                             <ErrorMessage error={errors.render_id}/>
                         </Field>
 
@@ -285,7 +284,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                 control={control}
                                 name="color_ids"
                                 render={({field}) => (
-                                    <ColorsComponents
+                                    <Colors
                                         colors={colors.data?.map(color => color.hex_code)}
                                         max={3}
                                         onChange={(value) => {
@@ -307,97 +306,79 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                             </Label>
                             <div className={cn("grid grid-cols-12 gap-x-6 gap-y-4")}>
                                 <div className={cn("col-span-4 flex flex-col gap-2")}>
-                                    <div className="relative w-full">
-                                        <Controller
-                                            control={control}
-                                            name="material_ids.0"
-                                            render={({field}) => (
-                                                <Select
-                                                    defaultValue={String(defaultValues?.material_ids?.[0] || "")}
-                                                    onChange={(value) => {
-                                                        field.onChange(Number(value));
-                                                    }}
-                                                >
-                                                    <option value="">Choose material</option>
-                                                    {
-                                                        listMaterial?.map(material =>
-                                                                !(material.disabled && material.id !== materialIds[0]) && (
-                                                                    <option
-                                                                        key={material.id}
-                                                                        value={material.id}
-                                                                    >
-                                                                        {material.name}
-                                                                    </option>
-                                                                )
-                                                        )
-                                                    }
-                                                </Select>
-                                            )}
-                                        />
-                                    </div>
+                                    <Controller
+                                        control={control}
+                                        name="material_ids.0"
+                                        render={({field}) => (
+                                            <Combobox
+                                                placeholder="Choose material"
+                                                isClearable={true}
+                                                defaultValue={defaultValues?.material_ids?.[0] || undefined}
+                                                options={
+                                                    listMaterial
+                                                        ?.filter(material => !(material.disabled && material.id !== materialIds[0]))
+                                                        ?.map(material => ({
+                                                            id: material.id,
+                                                            value: material.name
+                                                        }))
+                                                }
+                                                onChange={(value) => {
+                                                    const selectedItem = Array.isArray(value) ? value?.[0] : value;
+                                                    field.onChange(Number(selectedItem?.id || 0));
+                                                }}
+                                            />
+                                        )}
+                                    />
                                 </div>
                                 <div className={cn("col-span-4 flex flex-col gap-2")}>
-                                    <div className="relative w-full">
-                                        <Controller
-                                            control={control}
-                                            name="material_ids.1"
-                                            render={({field}) => (
-                                                <Select
-                                                    defaultValue={String(defaultValues?.material_ids?.[1] || "")}
-                                                    onChange={(value) => {
-                                                        field.onChange(Number(value));
-                                                    }}
-                                                >
-                                                    <option value="">Choose material</option>
-                                                    {
-                                                        listMaterial?.map(material =>
-                                                                !(material.disabled && material.id !== materialIds[1]) && (
-                                                                    <option
-                                                                        key={material.id}
-                                                                        value={material.id}
-                                                                    >
-                                                                        {material.name}
-                                                                    </option>
-                                                                )
-                                                        )
-                                                    }
-                                                </Select>
-                                            )}
-                                        />
-                                    </div>
+                                    <Controller
+                                        control={control}
+                                        name="material_ids.1"
+                                        render={({field}) => (
+                                            <Combobox
+                                                placeholder="Choose material"
+                                                isClearable={true}
+                                                defaultValue={defaultValues?.material_ids?.[1] || undefined}
+                                                options={
+                                                    listMaterial
+                                                        ?.filter(material => !(material.disabled && material.id !== materialIds[1]))
+                                                        ?.map(material => ({
+                                                            id: material.id,
+                                                            value: material.name
+                                                        }))
+                                                }
+                                                onChange={(value) => {
+                                                    const selectedItem = Array.isArray(value) ? value?.[0] : value;
+                                                    field.onChange(Number(selectedItem?.id || 0));
+                                                }}
+                                            />
+                                        )}
+                                    />
                                 </div>
                                 <div className={cn("col-span-4 flex flex-col gap-2")}>
-                                    <div className="relative w-full">
-                                        <Controller
-                                            control={control}
-                                            name="material_ids.2"
-                                            render={({field}) => {
-
-                                                return (
-                                                    <Select
-                                                        defaultValue={String(defaultValues?.material_ids?.[2] || "")}
-                                                        onChange={(value) => {
-                                                            field.onChange(Number(value));
-                                                        }}
-                                                    >
-                                                        <option value="">Choose material</option>
-                                                        {
-                                                            listMaterial?.map(material =>
-                                                                    !(material.disabled && material.id !== materialIds[2]) && (
-                                                                        <option
-                                                                            key={material.id}
-                                                                            value={material.id}
-                                                                        >
-                                                                            {material.name}
-                                                                        </option>
-                                                                    )
-                                                            )
-                                                        }
-                                                    </Select>
-                                                )
-                                            }}
-                                        />
-                                    </div>
+                                    <Controller
+                                        control={control}
+                                        name="material_ids.2"
+                                        render={({field}) => (
+                                            <Combobox
+                                                placeholder="Choose material"
+                                                isClearable={true}
+                                                defaultValue={defaultValues?.material_ids?.[2] || undefined}
+                                                options={
+                                                    listMaterial
+                                                        ?.filter(material => !(material.disabled && material.id !== materialIds[2]))
+                                                        ?.map(material => ({
+                                                            id: material.id,
+                                                            value: material.name
+                                                        }))
+                                                }
+                                                onChange={(value) => {
+                                                    const selectedItem = Array.isArray(value) ? value?.[0] : value;
+                                                    field.onChange(Number(selectedItem?.id || 0));
+                                                }}
+                                            />
+                                        )}
+                                    />
                                 </div>
                             </div>
                             <ErrorMessage error={errors.material_ids}/>
@@ -407,29 +388,29 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                             <Label className={cn(stylesGlobal.formFieldLabel)}>
                                 Tag
                             </Label>
-                            <div className="relative w-full">
-                                <Controller
-                                    control={control}
-                                    name="tag_ids"
-                                    render={({field}) => (
-                                        <Select
-                                            defaultValue={String(defaultValues?.tag_ids?.[0] || "")}
-                                            onChange={(value) => {
-                                                field.onChange([Number(value)]);
-                                            }}
-                                        >
-                                            <option value="">Choose Tags</option>
-                                            {
-                                                tags.data?.map(tag => (
-                                                    <option key={tag.id} value={tag.id}>
-                                                        {tag.name}
-                                                    </option>
-                                                ))
-                                            }
-                                        </Select>
-                                    )}
-                                />
-                            </div>
+                            <Controller
+                                control={control}
+                                name="tag_ids"
+                                render={({field}) => (
+                                    <Combobox
+                                        placeholder="Choose Tags"
+                                        isClearable={true}
+                                        isCreatable={true}
+                                        defaultValue={defaultValues?.tag_ids?.filter(item => item !== undefined) || []}
+                                        multiple={true}
+                                        options={
+                                            tags.data?.map(tag => ({
+                                                id: tag.id,
+                                                value: tag.name
+                                            }))
+                                        }
+                                        onChange={(value) => {
+                                            const selectedItem = Array.isArray(value) ? value : [value];
+                                            field.onChange(selectedItem?.map(item => Number(item?.id || 0)));
+                                        }}
+                                    />
+                                )}
+                            />
                             <ErrorMessage error={errors.tag_ids}/>
                         </Field>
                     </div>
@@ -438,10 +419,13 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                         type="submit"
                         className={cn(
                             "py-3 px-8 rounded-xl bg-[#7D3200] mt-10",
-                            "text-xl/8 font-semibold text-white w-full"
+                            "text-xl/8 font-semibold text-white w-full",
+                            "flex items-center justify-center gap-2"
                         )}
+                        disabled={create3dModelMutation.isPending}
                         style={{boxShadow: "0px 20px 25px -5px rgba(0, 0, 0, 0.10), 0px 8px 10px -6px rgba(0, 0, 0, 0.10)"}}
                     >
+                        <Spinner isLoading={create3dModelMutation.isPending}/>
                         Send to moderation
                     </Button>
 

@@ -1,5 +1,3 @@
-"use client";
-
 import {cn} from "@/lib/utils";
 import {Button} from "@headlessui/react";
 import {CheckIcon} from "@heroicons/react/20/solid";

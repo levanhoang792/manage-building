@@ -1,4 +1,3 @@
-
 import styles from "@/global.module.scss";
 import {
     Button,
@@ -57,6 +56,7 @@ type ComboboxProps = {
     isCreatable?: boolean
     onCreate?: (value: string) => void
     multiple?: boolean
+    isParentDisabled?: boolean
 };
 
 export default function Combobox(
@@ -67,6 +67,7 @@ export default function Combobox(
         onChange,
         placeholder,
         isCreatable,
+        isParentDisabled,
         ...props
     }: ComboboxProps
 ) {
@@ -133,6 +134,7 @@ export default function Combobox(
                                     "py-1.5 pr-1 select-none data-[focus]:bg-black/10"
                                 )}
                                 style={{paddingLeft: `${indexChild + 0.25}rem`}}
+                                disabled={isParentDisabled && option.children && option.children.length > 0}
                             >
                                 <CheckIcon className="invisible size-4 fill-black group-data-[selected]:visible"/>
                                 <div className="text-sm/6 text-black">{option.value}</div>
