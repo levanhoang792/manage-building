@@ -96,12 +96,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
     });
     const materialIds = useWatch({control: control, name: "material_ids"});
 
-    const [listMaterial, setListMaterial] = useState<Array<MaterialListProps>>(
-        materials.data?.map(material => ({
-            ...material,
-            disabled: false
-        }))
-    );
+    const [listMaterial, setListMaterial] = useState<Array<MaterialListProps>>([]);
 
     const onSubmit = handleSubmit((data) => {
         create3dModelMutation.mutate(data, {
@@ -119,6 +114,13 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
             }
         })
     });
+
+    useEffect(() => {
+        setListMaterial(materials.data?.map(material => ({
+            ...material,
+            disabled: false
+        })))
+    }, [materials.data]);
 
     useEffect(() => {
         setListMaterial(prev => prev?.map(material => {
