@@ -9,7 +9,8 @@ export type ResUserData = {
 
 export type ReqLogin = {
     email: string,
-    password: string
+    password: string,
+    isRemember: boolean
 }
 
 export type ResLogin = {

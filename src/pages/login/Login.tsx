@@ -8,12 +8,12 @@ import {z, ZodType} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {DevTool} from "@hookform/devtools";
 import FieldError from "@/components/FieldError";
-import {LoginFormData} from "@/types/login";
 import {useAuth} from "@/hooks/useAuth";
 import {ROUTES} from "@/routes/routes";
+import {ReqLogin} from "@/hooks/users/model";
 
-const FormSchema: ZodType<LoginFormData> = z.object({
-    username: z.string().nonempty("Username is required"),
+const FormSchema: ZodType<ReqLogin> = z.object({
+    email: z.string().nonempty("Email is required"),
     password: z.string().nonempty("Password is required"),
     isRemember: z.boolean(),
 })
@@ -21,10 +21,10 @@ const FormSchema: ZodType<LoginFormData> = z.object({
 function Login() {
     const {login} = useAuth();
 
-    const {control, handleSubmit, formState} = useForm<LoginFormData>({
+    const {control, handleSubmit, formState} = useForm<ReqLogin>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
-            username: "",
+            email: "",
             password: "",
             isRemember: false,
         }
@@ -45,7 +45,7 @@ function Login() {
                 <form className="w-full mt-5" onSubmit={handleSubmit(login)}>
                     <Controller
                         control={control}
-                        name="username"
+                        name="email"
                         render={({field}) => (
                             <Field>
                                 <Label className="hidden">Name</Label>
@@ -65,7 +65,7 @@ function Login() {
                             </Field>
                         )}
                     />
-                    <FieldError error={errors?.username} className={cn("pl-4")}/>
+                    <FieldError error={errors?.email} className={cn("pl-4")}/>
 
                     <Controller
                         control={control}
@@ -127,8 +127,8 @@ function Login() {
                             Login
                         </Button>
 
-                        <Link 
-                            to={ROUTES.SIGN_UP}  
+                        <Link
+                            to={ROUTES.SIGN_UP}
                             className={cn(
                                 "inline-flex items-center justify-center gap-2 bg-white py-1.5 px-3 text-sm/6 w-full rounded-full",
                                 "font-semibold text-gray-800 shadow-inner shadow-white/10 focus:outline-none transition-all",

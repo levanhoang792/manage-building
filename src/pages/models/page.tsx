@@ -31,6 +31,7 @@ export default function Model3D() {
         limit: limit,
         page: curPage,
     }); // Fetch từ server trước khi render
+    console.log("------> Line: 34 | page.tsx model3d: ", model3d);
     const changeStatusMutation = useChangeStatus3dModel();
 
     const {data, meta} = model3d.data || {};
@@ -117,7 +118,7 @@ export default function Model3D() {
                     <tbody>
                     {data?.map((item, index) => (
                         <tr key={index}>
-                            <td className={cn("text-right")}>{(curPage - 1) * limit + index + 1}</td>
+                            <td className={cn("text-right")}>{((meta?.current_page || 0) - 1) * limit + index + 1}</td>
                             <td className={cn("flex justify-center")}>
                                 <img
                                     alt={item.name}
