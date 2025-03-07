@@ -1,6 +1,5 @@
 import {QueryClient} from "@tanstack/react-query";
 import {COOKIES} from "@/utils/cookies";
-import {API_ROUTES} from "@/routes/api";
 import {ENV} from "@/utils/env";
 import Cookies from "js-cookie";
 
@@ -45,7 +44,7 @@ const httpRequest = async ({uri, options}: HttpRequest) => {
     }
 
     try {
-        const response = await fetch((ENV.PUBLIC_URL || "") + API_ROUTES.API + uri, options);
+        const response = await fetch((ENV.VITE_ENDPOINT_API || "") + uri, options);
 
         if (response && !response.ok) {
             console.error("API Request failed: ", response);
@@ -107,19 +106,19 @@ const httpPost = ({uri, options}: HttpRequest) => {
 //         options: {method: METHOD.PUT, ...options}
 //     });
 // }
-//
-// const httpDelete = ({uri, options}: HttpRequest) => {
-//     return httpRequest({
-//         uri: uri,
-//         options: {method: METHOD.DELETE, ...options}
-//     });
-// }
+
+const httpDelete = ({uri, options}: HttpRequest) => {
+    return httpRequest({
+        uri: uri,
+        options: {method: METHOD.DELETE, ...options}
+    });
+}
 
 export {
     METHOD,
     queryClient,
     httpGet,
-    httpPost
+    httpPost,
     // httpPut,
-    // httpDelete
+    httpDelete
 }

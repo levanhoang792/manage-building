@@ -1,4 +1,4 @@
-import {httpGet, httpPost} from "@/utils/api";
+import {httpDelete, httpGet, httpPost} from "@/utils/api";
 import {
     Req3dModelCreate,
     Req3dModelData,
@@ -83,11 +83,33 @@ const useChangeStatus3dModel = () => {
     });
 };
 
+const delete3dModel = async (id: number) => {
+    const resp = await httpDelete(
+        {
+            uri: API_ROUTES.PRODUCTS_DELETE.replace(":id", String(id)),
+        },
+    )
+    return await resp.json() as ResRequest<null>;
+}
+
+const use3dModelDelete = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: delete3dModel,
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [queryKey]}).then(r => console.log("Re-fetching data: ", r)); // Hàm này sẽ tác động refresh hàm list
+        },
+        onError: () => {
+        }
+    });
+};
+
 export {
     useFetch3dModel,
 
     fetch3dModelDetail,
 
     use3dModelCreate,
-    useChangeStatus3dModel
+    useChangeStatus3dModel,
+    use3dModelDelete
 };

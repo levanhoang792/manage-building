@@ -12,7 +12,7 @@ import {CloudArrowUpIcon, TrashIcon} from "@heroicons/react/24/outline";
 import {Link} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import {useState} from "react";
-import {useChangeStatus3dModel, useFetch3dModel} from "@/hooks/models/use3dModel";
+import {use3dModelDelete, useChangeStatus3dModel, useFetch3dModel} from "@/hooks/models/use3dModel";
 import Pagination from "@/components/commons/Pagination";
 import moment from "moment";
 import {DATE_FORMAT_DEFAULT, STATUS_LIST_MAP_COLOR, STATUS_LIST_MAP_NAME} from "@/utils/string";
@@ -31,8 +31,8 @@ export default function Model3D() {
         limit: limit,
         page: curPage,
     }); // Fetch từ server trước khi render
-    console.log("------> Line: 34 | page.tsx model3d: ", model3d);
     const changeStatusMutation = useChangeStatus3dModel();
+    const deleteMutation = use3dModelDelete();
 
     const {data, meta} = model3d.data || {};
 
@@ -64,6 +64,21 @@ export default function Model3D() {
             onError: (err) => {
                 toast.error(err.message);
                 toggleItemChangeStatus(id);
+            }
+        });
+    }
+
+    const onDeleteModel = (id: number) => {
+        deleteMutation.mutate(id, {
+            onSuccess: (res) => {
+                if (res.r === API_RESPONSE_CODE.SUCCESS) {
+                    toast.success("Delete model successfully");
+                } else {
+                    toast.error(res.msg);
+                }
+            },
+            onError: (err) => {
+                toast.error(err.message);
             }
         });
     }
@@ -220,12 +235,14 @@ export default function Model3D() {
                                             </Link>
                                         </MenuItem>
                                         <MenuItem>
-                                            <Link
-                                                to={ROUTES.MODELS_DETAIL.replace(":id", String(item.id))}
+                                            <Button
                                                 className={cn(styles.menuItem)}
+                                                onClick={() => {
+                                                    onDeleteModel(item.id)
+                                                }}
                                             >
                                                 <TrashIcon className={cn("size-5")}/> Delete
-                                            </Link>
+                                            </Button>
                                         </MenuItem>
                                     </MenuItems>
                                 </Menu>

@@ -1,6 +1,4 @@
 export const API_ROUTES = {
-    API: "/api/admin",
-
     LOGIN: "/login",
     LOGOUT: "/logout",
     REGISTER: "/register",
@@ -11,6 +9,7 @@ export const API_ROUTES = {
 
     PRODUCTS: "/products",
     PRODUCTS_DETAIL: "/products/:id",
+    PRODUCTS_DELETE: "/products/:id",
     PRODUCTS_CHANGE_STATUS: "/products/:id/change-status",
 
     UPLOAD_TEMP_MODEL: "/upload-temp-model",
