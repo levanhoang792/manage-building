@@ -25,16 +25,19 @@ const queryClient = new QueryClient({
 })
 
 const httpRequest = async ({uri, options}: HttpRequest) => {
-    const authToken = Cookies.get(COOKIES.TOKEN);
+    const start = Date.now();
 
     if (options) {
         const body = options?.body;
         const isFormDataBody = body instanceof FormData;
 
         const headers = options.headers instanceof Headers ? options.headers : new Headers(options.headers);
+
         if (!isFormDataBody) {
             headers.set("Content-Type", "application/json");
         }
+
+        const authToken = Cookies.get(COOKIES.TOKEN);
         if (authToken) {
             headers.set("Authorization", `Bearer ${authToken}`);
         }
@@ -57,6 +60,8 @@ const httpRequest = async ({uri, options}: HttpRequest) => {
     } catch (error) {
         console.error("API Request failed exception: ", error);
         return Promise.reject(error);
+    } finally {
+        console.log(`API Request ${uri} took ${Date.now() - start}ms`);
     }
 }
 
