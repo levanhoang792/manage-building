@@ -3,13 +3,14 @@ export const API_ROUTES = {
     LOGOUT: "/logout",
     REGISTER: "/register",
     FORGOT_PASSWORD: "/forgot-password",
-    USER_TOKEN: "/user-token",
+    USER_TOKEN: "/user/token",
 
     CONFIG: "/config",
 
     PRODUCTS: "/products",
     PRODUCTS_DETAIL: "/products/:id",
     PRODUCTS_DELETE: "/products/:id",
+    PRODUCTS_UPDATE: "/products/:id",
     PRODUCTS_CHANGE_STATUS: "/products/:id/change-status",
 
     UPLOAD_TEMP_MODEL: "/upload-temp-model",

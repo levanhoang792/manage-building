@@ -2,7 +2,6 @@ import {cn} from "@/lib/utils";
 import {Button, Field, Fieldset, Input, Label} from "@headlessui/react";
 import stylesGlobal from "@/global.module.scss";
 import InputFileUpload from "@/components/commons/InputFileUpload";
-import Checkbox from "@/components/commons/Checkbox";
 import {Controller, useForm, useWatch} from "react-hook-form";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -14,7 +13,7 @@ import {ResTag} from "@/hooks/tags/model";
 import {ResColor} from "@/hooks/colors/model";
 import {Material, ResMaterial} from "@/hooks/materials/model";
 import {Req3dModelCreate} from "@/hooks/models/model";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {use3dModelCreate} from "@/hooks/models/use3dModel";
 import {API_RESPONSE_CODE} from "@/routes/api";
 import {toast} from "sonner";
@@ -22,29 +21,22 @@ import {ENV} from "@/utils/env";
 import Combobox from "@/components/commons/Combobox";
 import {PlusIcon} from "@heroicons/react/20/solid";
 import Spinner from "@/components/commons/Spinner";
-import {Link, useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import Colors from "@/components/Colors";
 import ImageUpload from "@/pages/models/create/components/ImageUpload";
-
-type FormUploadModelProps = {
-    categories: ResCategory;
-    platforms: ResPlatform
-    renders: ResRender
-    materials: ResMaterial
-    colors: ResColor
-    tags: ResTag
-};
+import {useFetchCategories} from "@/hooks/category/useCategory";
+import {useFetchPlatforms} from "@/hooks/platforms/usePlatforms";
+import {useFetchRenders} from "@/hooks/renders/useRenders";
+import {useFetchMaterials} from "@/hooks/materials/useMaterials";
+import {useFetchColors} from "@/hooks/colors/useColors";
+import {useFetchTags} from "@/hooks/tags/useTags";
 
 type MaterialListProps = Material & {
     disabled: boolean
 }
 
-type Req3dModelCreateProps = Req3dModelCreate & {
-    accept_terms: boolean
-}
-
-const uploadModelSchema: z.ZodType<Req3dModelCreateProps> = z.object({
+const uploadModelSchema: z.ZodType<Req3dModelCreate> = z.object({
     name: z.string().nonempty("Name is required"),
     category_id: z.number().int().positive("Category is required"),
     platform_id: z.number().int(),
@@ -62,13 +54,10 @@ const uploadModelSchema: z.ZodType<Req3dModelCreateProps> = z.object({
     file_url: z.string().url("Field is not a URL").nonempty("File Url is required"),
     image_urls: z.array(z.string().nonempty("Image URL cannot be empty"))
         .min(1, "At least one image is required"),
-    tag_ids: z.array(z.number().int().positive("Tag is required")),
-    accept_terms: z.boolean().refine(value => value, {
-        message: "You must accept the terms",
-    }),
+    tag_ids: z.array(z.number().int().positive("Tag is required"))
 });
 
-function FormUploadModel({categories, platforms, renders, materials, colors, tags}: FormUploadModelProps) {
+function FormUploadModel() {
     const navigate = useNavigate();
 
     const create3dModelMutation = use3dModelCreate();
@@ -79,7 +68,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
         formState: {defaultValues, errors},
         setError,
         getValues
-    } = useForm<Req3dModelCreateProps>({
+    } = useForm<Req3dModelCreate>({
         resolver: zodResolver(uploadModelSchema),
         defaultValues: {
             name: "",
@@ -90,11 +79,24 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
             material_ids: [0, 0, 0],
             file_url: "",
             image_urls: [],
-            tag_ids: [],
-            accept_terms: false
+            tag_ids: []
         }
     });
     const materialIds = useWatch({control: control, name: "material_ids"});
+
+    const categoriesMutation = useFetchCategories({limit: 100});
+    const platformsMutation = useFetchPlatforms();
+    const rendersMutation = useFetchRenders();
+    const materialsMutation = useFetchMaterials();
+    const colorsMutation = useFetchColors();
+    const tagsMutation = useFetchTags();
+
+    const categories = useMemo(() => categoriesMutation.data || {} as ResCategory, [categoriesMutation.data]);
+    const platforms = useMemo(() => platformsMutation.data || {} as ResPlatform, [platformsMutation.data]);
+    const renders = useMemo(() => rendersMutation.data || {} as ResRender, [rendersMutation.data]);
+    const materials = useMemo(() => materialsMutation.data || {} as ResMaterial, [materialsMutation.data]);
+    const colors = useMemo(() => colorsMutation.data || {} as ResColor, [colorsMutation.data]);
+    const tags = useMemo(() => tagsMutation.data || {} as ResTag, [tagsMutation.data]);
 
     const [listMaterial, setListMaterial] = useState<Array<MaterialListProps>>([]);
 
@@ -138,7 +140,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
     }, [materialIds]);
 
     return (
-        <form action="" onSubmit={onSubmit}>
+        <form onSubmit={onSubmit}>
             <Fieldset className={cn("flex gap-[3.75rem]")}>
                 <div className={cn("flex-grow")}>
                     <div className={cn("grid grid-cols-12 gap-x-6 gap-y-4")}>
@@ -211,7 +213,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                     <InputFileUpload
                                         maxSize={Number(ENV.VITE_MODEL_MAX_SIZE)}
                                         onChange={(file) => {
-                                            field.onChange(file || "");
+                                            field.onChange(file?.fileUrl || "");
                                         }}
                                         onError={(error) => {
                                             setError("file_url", {message: error.message});
@@ -233,7 +235,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                     <Combobox
                                         placeholder="Choose platform"
                                         isClearable={true}
-                                        defaultValue={defaultValues?.platform_id || undefined}
+                                        defaultValue={defaultValues?.platform_id || []}
                                         options={
                                             platforms.data?.map(platform => ({
                                                 id: platform.id,
@@ -261,7 +263,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                     <Combobox
                                         placeholder="Choose render"
                                         isClearable={true}
-                                        defaultValue={defaultValues?.render_id || undefined}
+                                        defaultValue={defaultValues?.render_id || []}
                                         options={
                                             renders.data?.map(render => ({
                                                 id: render.id,
@@ -315,7 +317,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                             <Combobox
                                                 placeholder="Choose material"
                                                 isClearable={true}
-                                                defaultValue={defaultValues?.material_ids?.[0] || undefined}
+                                                defaultValue={defaultValues?.material_ids?.[0] || []}
                                                 options={
                                                     listMaterial
                                                         ?.filter(material => !(material.disabled && material.id !== materialIds[0]))
@@ -340,7 +342,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                             <Combobox
                                                 placeholder="Choose material"
                                                 isClearable={true}
-                                                defaultValue={defaultValues?.material_ids?.[1] || undefined}
+                                                defaultValue={defaultValues?.material_ids?.[1] || []}
                                                 options={
                                                     listMaterial
                                                         ?.filter(material => !(material.disabled && material.id !== materialIds[1]))
@@ -365,7 +367,7 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                                             <Combobox
                                                 placeholder="Choose material"
                                                 isClearable={true}
-                                                defaultValue={defaultValues?.material_ids?.[2] || undefined}
+                                                defaultValue={defaultValues?.material_ids?.[2] || []}
                                                 options={
                                                     listMaterial
                                                         ?.filter(material => !(material.disabled && material.id !== materialIds[2]))
@@ -430,31 +432,6 @@ function FormUploadModel({categories, platforms, renders, materials, colors, tag
                         <Spinner isLoading={create3dModelMutation.isPending}/>
                         Send to moderation
                     </Button>
-
-                    <div className={cn("flex flex-col gap-2")}>
-                        <Field className={cn("flex items-center gap-4 mt-6")}>
-                            <Controller
-                                control={control}
-                                name="accept_terms"
-                                render={({field}) => (
-                                    <Checkbox
-                                        defaultValue={defaultValues?.accept_terms}
-                                        onChange={field.onChange}
-                                    />
-                                )}
-                            />
-                            <Label className="text-[#000000CC] text-base/6 hover:cursor-pointer">
-                                I’ve accepted {" "}
-                                <Link
-                                    to=""
-                                    className={cn("text-[#4676ED] underline")}
-                                >
-                                    Terms of use fo authors
-                                </Link>
-                            </Label>
-                        </Field>
-                        <ErrorMessage error={errors.accept_terms}/>
-                    </div>
                 </div>
 
                 <div>

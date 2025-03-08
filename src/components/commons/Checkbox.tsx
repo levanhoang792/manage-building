@@ -1,4 +1,3 @@
-
 import {Checkbox as CheckboxHeadlessUI} from "@headlessui/react";
 import {cn} from "@/lib/utils";
 import styles from "@/pages/models/page.module.scss";
@@ -9,9 +8,10 @@ interface CheckboxProps {
     defaultValue?: boolean,
     onChange?: (value: boolean) => void,
     className?: string
+    value?: boolean
 }
 
-function Checkbox({defaultValue = false, onChange, className}: CheckboxProps) {
+function Checkbox({defaultValue = false, onChange, className, value}: CheckboxProps) {
     const [checkedInternal, setCheckedInternal] = useState<boolean>(defaultValue);
 
     const onChangeInternal = () => {
@@ -21,6 +21,10 @@ function Checkbox({defaultValue = false, onChange, className}: CheckboxProps) {
     useEffect(() => {
         if (onChange) onChange(checkedInternal);
     }, [checkedInternal, onChange])
+
+    useEffect(() => {
+        setCheckedInternal(!!value);
+    }, [value]);
 
     return (
         <CheckboxHeadlessUI

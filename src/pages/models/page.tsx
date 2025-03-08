@@ -1,14 +1,14 @@
 import styles from "@/pages/models/page.module.scss";
 import {cn} from "@/lib/utils";
-import {Button, Field, Input, Label, Menu, MenuButton, MenuItem, MenuItems,} from "@headlessui/react";
+import {Button, Menu, MenuButton, MenuItem, MenuItems,} from "@headlessui/react";
 import {
     CheckCircleIcon,
     EllipsisVerticalIcon,
-    MagnifyingGlassIcon,
     PencilSquareIcon,
+    PlusIcon,
     XCircleIcon
 } from "@heroicons/react/20/solid";
-import {CloudArrowUpIcon, TrashIcon} from "@heroicons/react/24/outline";
+import {TrashIcon} from "@heroicons/react/24/outline";
 import {Link} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import {useState} from "react";
@@ -20,15 +20,13 @@ import {toast} from "sonner";
 import {API_RESPONSE_CODE} from "@/routes/api";
 import Spinner from "@/components/commons/Spinner";
 
-const limit = 10;
-
 export default function Model3D() {
     const [listStatusChange, setListStatusChange] = useState<number[]>([]);
     const [curPage, setCurPage] = useState<number>(1);
 
     // Con này không dùng await nhé, nextjs mới dung thấy cú pháp này thì convert qua dùng hook
     const model3d = useFetch3dModel({
-        limit: limit,
+        limit: 20,
         page: curPage,
     }); // Fetch từ server trước khi render
     const changeStatusMutation = useChangeStatus3dModel();
@@ -85,37 +83,21 @@ export default function Model3D() {
 
     return (
         <div className={cn("px-3 overflow-hidden flex flex-col w-full h-full")}>
-            <div className={cn("py-3 flex gap-6 bg-white")}>
-                <Field className={cn("flex-grow")}>
-                    <Label className={cn("hidden")}>Search in 3D model...</Label>
-                    <div className={cn("relative flex items-center w-full")}>
-                        <MagnifyingGlassIcon className={cn("size-5 absolute left-6")}/>
-                        <Input
-                            name="full_name"
-                            type="text"
-                            placeholder="Search in 3D model..."
-                            className={cn(
-                                "h-[52px] w-full rounded-lg bg-[#F8F8F8] border border-[#C9CDD4]",
-                                "px-12 outline-none text-sm/5",
-                            )}
-                        />
-                    </div>
-                </Field>
-
+            <div className={cn("py-3 flex justify-end gap-6 bg-white")}>
                 <Link
                     to={ROUTES.MODELS_CREATE}
                     className={cn(
-                        "px-8 flex justify-center items-center gap-2 rounded-lg border border-black",
+                        "px-8 flex justify-center items-center gap-2 rounded-lg border border-black h-10 max-h-full",
                         "hover:bg-[#7D3200] hover:text-white hover:border-transparent transition-colors",
                     )}
                     style={{boxShadow: "0px 20px 25px -5px rgba(0, 0, 0, 0.10), 0px 8px 10px -6px rgba(0, 0, 0, 0.10)"}}
                 >
-                    Upload model
-                    <CloudArrowUpIcon className={cn("size-5")}/>
+                    <PlusIcon className={cn("size-5")}/>
+                    Create
                 </Link>
             </div>
 
-            <div className="my-3 flex-grow overflow-auto">
+            <div className="my-3 flex-grow w-full overflow-auto">
                 <table className="default-table relative">
                     <thead className={cn("sticky z-10 top-0 bg-white")}>
                     <tr>
@@ -132,8 +114,8 @@ export default function Model3D() {
                     </thead>
                     <tbody>
                     {data?.map((item, index) => (
-                        <tr key={index}>
-                            <td className={cn("text-right")}>{((meta?.current_page || 0) - 1) * limit + index + 1}</td>
+                        <tr key={index} className={cn("hover:bg-gray-100 transition")}>
+                            <td className={cn("text-right")}>{meta && (meta.current_page - 1) * meta.per_page + index + 1}</td>
                             <td className={cn("flex justify-center")}>
                                 <img
                                     alt={item.name}

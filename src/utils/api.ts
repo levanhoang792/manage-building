@@ -46,16 +46,18 @@ const httpRequest = async ({uri, options}: HttpRequest) => {
     try {
         const response = await fetch((ENV.VITE_ENDPOINT_API || "") + uri, options);
 
-        if (response && !response.ok) {
-            console.error("API Request failed: ", response);
+        if (response && response.ok) {
+            return response;
         }
 
-        return response;
-    } catch (error) {
-        console.error("API Request failed: ", error);
-    }
+        if (response.status === 401) Cookies.remove(COOKIES.TOKEN);
 
-    return new Response(null, {status: 500});
+        console.error("API Request failed: ", response);
+        return Promise.reject(response);
+    } catch (error) {
+        console.error("API Request failed exception: ", error);
+        return Promise.reject(error);
+    }
 }
 
 const httpGet = ({uri, options}: HttpRequest) => {
@@ -100,12 +102,12 @@ const httpPost = ({uri, options}: HttpRequest) => {
     });
 }
 
-// const httpPut = ({uri, options}: HttpRequest) => {
-//     return httpRequest({
-//         uri: uri,
-//         options: {method: METHOD.PUT, ...options}
-//     });
-// }
+const httpPut = ({uri, options}: HttpRequest) => {
+    return httpRequest({
+        uri: uri,
+        options: {method: METHOD.PUT, ...options}
+    });
+}
 
 const httpDelete = ({uri, options}: HttpRequest) => {
     return httpRequest({
@@ -119,6 +121,6 @@ export {
     queryClient,
     httpGet,
     httpPost,
-    // httpPut,
+    httpPut,
     httpDelete
 }

@@ -1,10 +1,14 @@
-import {createContext, ReactNode, useCallback, useState} from 'react';
+import {createContext, ReactNode, useCallback} from 'react';
 import {useNavigate} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import {useLogin} from "@/hooks/users/useUsers";
-import {ReqLogin, ResLogin} from "@/hooks/users/model";
+import {ReqLogin, ResLogin, ResLoginUser} from "@/hooks/users/model";
 import Cookies from "js-cookie";
 import {COOKIES} from "@/utils/cookies";
+import {useDispatch} from "react-redux";
+import {AppDispatch} from "@/store/store";
+import {setUser} from "@/store/slices/authSlice";
+import {toast} from "sonner";
 
 type CallbackLoginFuncProps = {
     onSuccess?: (res: ResLogin) => void
@@ -24,25 +28,32 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
 
     const loginMutation = useLogin();
 
-    const [token, setToken] = useState<string | undefined>(Cookies.get(COOKIES.TOKEN) || undefined);
+    const dispatch = useDispatch<AppDispatch>();
 
-    const initializeToken = useCallback((token: string) => {
-        setToken(token);
+    const initializeToken = useCallback((user: ResLoginUser, token: string) => {
+        dispatch(setUser({
+            token: token,
+            user: user
+        }));
         Cookies.set(COOKIES.TOKEN, token);
-    }, []);
+    }, [dispatch]);
 
     const clearToken = useCallback(() => {
-        setToken(undefined);
+        dispatch(setUser(null));
         Cookies.remove(COOKIES.TOKEN);
-    }, []);
+    }, [dispatch]);
 
     const login = useCallback((data: ReqLogin, callbacks?: CallbackLoginFuncProps) => {
         loginMutation.mutate(data, {
             onSuccess: (res) => {
-                initializeToken(res.token);
-                navigate(ROUTES.HOME);
+                if (res.token) {
+                    initializeToken(res.user, res.token);
+                    navigate(ROUTES.HOME);
 
-                callbacks?.onSuccess?.(res);
+                    callbacks?.onSuccess?.(res);
+                } else {
+                    toast.error("Login failed");
+                }
             },
             onError: (error) => {
                 console.error(error);
@@ -59,7 +70,6 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
 
     const value: AuthContextType = {
         // variable
-        token,
 
         // function
         login,

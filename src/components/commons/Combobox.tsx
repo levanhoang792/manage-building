@@ -49,6 +49,7 @@ export type ComboboxOptionItemProps = {
 type ComboboxProps = {
     options: ComboboxOptionItemProps[]
     defaultValue?: number | number[]
+    value?: number | number[]
     className?: string
     isClearable?: boolean
     placeholder?: string
@@ -68,6 +69,7 @@ export default function Combobox(
         placeholder,
         isCreatable,
         isParentDisabled,
+        value: valueExternal,
         ...props
     }: ComboboxProps
 ) {
@@ -114,6 +116,18 @@ export default function Combobox(
             throw new Error("❌ ERROR: `defaultValue` should not change after first render!");
         }
     }, [defaultValue]);
+
+    useEffect(() => {
+        if (valueExternal) {
+            const valueSelected = getSelectedValue(options, valueExternal) || (props.multiple ? [] : null);
+            setValue(prev => {
+                if (JSON.stringify(prev) !== JSON.stringify(valueSelected)) {
+                    return valueSelected;
+                }
+                return prev;
+            });
+        }
+    }, [options, props.multiple, valueExternal]);
 
     const renderOptions = (options: ComboboxOptionItemProps[], indexChild: number) => {
         let viewOption = (

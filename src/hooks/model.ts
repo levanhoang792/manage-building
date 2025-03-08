@@ -9,10 +9,11 @@ export type Pagination = {
     total: number
 }
 
-export type ResRequest<T> = {
+export type ResRequest<T, U = null> = {
     r: number
     msg: string
     data: T
+    errors: U
 }
 
 export type ResRequestPagination<T> = {

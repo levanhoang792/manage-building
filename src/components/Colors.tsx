@@ -7,6 +7,7 @@ interface ColorProps {
     colors: string[];
     className?: string,
     defaultValue?: (string)[],
+    value?: (string)[],
     buttonColor?: {
         className: string
     },
@@ -15,7 +16,7 @@ interface ColorProps {
     disabled?: boolean
 }
 
-function Colors({colors, className, buttonColor, defaultValue, onChange, max, disabled}: ColorProps) {
+function Colors({colors, className, buttonColor, defaultValue, onChange, max, disabled, value}: ColorProps) {
     const lastSelectedColor = useRef<string[] | undefined>(defaultValue); // Lưu giá trị gần nhất
     const firstRenderDefaultValue = useRef(defaultValue); // 🔥 Lưu giá trị `defaultValue` ban đầu
 
@@ -76,6 +77,10 @@ function Colors({colors, className, buttonColor, defaultValue, onChange, max, di
             onChangeRef.current?.(selectedColor);
         }
     }, [selectedColor]);
+
+    useEffect(() => {
+        setSelectedColor(value);
+    }, [value]);
 
     return (
         <div className={cn("flex justify-between mt-2", className)}>

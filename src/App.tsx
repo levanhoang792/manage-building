@@ -1,7 +1,6 @@
 import {BrowserRouter as Router, Navigate, Route, Routes} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import Login from "@/pages/login/Login.tsx";
-import Home from "@/pages/home/Home.tsx";
 import AccountSetting from "@/pages/account-setting/AccountSetting";
 import NotFound from "@/pages/not-found/NotFound";
 import {AuthProvider} from "@/context/AuthProvider";
@@ -18,45 +17,53 @@ import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {queryClient} from "./utils/api";
 import Create3DModelPage from "./pages/models/create/page";
 import {Toaster} from "sonner";
+import ProductDetail from "@/pages/models/detail/page";
+import {Provider} from "react-redux";
+import {store} from "@/store/store";
 
 function App() {
     return (
         <Router>
             <QueryClientProvider client={queryClient}>
-                <AuthProvider>
-                    <Routes>
-                        {/* Define your public routes */}
-                        <Route path={ROUTES.LOGIN} element={<Login/>}/>
-                        <Route path={ROUTES.LOGOUT} element={<Logout/>}/>
-                        <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword/>}/>
-                        <Route path={ROUTES.CONFIRM_OTP} element={<ConfrimOtp/>}/>
-                        <Route path={ROUTES.CHANGE_PASSWORD} element={<ChangePassword/>}/>
+                <Provider store={store}>
+                    <AuthProvider>
+                        <Routes>
+                            {/* Define your public routes */}
+                            <Route path={ROUTES.LOGIN} element={<Login/>}/>
+                            <Route path={ROUTES.LOGOUT} element={<Logout/>}/>
+                            <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword/>}/>
+                            <Route path={ROUTES.CONFIRM_OTP} element={<ConfrimOtp/>}/>
+                            <Route path={ROUTES.CHANGE_PASSWORD} element={<ChangePassword/>}/>
 
-                        <Route path={ROUTES.SIGN_UP} element={<SignUp/>}/>
+                            <Route path={ROUTES.SIGN_UP} element={<SignUp/>}/>
 
-                        {/* Define your private routes */}
-                        <Route element={<PrivateRoute/>}>
-                            <Route element={<MainLayout/>}>
-                                <Route path={ROUTES.HOME} element={<Home/>}/>
-                                <Route path="/home" element={<Navigate to={ROUTES.HOME}/>}/>
+                            {/* Define your private routes */}
+                            <Route element={<PrivateRoute/>}>
+                                <Route element={<MainLayout/>}>
+                                    {/*<Route path={ROUTES.HOME} element={<Home/>}/>*/}
+                                    {/*<Route path="/home" element={<Navigate to={ROUTES.HOME}/>}/>*/}
+                                    <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.MODELS}/>}/>
 
-                                <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting/>}/>
-                                <Route path={ROUTES.MODELS} element={<Model3D/>}/>
-                                <Route path={ROUTES.MODELS_CREATE} element={<Create3DModelPage/>}/>
+                                    <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting/>}/>
+                                    <Route path={ROUTES.MODELS} element={<Model3D/>}/>
+                                    <Route path={ROUTES.MODELS_CREATE} element={<Create3DModelPage/>}/>
+                                    <Route path={ROUTES.MODELS_DETAIL} element={<ProductDetail/>}/>
+                                </Route>
                             </Route>
-                        </Route>
 
-                        {/* Catch-all route for 404 */}
-                        <Route path="*" element={<NotFound/>}/>
-                    </Routes>
-                </AuthProvider>
+                            {/* Catch-all route for 404 */}
+                            <Route path="*" element={<NotFound/>}/>
+                        </Routes>
+                    </AuthProvider>
+                </Provider>
 
                 <Toaster position="bottom-right" richColors closeButton={true}/>
 
                 <ReactQueryDevtools initialIsOpen={false}/>
             </QueryClientProvider>
         </Router>
-    );
+    )
+        ;
 }
 
 export default App;
