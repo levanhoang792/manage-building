@@ -50,7 +50,6 @@ const PrivateRoute = () => {
                     },
                     onError: (e) => {
                         console.error("Check expire token error", e);
-                        handleLogout();
                     }
                 })
             }
