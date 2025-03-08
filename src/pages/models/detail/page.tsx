@@ -1,5 +1,5 @@
 import {cn} from "@/lib/utils";
-import {Link, useParams} from "react-router-dom";
+import {Link, useSearchParams} from "react-router-dom";
 import {use3dModelUpdate, useFetch3dModelDetail} from "@/hooks/models/use3dModel";
 import {useEffect, useMemo, useState} from "react";
 import {Req3dModelUpdate, Res3dModelDetailData} from "@/hooks/models/model";
@@ -12,7 +12,7 @@ import InputFileUpload from "@/components/commons/InputFileUpload";
 import {ENV} from "@/utils/env";
 import Colors from "@/components/Colors";
 import Spinner from "@/components/commons/Spinner";
-import ImageUpload from "@/pages/models/create/components/ImageUpload";
+import ImageUpload from "@/components/commons/ImageUpload";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useFetchCategories} from "@/hooks/category/useCategory";
 import {useFetchPlatforms} from "@/hooks/platforms/usePlatforms";
@@ -36,9 +36,9 @@ type MaterialListProps = Material & {
     disabled: boolean
 }
 
-type ParamsType = {
-    id: string;
-}
+// type ParamsType = {
+//     id: string;
+// }
 
 const uploadModelSchema: z.ZodType<Req3dModelUpdate> = z.object({
     id: z.number().int().positive("ID is required"),
@@ -63,7 +63,9 @@ const uploadModelSchema: z.ZodType<Req3dModelUpdate> = z.object({
 });
 
 export default function ProductDetail() {
-    const {id} = useParams<ParamsType>();
+    // const {id} = useParams<ParamsType>();
+    const [searchParams] = useSearchParams();
+    const id = searchParams.get("id");
 
     const fetchDetailModelMutation = useFetch3dModelDetail(Number(id || 0));
     const update3dModelMutation = use3dModelUpdate();

@@ -10,5 +10,5 @@ export const ROUTES = {
 
     MODELS: "/models",
     MODELS_CREATE: "/models/create",
-    MODELS_DETAIL: "/models/:id",
+    MODELS_DETAIL: "/models/update",
 };

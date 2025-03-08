@@ -24,7 +24,7 @@ import Spinner from "@/components/commons/Spinner";
 import {useNavigate} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import Colors from "@/components/Colors";
-import ImageUpload from "@/pages/models/create/components/ImageUpload";
+import ImageUpload from "@/components/commons/ImageUpload";
 import {useFetchCategories} from "@/hooks/category/useCategory";
 import {useFetchPlatforms} from "@/hooks/platforms/usePlatforms";
 import {useFetchRenders} from "@/hooks/renders/useRenders";

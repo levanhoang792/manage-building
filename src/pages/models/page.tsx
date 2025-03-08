@@ -210,7 +210,7 @@ export default function Model3D() {
                                     >
                                         <MenuItem>
                                             <Link
-                                                to={ROUTES.MODELS_DETAIL.replace(":id", String(item.id))}
+                                                to={ROUTES.MODELS_DETAIL + `?id=${item.id}`}
                                                 className={cn(styles.menuItem)}
                                             >
                                                 <PencilSquareIcon className={cn("size-5")}/> Detail

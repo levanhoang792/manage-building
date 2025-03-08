@@ -18,6 +18,7 @@ export default ({mode}: { mode: string }) => {
                     {src: 'dist/index.html', dest: 'login'},
                     {src: 'dist/index.html', dest: 'sign-up'},
                     {src: 'dist/index.html', dest: 'logout'},
+                    {src: 'dist/index.html', dest: 'models/update'},
                 ],
             })
         ],

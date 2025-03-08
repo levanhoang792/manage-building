@@ -25,16 +25,18 @@ type FileUploadedProps = {
     imgSrc: string | null;
 };
 
-function ImageUpload({
-                         children,
-                         onChange,
-                         onError,
-                         maxSize,
-                         maxFiles = 1,
-                         className,
-                         image,
-                         value
-                     }: ImagePreviewUploadProps) {
+function ImageUpload(
+    {
+        children,
+        onChange,
+        onError,
+        maxSize,
+        maxFiles = 1,
+        className,
+        image,
+        value
+    }: ImagePreviewUploadProps
+) {
     const onChangeRef = useRef(onChange);
     const onErrorRef = useRef(onError);
     const uploadMutation = useUploadImage();
