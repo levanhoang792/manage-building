@@ -1,6 +1,17 @@
 import styles from "@/pages/models/page.module.scss";
 import {cn} from "@/lib/utils";
-import {Button, Menu, MenuButton, MenuItem, MenuItems,} from "@headlessui/react";
+import {
+    Button,
+    Description,
+    Dialog,
+    DialogBackdrop,
+    DialogPanel,
+    DialogTitle,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuItems,
+} from "@headlessui/react";
 import {
     CheckCircleIcon,
     EllipsisVerticalIcon,
@@ -11,7 +22,7 @@ import {
 import {TrashIcon} from "@heroicons/react/24/outline";
 import {Link} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {use3dModelDelete, useChangeStatus3dModel, useFetch3dModel} from "@/hooks/models/use3dModel";
 import Pagination from "@/components/commons/Pagination";
 import moment from "moment";
@@ -23,6 +34,9 @@ import Spinner from "@/components/commons/Spinner";
 export default function Model3D() {
     const [listStatusChange, setListStatusChange] = useState<number[]>([]);
     const [curPage, setCurPage] = useState<number>(1);
+
+    const [isOpenDialogDelete, setIsOpenDialogDelete] = useState<boolean>(false);
+    const idDeleteRef = useRef<number | null>(null);
 
     // Con này không dùng await nhé, nextjs mới dung thấy cú pháp này thì convert qua dùng hook
     const model3d = useFetch3dModel({
@@ -66,8 +80,13 @@ export default function Model3D() {
         });
     }
 
-    const onDeleteModel = (id: number) => {
-        deleteMutation.mutate(id, {
+    const onDeleteModel = () => {
+        if (!idDeleteRef.current) {
+            toast.error("Model id is invalid");
+        }
+
+        setIsOpenDialogDelete(false);
+        deleteMutation.mutate(idDeleteRef.current || 0, {
             onSuccess: (res) => {
                 if (res.r === API_RESPONSE_CODE.SUCCESS) {
                     toast.success("Delete model successfully");
@@ -80,6 +99,12 @@ export default function Model3D() {
             }
         });
     }
+
+    useEffect(() => {
+        if (!isOpenDialogDelete) {
+            idDeleteRef.current = null;
+        }
+    }, [isOpenDialogDelete]);
 
     return (
         <div className={cn("px-3 overflow-hidden flex flex-col w-full h-full")}>
@@ -220,7 +245,8 @@ export default function Model3D() {
                                             <Button
                                                 className={cn(styles.menuItem)}
                                                 onClick={() => {
-                                                    onDeleteModel(item.id)
+                                                    setIsOpenDialogDelete(true);
+                                                    idDeleteRef.current = item.id;
                                                 }}
                                             >
                                                 <TrashIcon className={cn("size-5")}/> Delete
@@ -244,6 +270,33 @@ export default function Model3D() {
                     />
                 )}
             </div>
+
+            <Dialog open={isOpenDialogDelete} onClose={() => setIsOpenDialogDelete(false)} className="relative z-50">
+                <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm"/>
+
+                <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
+                    <DialogPanel className="max-w-lg space-y-4 border bg-white py-5 px-8 rounded-xl shadow-xl">
+                        <DialogTitle className="font-bold">Delete model</DialogTitle>
+                        <Description>
+                            Are you sure you want to delete this model?
+                        </Description>
+                        <div className="flex justify-end gap-3">
+                            <Button
+                                className={cn("bg-red-500 text-white px-3 py-1 rounded-lg")}
+                                onClick={() => setIsOpenDialogDelete(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className={cn("bg-green-500 text-white px-3 py-1 rounded-lg")}
+                                onClick={() => onDeleteModel()}
+                            >
+                                Submit
+                            </Button>
+                        </div>
+                    </DialogPanel>
+                </div>
+            </Dialog>
         </div>
     );
 }
