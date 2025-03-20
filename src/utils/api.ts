@@ -2,6 +2,7 @@ import {QueryClient} from "@tanstack/react-query";
 import {COOKIES} from "@/utils/cookies";
 import {ENV} from "@/utils/env";
 import Cookies from "js-cookie";
+import {ResRequest} from "@/hooks/model";
 
 const METHOD = {
     GET: "GET",
@@ -53,13 +54,27 @@ const httpRequest = async ({uri, options}: HttpRequest) => {
             return response;
         }
 
+        // Xử lý lỗi trước khi reject
+        let errorJson: ResRequest<null>;
+        try {
+            errorJson = await response.json(); // Parse lỗi trước khi reject
+        } catch {
+            errorJson = {msg: "Unknown error", r: response.status, data: null, errors: null};
+        }
+
         if (response.status === 401) Cookies.remove(COOKIES.TOKEN);
 
         console.error("API Request failed: ", response);
-        return Promise.reject(response);
+        return Promise.reject(errorJson);
     } catch (error) {
-        console.error("API Request failed exception: ", error);
-        return Promise.reject(error);
+        const msg = "API Request failed exception: " + error;
+        console.error(msg);
+        return Promise.reject({
+            msg: msg,
+            r: 500,
+            data: null,
+            errors: null
+        } as ResRequest<null>);
     } finally {
         console.log(`API Request ${uri} took ${Date.now() - start}ms`);
     }
