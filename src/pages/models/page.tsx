@@ -1,111 +1,10 @@
-import styles from "@/pages/models/page.module.scss";
 import {cn} from "@/lib/utils";
-import {
-    Button,
-    Description,
-    Dialog,
-    DialogBackdrop,
-    DialogPanel,
-    DialogTitle,
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-} from "@headlessui/react";
-import {
-    CheckCircleIcon,
-    EllipsisVerticalIcon,
-    PencilSquareIcon,
-    PlusIcon,
-    XCircleIcon
-} from "@heroicons/react/20/solid";
-import {TrashIcon} from "@heroicons/react/24/outline";
+import {PlusIcon} from "@heroicons/react/20/solid";
 import {Link} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
-import {useEffect, useRef, useState} from "react";
-import {use3dModelDelete, useChangeStatus3dModel, useFetch3dModel} from "@/hooks/models/use3dModel";
 import Pagination from "@/components/commons/Pagination";
-import moment from "moment";
-import {DATE_FORMAT_DEFAULT, STATUS_LIST_MAP_COLOR, STATUS_LIST_MAP_NAME} from "@/utils/string";
-import {toast} from "sonner";
-import {API_RESPONSE_CODE} from "@/routes/api";
-import Spinner from "@/components/commons/Spinner";
 
 export default function Model3D() {
-    const [listStatusChange, setListStatusChange] = useState<number[]>([]);
-    const [curPage, setCurPage] = useState<number>(1);
-
-    const [isOpenDialogDelete, setIsOpenDialogDelete] = useState<boolean>(false);
-    const idDeleteRef = useRef<number | null>(null);
-
-    // Con này không dùng await nhé, nextjs mới dung thấy cú pháp này thì convert qua dùng hook
-    const model3d = useFetch3dModel({
-        limit: 20,
-        page: curPage,
-    }); // Fetch từ server trước khi render
-    const changeStatusMutation = useChangeStatus3dModel();
-    const deleteMutation = use3dModelDelete();
-
-    const {data, meta} = model3d.data || {};
-
-    const onChangePage = (page: number) => {
-        setCurPage(page);
-    }
-
-    const toggleItemChangeStatus = (id: number) => {
-        setListStatusChange((prev) =>
-            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-        );
-    };
-
-    const onChangeStatus = (id: number, status: string) => {
-        toggleItemChangeStatus(id);
-
-        changeStatusMutation.mutate({
-            id: id,
-            status: status,
-        }, {
-            onSuccess: (res) => {
-                if (res.r === API_RESPONSE_CODE.SUCCESS) {
-                    toast.success("Change status successfully");
-                } else {
-                    toast.error(res.msg);
-                }
-                toggleItemChangeStatus(id);
-            },
-            onError: (err) => {
-                toast.error(err.message);
-                toggleItemChangeStatus(id);
-            }
-        });
-    }
-
-    const onDeleteModel = () => {
-        if (!idDeleteRef.current) {
-            toast.error("Model id is invalid");
-        }
-
-        setIsOpenDialogDelete(false);
-        deleteMutation.mutate(idDeleteRef.current || 0, {
-            onSuccess: (res) => {
-                if (res.r === API_RESPONSE_CODE.SUCCESS) {
-                    toast.success("Delete model successfully");
-                } else {
-                    toast.error(res.msg);
-                }
-            },
-            onError: (err) => {
-                toast.error(err.message);
-            }
-        });
-    }
-
-    useEffect(() => {
-        if (!isOpenDialogDelete) {
-            idDeleteRef.current = null;
-        }
-    }, [isOpenDialogDelete]);
-
     return (
         <div className={cn("px-3 overflow-hidden flex flex-col w-full h-full")}>
             <div className={cn("py-3 flex justify-end gap-6 bg-white")}>
@@ -138,165 +37,19 @@ export default function Model3D() {
                     </tr>
                     </thead>
                     <tbody>
-                    {data?.map((item, index) => (
-                        <tr key={index} className={cn("hover:bg-gray-100 transition")}>
-                            <td className={cn("text-right")}>{meta && (meta.current_page - 1) * meta.per_page + index + 1}</td>
-                            <td className={cn("flex justify-center")}>
-                                <img
-                                    alt={item.name}
-                                    src={item.image_files.find(item => item.pivot.is_thumbnail)?.file_path || ""}
-                                    className={cn("size-16 rounded-lg")}
-                                />
-                            </td>
-                            <td>{item.name}</td>
-                            <td>{item.user.name}</td>
-                            <td>
-                                <div className={cn("w-full flex justify-center")}>
-                                    {item.public
-                                        ? <CheckCircleIcon className={cn("size-10 fill-green-500")}/> :
-                                        <XCircleIcon className={cn("size-10 fill-red-500")}/>}
-                                </div>
-                            </td>
-                            <td className={cn("text-center")}>{moment(item.created_at).format(DATE_FORMAT_DEFAULT)}</td>
-                            <td className={cn("text-center")}>{moment(item.updated_at).format(DATE_FORMAT_DEFAULT)}</td>
-                            <td className={cn("text-center")}>
-                                <Menu>
-                                    <MenuButton
-                                        disabled={listStatusChange.includes(item.id)}
-                                        className={cn("relative text-sm font-semibold text-white rounded-full py-2 px-4 line-clamp-1 w-full")}
-                                        style={{
-                                            backgroundColor: STATUS_LIST_MAP_COLOR[item.status as keyof typeof STATUS_LIST_MAP_COLOR] || "text-gray-500"
-                                        }}
-                                    >
-                                        <div
-                                            className={cn(
-                                                "absolute w-full h-full top-0 left-0 flex justify-center items-center",
-                                                "bg-gray-300 bg-opacity-50 rounded-full",
-                                                {"hidden": !listStatusChange.includes(item.id)}
-                                            )}
-                                        >
-                                            <Spinner isLoading={true}/>
-                                        </div>
-                                        {item.status}
-                                    </MenuButton>
 
-                                    <MenuItems
-                                        transition
-                                        anchor="bottom end"
-                                        className={cn(
-                                            "w-40 max-w-full bg-white rounded-lg border border-gray-200 shadow",
-                                            "text-sm/6 text-black transition duration-100 ease-out",
-                                            "[--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
-                                        )}
-                                    >
-                                        {Object.keys(STATUS_LIST_MAP_COLOR).map((status, index) => (
-                                            <MenuItem key={index}>
-                                                <Button
-                                                    className={cn(styles.menuItem, "w-full")}
-                                                    onClick={() => {
-                                                        onChangeStatus(item.id, status as keyof typeof STATUS_LIST_MAP_COLOR);
-                                                    }}
-                                                >
-                                                    <p
-                                                        className={cn("font-bold w-full",)}
-                                                        style={{
-                                                            color: STATUS_LIST_MAP_COLOR[status as keyof typeof STATUS_LIST_MAP_COLOR] || "text-gray-500"
-                                                        }}
-                                                    >
-                                                        <span
-                                                            className={cn("line-clamp-1")}>
-                                                            {STATUS_LIST_MAP_NAME[status as keyof typeof STATUS_LIST_MAP_COLOR]}
-                                                        </span>
-                                                    </p>
-                                                </Button>
-                                            </MenuItem>
-                                        ))}
-                                    </MenuItems>
-                                </Menu>
-                            </td>
-                            <td className={cn("text-center")}>
-                                <Menu>
-                                    <MenuButton
-                                        className={cn(
-                                            "hover:bg-gray-200 py-1.5 px-2 rounded-lg transition"
-                                        )}
-                                    >
-                                        <EllipsisVerticalIcon className={cn("size-6")}/>
-                                    </MenuButton>
-
-                                    <MenuItems
-                                        transition
-                                        anchor="bottom end"
-                                        className={cn(
-                                            "w-40 max-w-full bg-white rounded-lg border border-gray-200 shadow",
-                                            "text-sm/6 text-black transition duration-100 ease-out",
-                                            "[--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
-                                        )}
-                                    >
-                                        <MenuItem>
-                                            <Link
-                                                to={ROUTES.MODELS_DETAIL + `?id=${item.id}`}
-                                                className={cn(styles.menuItem)}
-                                            >
-                                                <PencilSquareIcon className={cn("size-5")}/> Detail
-                                            </Link>
-                                        </MenuItem>
-                                        <MenuItem>
-                                            <Button
-                                                className={cn(styles.menuItem)}
-                                                onClick={() => {
-                                                    setIsOpenDialogDelete(true);
-                                                    idDeleteRef.current = item.id;
-                                                }}
-                                            >
-                                                <TrashIcon className={cn("size-5")}/> Delete
-                                            </Button>
-                                        </MenuItem>
-                                    </MenuItems>
-                                </Menu>
-                            </td>
-                        </tr>
-                    ))}
                     </tbody>
                 </table>
             </div>
 
             <div className={cn("w-full bg-white py-3")}>
-                {meta && (
-                    <Pagination
-                        currentPage={meta.current_page}
-                        totalPage={meta.last_page}
-                        onPageChange={onChangePage}
-                    />
-                )}
+                <Pagination
+                    currentPage={1}
+                    totalPage={10}
+                    onPageChange={() => {
+                    }}
+                />
             </div>
-
-            <Dialog open={isOpenDialogDelete} onClose={() => setIsOpenDialogDelete(false)} className="relative z-50">
-                <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm"/>
-
-                <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
-                    <DialogPanel className="max-w-lg space-y-4 border bg-white py-5 px-8 rounded-xl shadow-xl">
-                        <DialogTitle className="font-bold">Delete model</DialogTitle>
-                        <Description>
-                            Are you sure you want to delete this model?
-                        </Description>
-                        <div className="flex justify-end gap-3">
-                            <Button
-                                className={cn("bg-red-500 text-white px-3 py-1 rounded-lg")}
-                                onClick={() => setIsOpenDialogDelete(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                className={cn("bg-green-500 text-white px-3 py-1 rounded-lg")}
-                                onClick={() => onDeleteModel()}
-                            >
-                                Submit
-                            </Button>
-                        </div>
-                    </DialogPanel>
-                </div>
-            </Dialog>
         </div>
     );
 }

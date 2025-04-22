@@ -8,7 +8,6 @@ import {COOKIES} from "@/utils/cookies";
 import {useDispatch} from "react-redux";
 import {AppDispatch} from "@/store/store";
 import {setUser} from "@/store/slices/authSlice";
-import {toast} from "sonner";
 
 type CallbackLoginFuncProps = {
     onSuccess?: (res: ResLogin) => void
@@ -44,7 +43,15 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
     }, [dispatch]);
 
     const login = useCallback((data: ReqLogin, callbacks?: CallbackLoginFuncProps) => {
-        loginMutation.mutate(data, {
+        console.log("------> Line: 46 | AuthProvider.tsx callbacks: ", callbacks);
+        initializeToken({
+                email: data.email,
+                username: "1",
+                name: "",
+            }, "res.token"
+        );
+        navigate(ROUTES.HOME);
+        /*loginMutation.mutate(data, {
             onSuccess: (res) => {
                 if (res.token) {
                     initializeToken(res.user, res.token);
@@ -60,7 +67,7 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
 
                 callbacks?.onError?.(error);
             }
-        })
+        })*/
     }, [initializeToken, loginMutation, navigate]);
 
     const logout = useCallback(() => {

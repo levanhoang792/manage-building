@@ -1,4 +1,4 @@
-import {BrowserRouter as Router, Navigate, Route, Routes} from "react-router-dom";
+import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import {ROUTES} from "@/routes/routes";
 import Login from "@/pages/login/Login.tsx";
 import AccountSetting from "@/pages/account-setting/AccountSetting";
@@ -20,6 +20,7 @@ import {Toaster} from "sonner";
 import ProductDetail from "@/pages/models/detail/page";
 import {Provider} from "react-redux";
 import {store} from "@/store/store";
+import Dashboard from "@/pages/dashboard/Dashboard";
 
 function App() {
     return (
@@ -42,7 +43,7 @@ function App() {
                                 <Route element={<MainLayout/>}>
                                     {/*<Route path={ROUTES.HOME} element={<Home/>}/>*/}
                                     {/*<Route path="/home" element={<Navigate to={ROUTES.HOME}/>}/>*/}
-                                    <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.MODELS}/>}/>
+                                    <Route path={ROUTES.HOME} element={<Dashboard/>}/>
 
                                     <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting/>}/>
                                     <Route path={ROUTES.MODELS} element={<Model3D/>}/>
