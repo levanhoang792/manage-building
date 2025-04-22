@@ -11,4 +11,16 @@ export const ROUTES = {
     MODELS: "/models",
     MODELS_CREATE: "/models/create",
     MODELS_DETAIL: "/models/update",
+
+    // Building routes
+    BUILDINGS: "/buildings",
+    BUILDING_DETAIL: "/buildings/:id",
+    BUILDING_FLOORS: "/buildings/:id/floors",
+    BUILDING_FLOOR_DETAIL: "/buildings/:id/floors/:floorId",
+
+    // Admin routes
+    DASHBOARD: "/dashboard",
+    USERS: "/users",
+    USER_CREATE: "/users/create",
+    USER_EDIT: "/users/:id",
 };

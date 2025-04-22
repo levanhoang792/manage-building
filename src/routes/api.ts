@@ -27,6 +27,35 @@ export const API_ROUTES = {
     MATERIALS: "/materials",
 
     TAGS: "/tags",
+
+    // Building endpoints
+    BUILDINGS: "/buildings",
+    BUILDING_DETAIL: "/buildings/:id",
+    BUILDING_CREATE: "/buildings",
+    BUILDING_UPDATE: "/buildings/:id",
+    BUILDING_DELETE: "/buildings/:id",
+
+    // Floor endpoints
+    FLOORS: "/floors",
+    FLOOR_DETAIL: "/floors/:id",
+    FLOOR_CREATE: "/floors",
+    FLOOR_UPDATE: "/floors/:id",
+    FLOOR_DELETE: "/floors/:id",
+
+    // User management endpoints
+    USERS: "/users",
+    USER_DETAIL: "/users/:id",
+    USER_CREATE: "/users",
+    USER_UPDATE: "/users/:id",
+    USER_DELETE: "/users/:id",
+
+    // Door status endpoints
+    DOORS: "/doors",
+    DOOR_STATUS: "/doors/:id/status",
+    DOOR_TOGGLE: "/doors/:id/toggle",
+
+    // Dashboard statistics
+    DASHBOARD_STATS: "/dashboard/stats",
 }
 
 export const API_RESPONSE_CODE = {
