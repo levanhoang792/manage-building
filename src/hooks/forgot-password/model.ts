@@ -1,4 +1,3 @@
-
 export type ResUserData = {
     status: number,
     randomCode: number

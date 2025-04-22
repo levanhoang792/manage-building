@@ -1,6 +1,7 @@
 import {Line} from 'react-chartjs-2';
 import {ChartOptions} from 'chart.js';
 import {v4} from 'uuid';
+import {cn} from "@/lib/utils";
 
 const lineData = {
     labels: ['T2', 'T3', 'T4', 'T5'],
@@ -40,7 +41,7 @@ const lineOptions: ChartOptions<'line'> = {
 
 const LineChart = () => {
     return (
-        <div>
+        <div className={cn("min-h-[500px]")}>
             <Line key={v4()} data={lineData} options={lineOptions}/>
         </div>
     );

@@ -1,6 +1,7 @@
-import { Pie } from 'react-chartjs-2';
-import { ChartOptions } from 'chart.js';
-import { v4 } from 'uuid';
+import {Pie} from 'react-chartjs-2';
+import {ChartOptions} from 'chart.js';
+import {v4} from 'uuid';
+import {cn} from "@/lib/utils";
 
 const pieData = {
     labels: ['Chrome', 'Firefox', 'Edge'],
@@ -30,8 +31,8 @@ const pieOptions: ChartOptions<'pie'> = {
 
 const PieChart = () => {
     return (
-        <div>
-            <Pie key={v4()} data={pieData} options={pieOptions} />
+        <div className={cn("min-h-[500px]")}>
+            <Pie key={v4()} data={pieData} options={pieOptions}/>
         </div>
     );
 };

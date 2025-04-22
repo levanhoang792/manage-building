@@ -59,7 +59,7 @@ function SignUp() {
 
                 <form className="w-full mt-5" onSubmit={onSubmit}>
 
-                <Controller
+                    <Controller
                         control={control}
                         name="email"
                         render={({field}) => (

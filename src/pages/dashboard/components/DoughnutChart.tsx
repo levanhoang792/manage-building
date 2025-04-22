@@ -1,6 +1,7 @@
-import { Doughnut } from 'react-chartjs-2';
-import { ChartOptions } from 'chart.js';
-import { v4 } from 'uuid';
+import {Doughnut} from 'react-chartjs-2';
+import {ChartOptions} from 'chart.js';
+import {v4} from 'uuid';
+import {cn} from "@/lib/utils";
 
 const doughnutData = {
     labels: ['Frontend', 'Backend', 'DevOps'],
@@ -28,8 +29,8 @@ const doughnutOptions: ChartOptions<'doughnut'> = {
 
 const DoughnutChart = () => {
     return (
-        <div>
-            <Doughnut key={v4()} data={doughnutData} options={doughnutOptions} />
+        <div className={cn("min-h-[500px]")}>
+            <Doughnut key={v4()} data={doughnutData} options={doughnutOptions}/>
         </div>
     );
 };

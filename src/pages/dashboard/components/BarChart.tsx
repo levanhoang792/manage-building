@@ -1,6 +1,7 @@
-import { Bar } from 'react-chartjs-2';
-import { ChartOptions } from 'chart.js';
-import { v4 } from 'uuid';
+import {Bar} from 'react-chartjs-2';
+import {ChartOptions} from 'chart.js';
+import {v4} from 'uuid';
+import {cn} from "@/lib/utils";
 
 // ✅ Kiểu dữ liệu cho option bar chart
 const barOptions: ChartOptions<'bar'> = {
@@ -37,8 +38,8 @@ const barData = {
 
 const BarChart = () => {
     return (
-        <div>
-            <Bar key={v4()} data={barData} options={barOptions} />
+        <div className={cn("min-h-[500px]")}>
+            <Bar key={v4()} data={barData} options={barOptions}/>
         </div>
     );
 };

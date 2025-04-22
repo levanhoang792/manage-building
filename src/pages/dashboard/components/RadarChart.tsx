@@ -1,6 +1,7 @@
 import {Radar} from 'react-chartjs-2';
 import {ChartOptions} from 'chart.js';
 import {v4} from 'uuid';
+import {cn} from "@/lib/utils";
 
 const radarData = {
     labels: ['HTML', 'CSS', 'JS', 'React', 'Vue'],
@@ -38,7 +39,7 @@ const radarOptions: ChartOptions<'radar'> = {
 
 const RadarChart = () => {
     return (
-        <div>
+        <div className={cn("min-h-[500px]")}>
             <Radar key={v4()} data={radarData} options={radarOptions}/>
         </div>
     );

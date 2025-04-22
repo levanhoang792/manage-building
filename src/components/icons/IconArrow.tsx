@@ -1,4 +1,4 @@
-const IconArrow = ({ size = 20, color = "currentColor", ...props }) => (
+const IconArrow = ({size = 20, color = "currentColor", ...props}) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         width={size}
