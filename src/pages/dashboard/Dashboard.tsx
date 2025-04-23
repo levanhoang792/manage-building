@@ -12,10 +12,10 @@ import {
     Title,
     Tooltip,
 } from 'chart.js';
-import BarChart from "@/pages/dashboard/components/BarChart";
-import LineChart from "@/pages/dashboard/components/LineChart";
-import PieChart from "@/pages/dashboard/components/PieChart";
-import DoughnutChart from "@/pages/dashboard/components/DoughnutChart";
+import BarChart, {BarChartData} from "@/pages/dashboard/components/BarChart";
+import LineChart, {LineChartData} from "@/pages/dashboard/components/LineChart";
+import PieChart, {PieChartData} from "@/pages/dashboard/components/PieChart";
+import DoughnutChart, {DoughnutChartData} from "@/pages/dashboard/components/DoughnutChart";
 
 // Mock data for dashboard statistics (replace with API call later)
 const mockStats = {
@@ -83,7 +83,7 @@ export default function Dashboard() {
     }, []);
 
     // Data for door status chart
-    const doorStatusData = {
+    const doorStatusData: DoughnutChartData = {
         labels: ['Open', 'Closed'],
         datasets: [
             {
@@ -103,7 +103,7 @@ export default function Dashboard() {
     };
 
     // Data for entry/exit history chart
-    const entryExitData = {
+    const entryExitData: LineChartData = {
         labels: stats.entryExitHistory.map(item => item.date),
         datasets: [
             {
@@ -126,7 +126,7 @@ export default function Dashboard() {
     };
 
     // Data for people by building chart
-    const peopleByBuildingData = {
+    const peopleByBuildingData: PieChartData = {
         labels: stats.peopleByBuilding.map(item => item.building),
         datasets: [
             {
@@ -140,7 +140,7 @@ export default function Dashboard() {
     };
 
     // Data for door status by building chart
-    const doorStatusByBuildingData = {
+    const doorStatusByBuildingData: BarChartData = {
         labels: stats.doorStatusByBuilding.map(item => item.building),
         datasets: [
             {
@@ -209,7 +209,7 @@ export default function Dashboard() {
                     {/* Entry/Exit History */}
                     <div className="bg-white p-4 rounded-lg shadow-md mb-6">
                         <h2 className="text-lg font-semibold text-gray-700 mb-4">Entry/Exit History</h2>
-                        <div className="h-64">
+                        <div className="h-96">
                             <LineChart data={entryExitData}/>
                         </div>
                     </div>

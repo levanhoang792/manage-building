@@ -154,7 +154,8 @@ function BuildingManagement() {
                                         setImageToPreview(building.img);
                                         setShowImageModal(true);
                                     }}>
-                                        <img src={building.img} alt={building.name} className="w-12 h-12 object-cover rounded hover:scale-105 transition-transform duration-200"/>
+                                        <img src={building.img} alt={building.name}
+                                             className="w-12 h-12 object-cover rounded hover:scale-105 transition-transform duration-200"/>
                                     </button>
                                 </td>
 

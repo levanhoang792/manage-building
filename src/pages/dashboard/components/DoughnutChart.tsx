@@ -1,17 +1,17 @@
 import {Doughnut} from 'react-chartjs-2';
-import {ChartOptions} from 'chart.js';
+import {ChartData, ChartOptions} from 'chart.js';
 import {v4} from 'uuid';
-import {cn} from "@/lib/utils";
 
-const doughnutData = {
-    labels: ['Frontend', 'Backend', 'DevOps'],
-    datasets: [
-        {
-            data: [40, 35, 25],
-            backgroundColor: ['#36A2EB', '#FF6384', '#4BC0C0'],
-        },
-    ],
-};
+export interface DoughnutChartData extends ChartData<'doughnut'> {
+    labels: string[];
+    datasets: {
+        label: string;
+        data: number[];
+        backgroundColor: string[];
+        borderColor: string[];
+        borderWidth: number;
+    }[];
+}
 
 // ✅ options với đúng kiểu ChartOptions<'doughnut'>
 const doughnutOptions: ChartOptions<'doughnut'> = {
@@ -19,20 +19,20 @@ const doughnutOptions: ChartOptions<'doughnut'> = {
     maintainAspectRatio: false,
     plugins: {
         legend: {
-            position: 'bottom',
+            position: 'bottom'
         },
         tooltip: {
-            enabled: true,
-        },
-    },
+            enabled: true
+        }
+    }
 };
 
-const DoughnutChart = () => {
-    return (
-        <div className={cn("min-h-[500px]")}>
-            <Doughnut key={v4()} data={doughnutData} options={doughnutOptions}/>
-        </div>
-    );
+interface DoughnutChartProps {
+    data: DoughnutChartData;
+}
+
+const DoughnutChart = ({data}: DoughnutChartProps) => {
+    return <Doughnut key={v4()} data={data} options={doughnutOptions}/>;
 };
 
 export default DoughnutChart;

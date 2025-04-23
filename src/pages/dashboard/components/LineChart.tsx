@@ -1,21 +1,18 @@
 import {Line} from 'react-chartjs-2';
-import {ChartOptions} from 'chart.js';
+import {ChartData, ChartOptions} from 'chart.js';
 import {v4} from 'uuid';
-import {cn} from "@/lib/utils";
 
-const lineData = {
-    labels: ['T2', 'T3', 'T4', 'T5'],
-    datasets: [
-        {
-            label: 'Truy cập',
-            data: [100, 300, 200, 500],
-            borderColor: 'rgb(54, 162, 235)',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            tension: 0.3,
-            fill: true,
-        },
-    ],
-};
+export interface LineChartData extends ChartData<'line'> {
+    labels: string[];
+    datasets: {
+        label: string;
+        data: number[];
+        borderColor: string;
+        backgroundColor: string;
+        tension: number;
+        fill: boolean;
+    }[];
+}
 
 // ✅ Cấu hình tùy chỉnh biểu đồ line
 const lineOptions: ChartOptions<'line'> = {
@@ -23,28 +20,28 @@ const lineOptions: ChartOptions<'line'> = {
     maintainAspectRatio: false,
     plugins: {
         legend: {
-            position: 'top',
+            position: 'top'
         },
         tooltip: {
-            enabled: true,
-        },
+            enabled: true
+        }
     },
     scales: {
         x: {
-            beginAtZero: true,
+            beginAtZero: true
         },
         y: {
-            beginAtZero: true,
-        },
-    },
+            beginAtZero: true
+        }
+    }
 };
 
-const LineChart = () => {
-    return (
-        <div className={cn("min-h-[500px]")}>
-            <Line key={v4()} data={lineData} options={lineOptions}/>
-        </div>
-    );
+interface LineChartProps {
+    data: LineChartData;
+}
+
+const LineChart = ({data}: LineChartProps) => {
+    return <Line key={v4()} data={data} options={lineOptions}/>;
 };
 
 export default LineChart;
