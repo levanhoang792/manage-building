@@ -4,18 +4,22 @@ import {Link} from 'react-router-dom';
 import {ROUTES} from '@/routes/routes';
 import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react';
 import {EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon} from '@heroicons/react/20/solid';
+import nha1 from "@/assets/images/toa-nha-1.jpg";
+import nha2 from "@/assets/images/toa-nha-2.jpg";
+import nha3 from "@/assets/images/toa-nha-3.jpg";
 
 interface Building {
     id: number;
     name: string;
     description: string;
+    img: string;
 }
 
 // Mock data for buildings (replace with API call later)
 const mockBuildings = [
-    {id: 1, name: 'Building A', description: 'A modern office building with 10 floors'},
-    {id: 2, name: 'Building B', description: 'Residential complex with 15 floors'},
-    {id: 3, name: 'Building C', description: 'Commercial center with 5 floors'}
+    {id: 1, name: 'Building A', img: nha1, description: 'A modern office building with 10 floors'},
+    {id: 2, name: 'Building B', img: nha2, description: 'Residential complex with 15 floors'},
+    {id: 3, name: 'Building C', img: nha3, description: 'Commercial center with 5 floors'}
 ];
 
 function BuildingManagement() {
@@ -25,9 +29,13 @@ function BuildingManagement() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [currentBuilding, setCurrentBuilding] = useState<Building | null>(null);
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [imageToPreview, setImageToPreview] = useState<string | null>(null);
+
     const [formData, setFormData] = useState({
         name: '',
-        description: ''
+        description: '',
+        img: ''
     });
 
     useEffect(() => {
@@ -54,7 +62,7 @@ function BuildingManagement() {
     };
 
     const handleAdd = () => {
-        setFormData({name: '', description: ''});
+        setFormData({name: '', description: '', img: ''});
         setShowAddModal(true);
     };
 
@@ -62,7 +70,8 @@ function BuildingManagement() {
         setCurrentBuilding(building);
         setFormData({
             name: building.name,
-            description: building.description
+            description: building.description,
+            img: building.img
         });
         setShowEditModal(true);
     };
@@ -76,7 +85,8 @@ function BuildingManagement() {
         const newBuilding = {
             id: buildings.length + 1,
             name: formData.name,
-            description: formData.description
+            description: formData.description,
+            img: formData.img
         };
 
         setBuildings([...buildings, newBuilding]);
@@ -129,6 +139,7 @@ function BuildingManagement() {
                         <tr>
                             <th className="py-2 px-4 border-b text-left">ID</th>
                             <th className="py-2 px-4 border-b text-left">Name</th>
+                            <th className="py-2 px-4 border-b text-left">View</th>
                             <th className="py-2 px-4 border-b text-left">Description</th>
                             <th className="py-2 px-4 border-b text-left">Actions</th>
                         </tr>
@@ -138,6 +149,15 @@ function BuildingManagement() {
                             <tr key={building.id}>
                                 <td className="py-2 px-4 border-b">{building.id}</td>
                                 <td className="py-2 px-4 border-b">{building.name}</td>
+                                <td className="py-2 px-4 border-b">
+                                    <button onClick={() => {
+                                        setImageToPreview(building.img);
+                                        setShowImageModal(true);
+                                    }}>
+                                        <img src={building.img} alt={building.name} className="w-12 h-12 object-cover rounded hover:scale-105 transition-transform duration-200"/>
+                                    </button>
+                                </td>
+
                                 <td className="py-2 px-4 border-b">{building.description}</td>
                                 <td className="py-2 px-4 border-b">
                                     <Menu as="div" className="relative inline-block text-left">
@@ -293,6 +313,17 @@ function BuildingManagement() {
                         </button>
                     </div>
                 </Modal>
+
+                <Modal show={showImageModal} title="Preview Image" onClose={() => setShowImageModal(false)}>
+                    <div className="flex justify-center items-center max-h-screen overflow-auto p-4">
+                        <img
+                            src={imageToPreview || ''}
+                            alt="Preview"
+                            className="w-full h-auto max-w-[1000px] max-h-[90vh] object-contain rounded-xl shadow-2xl"
+                        />
+                    </div>
+                </Modal>
+
             </div>
         </>
     );

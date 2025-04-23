@@ -231,7 +231,7 @@ function FloorManagement() {
                                 required
                             >
                                 <option value="">Select Building</option>
-                                {buildings.map(building => (
+                                {mockBuildings.map(building => (
                                     <option key={building.id} value={building.id}>
                                         {building.name}
                                     </option>
@@ -303,7 +303,7 @@ function FloorManagement() {
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 required
                             >
-                                {buildings.map(building => (
+                                {mockBuildings.map(building => (
                                     <option key={building.id} value={building.id}>
                                         {building.name}
                                     </option>
