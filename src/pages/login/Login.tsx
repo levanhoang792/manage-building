@@ -1,39 +1,45 @@
 import bgImage from "@/assets/bg-image.jpg";
 import {cn} from "@/lib/utils.ts";
-import {Button, Checkbox, Field, Input, Label} from "@headlessui/react";
-import {CheckIcon, LockClosedIcon, UserIcon} from "@heroicons/react/20/solid";
+import {Button, Field, Input, Label} from "@headlessui/react";
+import {EnvelopeIcon, LockClosedIcon} from "@heroicons/react/20/solid";
 import {Link} from "react-router-dom";
 import {Controller, useForm} from "react-hook-form";
-import {z, ZodType} from "zod";
+import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {DevTool} from "@hookform/devtools";
-import FieldError from "@/components/FieldError";
-import {useAuth} from "@/hooks/useAuth";
+import {LoginFormData} from "@/hooks/auth/model";
 import {ROUTES} from "@/routes/routes";
-import {ReqLogin} from "@/hooks/users/model";
+import FieldError from "@/components/FieldError";
+import Checkbox from "@/components/commons/Checkbox";
+import {useAuth} from "@/hooks/useAuth";
 
-const FormSchema: ZodType<ReqLogin> = z.object({
-    email: z.string().nonempty("Email is required"),
-    password: z.string().nonempty("Password is required"),
-    isRemember: z.boolean(),
-})
+const FormSchema: z.ZodType<LoginFormData> = z.object({
+    email: z.string()
+        .nonempty("Email is required")
+        .email("Invalid email format"),
+    password: z.string()
+        .nonempty("Password is required"),
+    isRemember: z.boolean()
+});
 
 function Login() {
-    const {login} = useAuth();
+    const {login, loginMutation} = useAuth();
 
-    const {control, handleSubmit, formState} = useForm<ReqLogin>({
+    const {control, handleSubmit, formState: {errors}} = useForm<LoginFormData>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
             email: "",
             password: "",
-            isRemember: false,
+            isRemember: false
         }
-    })
-    const {errors} = formState;
+    });
+
+    const onSubmit = handleSubmit((data) => {
+        login(data);
+    });
 
     return (
         <div
-            className={cn("h-screen flex items-center justify-center bg-center bg-no-repeat bg-cover")}
+            className="h-screen flex items-center justify-center bg-center"
             style={{backgroundImage: `url(${bgImage})`}}
         >
             <div
@@ -42,13 +48,13 @@ function Login() {
             >
                 <h1 className={cn("text-3xl font-bold text-white text-center")}>Login</h1>
 
-                <form className="w-full mt-5" onSubmit={handleSubmit(login)}>
+                <form className="w-full mt-5" onSubmit={onSubmit}>
                     <Controller
                         control={control}
                         name="email"
                         render={({field}) => (
                             <Field>
-                                <Label className="hidden">Name</Label>
+                                <Label className="text-sm/6 font-medium text-white hidden">Email</Label>
                                 <div className={cn("relative")}>
                                     <Input
                                         {...field}
@@ -57,63 +63,67 @@ function Login() {
                                             "outline-none outline-1 -outline-offset-2 outline-white/25",
                                             "focus:outline-none data-[focus]:outline-1 data-[focus]:-outline-offset-2 data-[focus]:outline-white/50 transition-all"
                                         )}
-                                        placeholder="Username"
+                                        placeholder="Email"
                                     />
-                                    <UserIcon
-                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}/>
+                                    <EnvelopeIcon
+                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}
+                                    />
                                 </div>
                             </Field>
                         )}
                     />
-                    <FieldError error={errors?.email} className={cn("pl-4")}/>
+                    <FieldError error={errors.email}/>
 
                     <Controller
                         control={control}
                         name="password"
                         render={({field}) => (
                             <Field className={cn("mt-5")}>
-                                <Label className="hidden">Password</Label>
+                                <Label className="text-sm/6 font-medium text-white hidden">Password</Label>
                                 <div className={cn("relative")}>
                                     <Input
                                         {...field}
                                         type="password"
                                         className={cn(
-                                            "block w-full rounded-full border-0 bg-white/5 text-white py-2 pl-4 pr-10 text-sm/6 outline-white/25",
+                                            "block w-full rounded-full border-0 bg-white/5 text-white py-2 pl-4 pr-10 text-sm/6",
                                             "outline-none outline-1 -outline-offset-2 outline-white/25",
                                             "focus:outline-none data-[focus]:outline-1 data-[focus]:-outline-offset-2 data-[focus]:outline-white/50 transition-all"
                                         )}
                                         placeholder="Password"
                                     />
                                     <LockClosedIcon
-                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}/>
+                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}
+                                    />
                                 </div>
                             </Field>
                         )}
                     />
-                    <FieldError error={errors?.password} className={cn("pl-4")}/>
+                    <FieldError error={errors.password}/>
 
-                    <div className={cn("mt-5 flex gap-4 justify-between items-center")}>
-                        <Controller
-                            control={control}
-                            name="isRemember"
-                            render={({field}) => (
-                                <Field className={cn("flex gap-2 items-center")}>
+                    <div className={cn("mt-5 flex items-center justify-between")}>
+                        <Field className={cn("flex gap-2 items-center")}>
+                            <Controller
+                                control={control}
+                                name="isRemember"
+                                render={({field: {value, onChange}}) => (
                                     <Checkbox
-                                        {...field}
-                                        className="group size-6 bg-white/10 block rounded-md p-1 ring-1 ring-white/15 ring-inset data-[checked]:bg-white"
-                                    >
-                                        <CheckIcon className="hidden size-4 fill-black group-data-[checked]:block"/>
-                                    </Checkbox>
-                                    <Label className="text-sm/6 font-medium text-white">Remember me</Label>
-                                </Field>
-                            )}
-                        />
-                        <Link to={ROUTES.FORGOT_PASSWORD} className={cn("text-sm text-white hover:underline italic")}>
-                            Forgot password?
+                                        value={value}
+                                        onChange={onChange}
+                                    />
+                                )}
+                            />
+                            <Label className="text-sm/6 font-medium text-white">Remember me</Label>
+                        </Field>
+
+                        <Link
+                            to={ROUTES.FORGOT_PASSWORD}
+                            className={cn("text-sm/6 text-white hover:text-purple-300 transition-all")}
+                        >
+                            Forgot Password?
                         </Link>
                     </div>
 
-                    <div className={cn("mt-5 flex items-center justify-around gap-2")}>
+                    <div className={cn("mt-5")}>
                         <Button
                             type="submit"
                             className={cn(
@@ -123,27 +133,23 @@ function Login() {
                                 "data-[hover]:bg-purple-600 data-[open]:bg-purple-600",
                                 "data-[hover]:text-neutral-200 data-[open]:text-neutral-200"
                             )}
+                            disabled={loginMutation.isPending}
                         >
-                            Login
+                            {loginMutation.isPending ? "Logging in..." : "Login"}
                         </Button>
+                    </div>
 
+                    <p className={cn("mt-5 text-center text-sm/6 text-white")}>
+                        Don't have an account?{" "}
                         <Link
                             to={ROUTES.SIGN_UP}
-                            className={cn(
-                                "inline-flex items-center justify-center gap-2 bg-white py-1.5 px-3 text-sm/6 w-full rounded-full",
-                                "font-semibold text-gray-800 shadow-inner shadow-white/10 focus:outline-none transition-all",
-                                "data-[focus]:outline-1 data-[focus]:outline-white",
-                                "data-[hover]:bg-purple-600 data-[open]:bg-purple-600",
-                                "data-[hover]:text-neutral-200 data-[open]:text-neutral-200"
-                            )}>
-                            SignUp
+                            className={cn("text-purple-300 hover:text-purple-400 transition-all")}
+                        >
+                            Sign up
                         </Link>
-
-                    </div>
+                    </p>
                 </form>
             </div>
-
-            <DevTool control={control}/>
         </div>
     );
 }

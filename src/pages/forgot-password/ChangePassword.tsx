@@ -4,41 +4,52 @@ import {Button, Field, Input, Label} from "@headlessui/react";
 import {LockClosedIcon} from "@heroicons/react/20/solid";
 import {useNavigate} from "react-router-dom";
 import {Controller, useForm} from "react-hook-form";
-import {z, ZodType} from "zod";
+import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {DevTool} from "@hookform/devtools";
+import {ReqPassword} from "@/hooks/forgot-password/model";
+import {usePassword} from "@/hooks/forgot-password/useForgotPass";
 import {ROUTES} from "@/routes/routes";
 import FieldError from "@/components/FieldError";
+import {toast} from "sonner";
 
-type FormData = {
-    newPassword: string;
-    confirmPassword: string;
-};
-
-const FormSchema: ZodType<FormData> = z.object({
-    newPassword: z.string().nonempty("New password is required"),
-    confirmPassword: z.string().nonempty("Confirm password is required"),
+const FormSchema: z.ZodType<ReqPassword> = z.object({
+    newPassword: z.string()
+        .nonempty("New password is required")
+        .min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string()
+        .nonempty("Confirm password is required")
 }).refine(data => data.newPassword === data.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Confirm password must match new password",
+    message: "Confirm password must match new password"
 });
 
 function ChangePassword() {
     const navigate = useNavigate();
+    const passwordMutation = usePassword();
 
-    const {control, handleSubmit, formState} = useForm<FormData>({
+    const {control, handleSubmit, formState: {errors}} = useForm<ReqPassword>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
             newPassword: "",
-            confirmPassword: "",
+            confirmPassword: ""
         }
-    })
-    const {errors} = formState;
+    });
 
     const onSubmit = handleSubmit((data) => {
-        console.log(data);
-        navigate(ROUTES.LOGIN);
-    })
+        passwordMutation.mutate(data, {
+            onSuccess: (response) => {
+                if (response.status === 200) {
+                    toast.success("Password changed successfully");
+                    navigate(ROUTES.LOGIN);
+                } else {
+                    toast.error("Failed to change password. Please try again.");
+                }
+            },
+            onError: () => {
+                toast.error("Failed to change password. Please try again.");
+            }
+        });
+    });
 
     return (
         <div
@@ -52,30 +63,31 @@ function ChangePassword() {
                 <h1 className={cn("text-3xl font-bold text-white text-center")}>Change Password</h1>
 
                 <form className="w-full mt-5" onSubmit={onSubmit}>
-
                     <Controller
                         control={control}
                         name="newPassword"
                         render={({field}) => (
-                            <Field className={cn("mt-5")}>
+                            <Field>
                                 <Label className="text-sm/6 font-medium text-white hidden">New Password</Label>
                                 <div className={cn("relative")}>
                                     <Input
                                         {...field}
+                                        type="password"
                                         className={cn(
-                                            "block w-full rounded-full border-0 bg-white/5 text-white py-2 pl-4 pr-10 text-sm/6 outline-white/25",
+                                            "block w-full rounded-full border-0 bg-white/5 text-white py-2 pl-4 pr-10 text-sm/6",
                                             "outline-none outline-1 -outline-offset-2 outline-white/25",
                                             "focus:outline-none data-[focus]:outline-1 data-[focus]:-outline-offset-2 data-[focus]:outline-white/50 transition-all"
                                         )}
                                         placeholder="New Password"
                                     />
                                     <LockClosedIcon
-                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}/>
+                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}
+                                    />
                                 </div>
                             </Field>
                         )}
                     />
-                    <FieldError error={errors?.newPassword}/>
+                    <FieldError error={errors.newPassword}/>
 
                     <Controller
                         control={control}
@@ -86,20 +98,22 @@ function ChangePassword() {
                                 <div className={cn("relative")}>
                                     <Input
                                         {...field}
+                                        type="password"
                                         className={cn(
-                                            "block w-full rounded-full border-0 bg-white/5 text-white py-2 pl-4 pr-10 text-sm/6 outline-white/25",
+                                            "block w-full rounded-full border-0 bg-white/5 text-white py-2 pl-4 pr-10 text-sm/6",
                                             "outline-none outline-1 -outline-offset-2 outline-white/25",
                                             "focus:outline-none data-[focus]:outline-1 data-[focus]:-outline-offset-2 data-[focus]:outline-white/50 transition-all"
                                         )}
                                         placeholder="Confirm Password"
                                     />
                                     <LockClosedIcon
-                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}/>
+                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}
+                                    />
                                 </div>
                             </Field>
                         )}
                     />
-                    <FieldError error={errors?.confirmPassword}/>
+                    <FieldError error={errors.confirmPassword}/>
 
                     <div className={cn("mt-5")}>
                         <Button
@@ -111,17 +125,15 @@ function ChangePassword() {
                                 "data-[hover]:bg-purple-600 data-[open]:bg-purple-600",
                                 "data-[hover]:text-neutral-200 data-[open]:text-neutral-200"
                             )}
+                            disabled={passwordMutation.isPending}
                         >
-                            Change Password
+                            {passwordMutation.isPending ? "Changing..." : "Change Password"}
                         </Button>
                     </div>
                 </form>
             </div>
-
-            <DevTool control={control}/>
         </div>
-    )
-        ;
+    );
 }
 
 export default ChangePassword;

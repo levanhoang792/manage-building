@@ -1,73 +1,40 @@
 import {useMutation} from "@tanstack/react-query";
 import {httpPost} from "@/utils/api";
-import {ReqEmail, ReqOtp, ReqPassword, ResUserData} from "@/hooks/forgot-password/model";
-
+import {ReqEmail, ReqOtp, ReqPassword, ResForgotPassword} from "@/hooks/forgot-password/model";
 import {API_ROUTES} from "@/routes/api";
 
-// const queryKey = "forgot-password";
-
-const useEmail = () => {
-    // const queryClient = useQueryClient();
+export const useEmail = () => {
     return useMutation({
-        mutationFn: async (params: ReqEmail) => {
-            const resp = await httpPost(
-                {
-                    uri: API_ROUTES.FORGOT_PASSWORD,
-                    options: {body: JSON.stringify(params)}
-                },
-            )
-            return await resp.json() as ResUserData;
-        },
-        onSuccess: () => {
-            // queryClient.invalidateQueries({queryKey: [queryKey]}).then(r => console.log("Re-fetching data: ", r));
-        },
-        onError: () => {
+        mutationFn: async (data: ReqEmail) => {
+            const resp = await httpPost({
+                uri: API_ROUTES.FORGOT_PASSWORD_EMAIL,
+                options: {body: JSON.stringify(data)}
+            });
+            return await resp.json() as ResForgotPassword;
         }
     });
 };
 
-const useOtp = () => {
-    // const queryClient = useQueryClient();
+export const useOtp = () => {
     return useMutation({
-        mutationFn: async (params: ReqOtp) => {
-            const resp = await httpPost(
-                {
-                    uri: API_ROUTES.FORGOT_PASSWORD,
-                    options: {body: JSON.stringify(params)}
-                },
-            )
-            return await resp.json() as ResUserData;
-        },
-        onSuccess: () => {
-            // queryClient.invalidateQueries({queryKey: [queryKey]}).then(r => console.log("Re-fetching data: ", r));
-        },
-        onError: () => {
+        mutationFn: async (data: ReqOtp) => {
+            const resp = await httpPost({
+                uri: API_ROUTES.FORGOT_PASSWORD_OTP,
+                options: {body: JSON.stringify(data)}
+            });
+            return await resp.json() as ResForgotPassword;
         }
     });
 };
 
-const usePassword = () => {
-    // const queryClient = useQueryClient();
+export const usePassword = () => {
     return useMutation({
-        mutationFn: async (params: ReqPassword) => {
-            const resp = await httpPost(
-                {
-                    uri: API_ROUTES.FORGOT_PASSWORD,
-                    options: {body: JSON.stringify(params)}
-                },
-            )
-            return await resp.json() as ResUserData;
-        },
-        onSuccess: () => {
-            // queryClient.invalidateQueries({queryKey: [queryKey]}).then(r => console.log("Re-fetching data: ", r));
-        },
-        onError: () => {
+        mutationFn: async (data: ReqPassword) => {
+            const resp = await httpPost({
+                uri: API_ROUTES.FORGOT_PASSWORD_RESET,
+                options: {body: JSON.stringify(data)}
+            });
+            return await resp.json() as ResForgotPassword;
         }
     });
-};
-
-export {
-    useEmail,
-    useOtp,
-    usePassword
 };

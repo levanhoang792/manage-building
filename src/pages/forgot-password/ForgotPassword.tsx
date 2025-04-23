@@ -4,35 +4,46 @@ import {Button, Field, Input, Label} from "@headlessui/react";
 import {EnvelopeIcon} from "@heroicons/react/20/solid";
 import {useNavigate} from "react-router-dom";
 import {Controller, useForm} from "react-hook-form";
-import {z, ZodType} from "zod";
+import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {DevTool} from "@hookform/devtools";
+import {ReqEmail} from "@/hooks/forgot-password/model";
+import {useEmail} from "@/hooks/forgot-password/useForgotPass";
 import {ROUTES} from "@/routes/routes";
 import FieldError from "@/components/FieldError";
+import {toast} from "sonner";
 
-type FormData = {
-    email: string;
-}
-
-const FormSchema: ZodType<FormData> = z.object({
-    email: z.string().nonempty("Email is required").email("Please provide a valid email"),
-})
+const FormSchema: z.ZodType<ReqEmail> = z.object({
+    email: z.string()
+        .nonempty("Email is required")
+        .email("Invalid email format")
+});
 
 function ForgotPassword() {
     const navigate = useNavigate();
+    const emailMutation = useEmail();
 
-    const {control, handleSubmit, formState} = useForm<FormData>({
+    const {control, handleSubmit, formState: {errors}} = useForm<ReqEmail>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
-            email: "",
+            email: ""
         }
-    })
-    const {errors} = formState;
+    });
 
     const onSubmit = handleSubmit((data) => {
-        console.log(data);
-        navigate(ROUTES.CONFIRM_OTP);
-    })
+        emailMutation.mutate(data, {
+            onSuccess: (response) => {
+                if (response.status === 200) {
+                    toast.success("OTP sent to your email");
+                    navigate(ROUTES.CONFIRM_OTP);
+                } else {
+                    toast.error("Failed to send OTP. Please try again.");
+                }
+            },
+            onError: () => {
+                toast.error("Failed to send OTP. Please try again.");
+            }
+        });
+    });
 
     return (
         <div
@@ -63,12 +74,13 @@ function ForgotPassword() {
                                         placeholder="Email"
                                     />
                                     <EnvelopeIcon
-                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}/>
+                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}
+                                    />
                                 </div>
                             </Field>
                         )}
                     />
-                    <FieldError error={errors?.email}/>
+                    <FieldError error={errors.email}/>
 
                     <div className={cn("mt-5")}>
                         <Button
@@ -80,17 +92,15 @@ function ForgotPassword() {
                                 "data-[hover]:bg-purple-600 data-[open]:bg-purple-600",
                                 "data-[hover]:text-neutral-200 data-[open]:text-neutral-200"
                             )}
+                            disabled={emailMutation.isPending}
                         >
-                            Send OTP
+                            {emailMutation.isPending ? "Sending..." : "Send OTP"}
                         </Button>
                     </div>
                 </form>
             </div>
-
-            <DevTool control={control}/>
         </div>
-    )
-        ;
+    );
 }
 
 export default ForgotPassword;

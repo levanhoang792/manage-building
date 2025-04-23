@@ -37,3 +37,18 @@ export type ResUserToken = {
     updated_at: string
     email_verified_at: string
 }
+
+export type UserFormData = {
+    username: string;
+    email: string;
+    password: string;
+    role: string;
+}
+
+export type EditUserFormData = Omit<UserFormData, 'password'>;
+
+export type ChangePasswordFormData = {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}

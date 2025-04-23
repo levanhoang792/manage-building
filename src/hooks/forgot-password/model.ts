@@ -12,6 +12,12 @@ export type ReqOtp = {
 }
 
 export type ReqPassword = {
-    password: string,
-    re_password: string
+    newPassword: string;
+    confirmPassword: string;
+}
+
+export type ResForgotPassword = {
+    status: number;
+    message: string;
+    code?: string;
 }
