@@ -2,7 +2,9 @@ export const API_ROUTES = {
     LOGIN: "/login",
     LOGOUT: "/logout",
     REGISTER: "/register",
-    FORGOT_PASSWORD: "/forgot-password",
+    FORGOT_PASSWORD_EMAIL: "/forgot-password-email",
+    FORGOT_PASSWORD_OTP: "/forgot-password-otp",
+    FORGOT_PASSWORD_RESET: "/forgot-password-reset",
     USER_TOKEN: "/user/token",
 
     CONFIG: "/config",
