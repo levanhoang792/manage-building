@@ -1,6 +1,6 @@
 import {cn} from '@/lib/utils.ts';
 import {Button, Field, Label} from '@headlessui/react';
-import {useState} from 'react';
+import {useState, useRef, useEffect} from 'react';
 import {z} from 'zod';
 import {Controller, useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -86,6 +86,9 @@ function LocationSelect() {
         details: string;
     } | null>(null);
     const [mockDoorsState, setMockDoorsState] = useState(mockDoors);
+    const imageContainerRef = useRef<HTMLDivElement>(null);
+    const imageRef = useRef<HTMLImageElement>(null);
+    const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
     console.log('------> Line: 58 | LocationSelect.tsx selectedDoor: ', selectedDoor);
 
     // Hàm mô phỏng gọi API
@@ -160,10 +163,76 @@ function LocationSelect() {
         });
     };
 
+    // Theo dõi kích thước của container và ảnh
+    useEffect(() => {
+        if (!showImageModal) return;
+
+        const updateDimensions = () => {
+            if (imageRef.current) {
+                setImageDimensions({
+                    width: imageRef.current.clientWidth,
+                    height: imageRef.current.clientHeight
+                });
+            }
+        };
+
+        const imageElement = imageRef.current;
+        
+        // Cập nhật ngay khi ảnh được tải
+        if (imageElement?.complete) {
+            updateDimensions();
+        } else if (imageElement) {
+            imageElement.onload = updateDimensions;
+        }
+
+        // Thêm event listener để phát hiện thay đổi kích thước
+        const resizeObserver = new ResizeObserver(updateDimensions);
+        
+        if (imageContainerRef.current) {
+            resizeObserver.observe(imageContainerRef.current);
+        }
+        
+        if (imageElement) {
+            resizeObserver.observe(imageElement);
+        }
+
+        return () => {
+            resizeObserver.disconnect();
+            if (imageElement) {
+                imageElement.onload = null;
+            }
+        };
+    }, [showImageModal]);
+
     const onSubmit = handleSubmit((data) => {
         console.log(data);
         setShowImageModal(true);
     });
+
+    // Tính toán vị trí thực tế của các điểm dựa trên kích thước ảnh hiện tại
+    const calculateDoorPosition = (x: number, y: number) => {
+        // Nếu chưa có kích thước ảnh, sử dụng vị trí phần trăm
+        if (imageDimensions.width === 0 || imageDimensions.height === 0) {
+            return { left: `${x}%`, top: `${y}%` };
+        }
+
+        // Lấy kích thước của container
+        const containerWidth = imageContainerRef.current?.clientWidth || 0;
+        const containerHeight = imageContainerRef.current?.clientHeight || 0;
+        
+        // Tính offset để căn giữa ảnh trong container
+        const offsetX = (containerWidth - imageDimensions.width) / 2;
+        const offsetY = (containerHeight - imageDimensions.height) / 2;
+        
+        // Vị trí theo tỷ lệ phần trăm của ảnh gốc
+        const actualX = (x / 100) * imageDimensions.width + offsetX;
+        const actualY = (y / 100) * imageDimensions.height + offsetY;
+        
+        return {
+            left: `${actualX}px`,
+            top: `${actualY}px`,
+        };
+    };
 
     return (
         <>
@@ -248,65 +317,76 @@ function LocationSelect() {
                 onClose={() => setShowImageModal(false)}
                 className="w-full h-full max-w-full flex flex-col justify-center overflow-hidden"
                 backdropClassName="p-12">
-                <div className="flex justify-center items-center flex-grow overflow-hidden relative">
-                    <img src={ImageBg} alt="Floor Layout" className="w-auto h-full object-contain rounded-lg"/>
-                    {mockDoorsState.map((door) => (
-                        <div
-                            key={door.id}
-                            className="absolute"
-                            style={{
-                                left: `${door.x}%`,
-                                top: `${door.y}%`
-                            }}>
-                            <DoorTooltip
-                                content={
-                                    <div className="p-2">
-                                        <p className="font-bold mb-1">{door.name}</p>
-                                        <p className="mb-1">{door.details}</p>
-                                        <p>Trạng thái: {
-                                            door.status === 'open' ? 'Đang mở' :
-                                                door.status === 'closed' ? 'Đang đóng' :
-                                                    'Đang xử lý...'
-                                        }</p>
+                <div 
+                    ref={imageContainerRef}
+                    className="flex justify-center items-center flex-grow overflow-hidden relative">
+                    <img 
+                        ref={imageRef}
+                        src={ImageBg} 
+                        alt="Floor Layout" 
+                        className="w-auto h-full object-contain rounded-lg"
+                    />
+                    {mockDoorsState.map((door) => {
+                        const position = calculateDoorPosition(door.x, door.y);
+                        return (
+                            <div
+                                key={door.id}
+                                className="absolute"
+                                style={{
+                                    left: position.left,
+                                    top: position.top,
+                                    transform: 'translate(-50%, -50%)'
+                                }}>
+                                <DoorTooltip
+                                    content={
+                                        <div className="p-2">
+                                            <p className="font-bold mb-1">{door.name}</p>
+                                            <p className="mb-1">{door.details}</p>
+                                            <p>Trạng thái: {
+                                                door.status === 'open' ? 'Đang mở' :
+                                                    door.status === 'closed' ? 'Đang đóng' :
+                                                        'Đang xử lý...'
+                                            }</p>
+                                        </div>
+                                    }>
+                                    <div className="relative">
+                                        {/* Lớp nền có hiệu ứng heartbeat */}
+                                        <motion.div
+                                            className={cn(
+                                                'absolute w-6 h-6 rounded-full',
+                                                door.status === 'open' ? 'bg-green-500' :
+                                                    door.status === 'closed' ? 'bg-red-500' :
+                                                        'bg-yellow-500',
+                                                'opacity-50'
+                                            )}
+                                            animate={{
+                                                scale: [1, 1.4, 1]
+                                            }}
+                                            transition={{
+                                                duration: 2,
+                                                ease: 'easeInOut',
+                                                times: [0, 0.5, 1],
+                                                repeat: Infinity,
+                                                repeatDelay: 0.3
+                                            }}
+                                        />
+                                        {/* Phần tử chính giữ nguyên */}
+                                        <button
+                                            onClick={() => toggleDoorStatus(door.id)}
+                                            className={cn(
+                                                'relative w-6 h-6 rounded-full cursor-pointer z-10',
+                                                'transition-colors duration-200 border-2 border-white',
+                                                door.status === 'open' ? 'bg-green-500 hover:bg-green-600' :
+                                                    door.status === 'closed' ? 'bg-red-500 hover:bg-red-600' :
+                                                        'bg-yellow-500 hover:bg-yellow-600'
+                                            )}
+                                            disabled={door.status === 'pending'}
+                                        />
                                     </div>
-                                }>
-                                <div className="relative">
-                                    {/* Lớp nền có hiệu ứng heartbeat */}
-                                    <motion.div
-                                        className={cn(
-                                            'absolute w-6 h-6 rounded-full',
-                                            door.status === 'open' ? 'bg-green-500' :
-                                                door.status === 'closed' ? 'bg-red-500' :
-                                                    'bg-yellow-500',
-                                            'opacity-50'
-                                        )}
-                                        animate={{
-                                            scale: [1, 1.4, 1]
-                                        }}
-                                        transition={{
-                                            duration: 2,
-                                            ease: 'easeInOut',
-                                            times: [0, 0.5, 1],
-                                            repeat: Infinity,
-                                            repeatDelay: 0.3
-                                        }}
-                                    />
-                                    {/* Phần tử chính giữ nguyên */}
-                                    <button
-                                        onClick={() => toggleDoorStatus(door.id)}
-                                        className={cn(
-                                            'relative w-6 h-6 rounded-full cursor-pointer z-10',
-                                            'transition-colors duration-200 border-2 border-white',
-                                            door.status === 'open' ? 'bg-green-500 hover:bg-green-600' :
-                                                door.status === 'closed' ? 'bg-red-500 hover:bg-red-600' :
-                                                    'bg-yellow-500 hover:bg-yellow-600'
-                                        )}
-                                        disabled={door.status === 'pending'}
-                                    />
-                                </div>
-                            </DoorTooltip>
-                        </div>
-                    ))}
+                                </DoorTooltip>
+                            </div>
+                        );
+                    })}
                 </div>
             </Modal>
         </>
