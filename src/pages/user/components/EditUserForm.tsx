@@ -3,7 +3,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {Button} from "@headlessui/react";
 import {EditUserFormData} from "@/hooks/users/model";
-import {useEditUser} from "@/hooks/users/useUserManagement";
+import {useEditUser} from "@/pages/user/hooks/useUserManagement";
 import {cn} from "@/lib/utils";
 import FieldError from "@/components/FieldError";
 import {useEffect} from "react";

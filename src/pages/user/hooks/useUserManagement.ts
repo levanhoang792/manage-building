@@ -1,4 +1,8 @@
 import {useEffect, useState} from 'react';
+import {useMutation} from "@tanstack/react-query";
+import {ChangePasswordFormData, EditUserFormData, UserFormData} from "@/hooks/users/model";
+import {httpDelete, httpPost, httpPut} from "@/utils/api";
+import {API_ROUTES} from "@/routes/api";
 
 interface User {
     id: number;
@@ -14,6 +18,53 @@ const mockUsers = [
     {id: 3, username: 'user2', email: 'user2@example.com', role: 'User'},
     {id: 4, username: 'manager', email: 'manager@example.com', role: 'Manager'}
 ];
+
+export const useAddUser = () => {
+    return useMutation({
+        mutationFn: async (data: UserFormData) => {
+            const resp = await httpPost({
+                uri: API_ROUTES.USERS,
+                options: {body: JSON.stringify(data)}
+            });
+            return resp.json();
+        }
+    });
+};
+
+export const useEditUser = () => {
+    return useMutation({
+        mutationFn: async ({id, data}: { id: number; data: EditUserFormData }) => {
+            const resp = await httpPut({
+                uri: `${API_ROUTES.USERS}/${id}`,
+                options: {body: JSON.stringify(data)}
+            });
+            return resp.json();
+        }
+    });
+};
+
+export const useDeleteUser = () => {
+    return useMutation({
+        mutationFn: async (id: number) => {
+            const resp = await httpDelete({
+                uri: `${API_ROUTES.USERS}/${id}`
+            });
+            return resp.json();
+        }
+    });
+};
+
+export const useChangePassword = () => {
+    return useMutation({
+        mutationFn: async (data: ChangePasswordFormData) => {
+            const resp = await httpPost({
+                uri: `${API_ROUTES.USERS}/change-password`,
+                options: {body: JSON.stringify(data)}
+            });
+            return resp.json();
+        }
+    });
+};
 
 export const useUserManagement = () => {
     const [users, setUsers] = useState<User[]>([]);

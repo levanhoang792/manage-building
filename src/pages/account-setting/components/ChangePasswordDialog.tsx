@@ -5,7 +5,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {cn} from "@/lib/utils";
 import {ChangePasswordFormData} from "@/hooks/users/model";
-import {useChangePassword} from "@/hooks/users/useUserManagement";
+import {useChangePassword} from "@/pages/user/hooks/useUserManagement";
 import FieldError from "@/components/FieldError";
 import {toast} from "sonner";
 

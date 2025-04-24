@@ -1,6 +1,6 @@
 import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react';
 import {EllipsisVerticalIcon, PencilIcon, TrashIcon} from '@heroicons/react/20/solid';
-import {User} from '@/hooks/users/useUserManagement';
+import {User} from '@/pages/user/hooks/useUserManagement';
 
 interface UsersTableProps {
     users: User[];

@@ -1,5 +1,5 @@
 import Modal from '@/components/commons/Modal';
-import {useUserManagement} from './hooks/useUserManagement';
+import {useUserManagement} from '@/pages/user/hooks/useUserManagement';
 import {AddUserForm, DeleteUserForm, EditUserForm, UsersTable} from './components';
 import React from 'react';
 
