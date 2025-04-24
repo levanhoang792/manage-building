@@ -107,7 +107,7 @@ function LocationSelect() {
 
         // Xác định trạng thái mới sẽ chuyển sang sau khi API thành công
         const targetStatus = currentDoor.status === 'open' ? 'closed' : 'open';
-        
+
         // Đặt trạng thái "pending" trước khi gọi API
         setMockDoorsState((prevDoors) => {
             return prevDoors.map((door) => {
@@ -167,7 +167,7 @@ function LocationSelect() {
 
     return (
         <>
-            <AnimationStyle />
+            <AnimationStyle/>
             <div
                 className={cn('backdrop-blur-[20px] bg-transparent rounded-xl py-8 px-11 w-[420px]')}
                 style={{boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)', border: '2px solid rgba(255, 255, 255, 0.2)'}}>
@@ -199,7 +199,7 @@ function LocationSelect() {
                             </Field>
                         )}
                     />
-                    <FieldError error={errors.buildingId} />
+                    <FieldError error={errors.buildingId}/>
 
                     <Controller
                         control={control}
@@ -226,7 +226,7 @@ function LocationSelect() {
                             </Field>
                         )}
                     />
-                    <FieldError error={errors.floorId} />
+                    <FieldError error={errors.floorId}/>
 
                     <Button
                         type="submit"
@@ -249,7 +249,7 @@ function LocationSelect() {
                 className="w-full h-full max-w-full flex flex-col justify-center overflow-hidden"
                 backdropClassName="p-12">
                 <div className="flex justify-center items-center flex-grow overflow-hidden relative">
-                    <img src={ImageBg} alt="Floor Layout" className="w-auto h-full object-contain rounded-lg" />
+                    <img src={ImageBg} alt="Floor Layout" className="w-auto h-full object-contain rounded-lg"/>
                     {mockDoorsState.map((door) => (
                         <div
                             key={door.id}
@@ -264,9 +264,9 @@ function LocationSelect() {
                                         <p className="font-bold mb-1">{door.name}</p>
                                         <p className="mb-1">{door.details}</p>
                                         <p>Trạng thái: {
-                                            door.status === 'open' ? 'Đang mở' : 
-                                            door.status === 'closed' ? 'Đang đóng' : 
-                                            'Đang xử lý...'
+                                            door.status === 'open' ? 'Đang mở' :
+                                                door.status === 'closed' ? 'Đang đóng' :
+                                                    'Đang xử lý...'
                                         }</p>
                                     </div>
                                 }>
@@ -275,9 +275,9 @@ function LocationSelect() {
                                     <motion.div
                                         className={cn(
                                             'absolute w-6 h-6 rounded-full',
-                                            door.status === 'open' ? 'bg-green-500' : 
-                                            door.status === 'closed' ? 'bg-red-500' : 
-                                            'bg-yellow-500',
+                                            door.status === 'open' ? 'bg-green-500' :
+                                                door.status === 'closed' ? 'bg-red-500' :
+                                                    'bg-yellow-500',
                                             'opacity-50'
                                         )}
                                         animate={{
@@ -298,8 +298,8 @@ function LocationSelect() {
                                             'relative w-6 h-6 rounded-full cursor-pointer z-10',
                                             'transition-colors duration-200 border-2 border-white',
                                             door.status === 'open' ? 'bg-green-500 hover:bg-green-600' :
-                                            door.status === 'closed' ? 'bg-red-500 hover:bg-red-600' :
-                                            'bg-yellow-500 hover:bg-yellow-600'
+                                                door.status === 'closed' ? 'bg-red-500 hover:bg-red-600' :
+                                                    'bg-yellow-500 hover:bg-yellow-600'
                                         )}
                                         disabled={door.status === 'pending'}
                                     />
