@@ -10,7 +10,16 @@ router.use('/auth', require('@/src/routes/auth'));
 // Profile routes
 router.use('/profile', require('@/src/routes/profile'));
 
-// You can add more routes or import from other files
-// Example: router.use('/users', require('@/src/routes/users'));
+// Building management routes
+router.use('/buildings', require('@/src/routes/building'));
+
+// Floor routes (nested under buildings)
+router.use('/buildings/:buildingId/floors', require('@/src/routes/floor'));
+
+// Door routes (nested under floors)
+router.use('/buildings/:buildingId/floors/:floorId/doors', require('@/src/routes/door'));
+
+// Door coordinate routes (nested under doors)
+router.use('/buildings/:buildingId/floors/:floorId/doors/:doorId/coordinates', require('@/src/routes/doorCoordinate'));
 
 module.exports = router;
