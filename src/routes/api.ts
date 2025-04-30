@@ -1,11 +1,12 @@
 export const API_ROUTES = {
-    LOGIN: "/login",
+    AUTH_LOGIN: "/auth/login",
+    AUTH_REFRESH_TOKEN: "/auth/refresh-token",
+
     LOGOUT: "/logout",
     REGISTER: "/register",
     FORGOT_PASSWORD_EMAIL: "/forgot-password-email",
     FORGOT_PASSWORD_OTP: "/forgot-password-otp",
     FORGOT_PASSWORD_RESET: "/forgot-password-reset",
-    USER_TOKEN: "/user/token",
 
     CONFIG: "/config",
 
@@ -61,5 +62,5 @@ export const API_ROUTES = {
 }
 
 export const API_RESPONSE_CODE = {
-    SUCCESS: 0,
+    SUCCESS: 200,
 }

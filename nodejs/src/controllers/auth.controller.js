@@ -27,16 +27,16 @@ exports.login = async (req, res) => {
       );
     }
 
-    const { username, password } = req.body;
+    const { email, password, isRemember } = req.body;
 
-    // Find user by username
-    const user = await User.findByUsername(username);
+    // Find user by email
+    const user = await User.findByEmail(email);
     
     // If user not found
     if (!user) {
       return responseHandler.error(
         res, 
-        'Invalid username or password', 
+        'Invalid email or password', 
         responseCodes.INVALID_CREDENTIALS
       );
     }
@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
     if (!isPasswordValid) {
       return responseHandler.error(
         res, 
-        'Invalid username or password', 
+        'Invalid email or password', 
         responseCodes.INVALID_CREDENTIALS
       );
     }
@@ -81,12 +81,15 @@ exports.login = async (req, res) => {
       permissions: permissions.map(permission => permission.name)
     };
 
+    // Set token expiration based on isRemember flag
+    const expiresIn = isRemember ? jwtConfig.extendedExpiresIn : jwtConfig.expiresIn;
+
     // Generate JWT token
     const token = jwt.sign(
       payload,
       jwtConfig.secret,
       {
-        expiresIn: jwtConfig.expiresIn,
+        expiresIn: expiresIn,
         issuer: jwtConfig.issuer,
         audience: jwtConfig.audience
       }
@@ -103,7 +106,7 @@ exports.login = async (req, res) => {
           id: user.id,
           username: user.username,
           email: user.email,
-          fullName: user.full_name,
+          name: user.full_name || user.username, // Ensure name is always provided
           roles: roles.map(role => ({
             id: role.id,
             name: role.name

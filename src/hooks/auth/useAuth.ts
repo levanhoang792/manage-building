@@ -9,7 +9,7 @@ export const useLogin = () => {
     return useMutation({
         mutationFn: async (data: LoginFormData) => {
             const resp = await httpPost({
-                uri: API_ROUTES.LOGIN,
+                uri: API_ROUTES.AUTH_LOGIN,
                 options: {body: JSON.stringify(data)}
             });
             const result = await resp.json() as ResAuth;

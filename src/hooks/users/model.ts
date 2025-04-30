@@ -19,9 +19,16 @@ export type ResLogin = {
 }
 
 export type ResLoginUser = {
-    name: string,
-    username: string,
+    id: number
+    username: string
     email: string
+    fullName: string
+    roles: Array<ResLoginUserRole>
+}
+
+export type ResLoginUserRole = {
+    id: number
+    name: string
 }
 
 export type ResLogout = {
@@ -29,13 +36,16 @@ export type ResLogout = {
 }
 
 export type ResUserToken = {
+    token: string
+    user: ResUserTokenUser
+}
+
+export type ResUserTokenUser = {
     id: number
-    name: string
+    username: string
     email: string
-    role_id: number
-    created_at: string
-    updated_at: string
-    email_verified_at: string
+    fullName: string
+    roles: Array<ResLoginUserRole>
 }
 
 export type UserFormData = {

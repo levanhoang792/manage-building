@@ -1,5 +1,5 @@
 import {useMutation} from "@tanstack/react-query";
-import {httpGet, httpPost} from "@/utils/api";
+import {httpPost} from "@/utils/api";
 import {ReqLogin, ResLogin, ResLogout, ResUserToken} from "@/hooks/users/model";
 
 import {API_ROUTES} from "@/routes/api";
@@ -29,16 +29,18 @@ const useLogin = () => {
         mutationFn: async (params: ReqLogin) => {
             const resp = await httpPost(
                 {
-                    uri: API_ROUTES.LOGIN,
+                    uri: API_ROUTES.AUTH_LOGIN,
                     options: {body: JSON.stringify(params)}
                 },
-            )
-            return await resp.json() as ResLogin;
+            );
+            return await resp.json() as ResRequest<ResLogin>;
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             // queryClient.invalidateQueries({queryKey: [queryKey]}).then(r => console.log("Re-fetching data: ", r));
+            console.log('Login successful:', data);
         },
-        onError: () => {
+        onError: (error) => {
+            console.error('Login mutation error:', error);
         }
     });
 };
@@ -63,12 +65,16 @@ const useLogout = () => {
 };
 
 const checkExpireToken = async () => {
-    const resp = await httpGet(
-        {uri: API_ROUTES.USER_TOKEN}
+    const resp = await httpPost(
+        {uri: API_ROUTES.AUTH_REFRESH_TOKEN}
     )
     return await resp.json() as ResRequest<ResUserToken>;
 };
 
+/**
+ * Hook để kiểm tra token còn hạn hay không khi F5 lại trang
+ * @returns Query object với thông tin về token
+ */
 const useCheckExpireToken = () => {
     return useMutation({
         mutationFn: checkExpireToken,

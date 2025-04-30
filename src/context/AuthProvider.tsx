@@ -10,6 +10,7 @@ import {AppDispatch} from "@/store/store";
 import {setUser} from "@/store/slices/authSlice";
 import {UseMutationResult} from "@tanstack/react-query";
 import {toast} from "sonner";
+import {ResRequest} from "@/hooks/model";
 
 type CallbackLoginFuncProps = {
     onSuccess?: (res: ResLogin) => void
@@ -17,10 +18,10 @@ type CallbackLoginFuncProps = {
 }
 
 interface AuthContextType {
-    loginMutation: UseMutationResult<ResLogin, Error, ReqLogin, unknown>,
+    loginMutation: UseMutationResult<ResRequest<ResLogin>, Error, ReqLogin, unknown>,
     token?: string;
 
-    login: (data: ReqLogin) => void;
+    login: (data: ReqLogin, callbacks?: CallbackLoginFuncProps) => void;
     logout: () => void;
 }
 
@@ -47,31 +48,35 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
     }, [dispatch]);
 
     const login = useCallback((data: ReqLogin, callbacks?: CallbackLoginFuncProps) => {
-        // console.log("------> Line: 46 | AuthProvider.tsx callbacks: ", callbacks);
-        // initializeToken({
-        //         email: data.email,
-        //         username: "1",
-        //         name: "",
-        //     }, "res.token"
-        // );
-        // navigate(ROUTES.HOME);
         loginMutation.mutate(data, {
             onSuccess: (res) => {
-                if (res.token) {
-                    initializeToken(res.user, res.token);
+                const { data } = res;
+                if (data.token) {
+                    // Store token and user data
+                    initializeToken(data.user, data.token);
+                    
+                    // Show success message
+                    toast.success("Login successful");
+                    
+                    // Navigate to home page
                     navigate(ROUTES.HOME);
 
-                    callbacks?.onSuccess?.(res);
+                    // Call success callback if provided
+                    callbacks?.onSuccess?.(data);
                 } else {
-                    toast.error("Login failed");
+                    toast.error("Login failed: No token received");
                 }
             },
             onError: (error) => {
-                console.error(error);
+                console.error("Login error:", error);
+                
+                // Show error message
+                toast.error(error.message || "Login failed. Please try again.");
 
+                // Call error callback if provided
                 callbacks?.onError?.(error);
             }
-        })
+        });
     }, [initializeToken, loginMutation, navigate]);
 
     const logout = useCallback(() => {

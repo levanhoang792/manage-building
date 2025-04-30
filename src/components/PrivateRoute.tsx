@@ -36,13 +36,8 @@ const PrivateRoute = () => {
 
                         if (r === API_RESPONSE_CODE.SUCCESS) {
                             dispatch(setUser({
-                                token: token,
-                                user: {
-                                    ...data,
-                                    name: data.email,
-                                    username: data.name,
-                                    email: data.email,
-                                }
+                                token: data.token,
+                                user: data.user
                             }));
                         } else {
                             handleLogout();
@@ -56,7 +51,7 @@ const PrivateRoute = () => {
         } else if (window.location.pathname !== ROUTES.LOGIN) {
             navigate(ROUTES.LOGIN, {replace: true});
         }
-    }, [user?.token, navigate, checkExpireToken, dispatch]);
+    }, [user?.token, navigate, dispatch]);
 
     return <Outlet/>;
 };
