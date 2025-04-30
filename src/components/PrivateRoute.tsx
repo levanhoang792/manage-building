@@ -51,7 +51,7 @@ const PrivateRoute = () => {
         } else if (window.location.pathname !== ROUTES.LOGIN) {
             navigate(ROUTES.LOGIN, {replace: true});
         }
-    }, [user?.token, navigate, dispatch]);
+    }, [user?.token, navigate, dispatch, checkExpireToken]);
 
     return <Outlet/>;
 };

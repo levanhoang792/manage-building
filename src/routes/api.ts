@@ -7,7 +7,10 @@ export const API_ROUTES = {
     FORGOT_PASSWORD_EMAIL: "/forgot-password-email",
     FORGOT_PASSWORD_OTP: "/forgot-password-otp",
     FORGOT_PASSWORD_RESET: "/forgot-password-reset",
-
+    
+    // Profile endpoints
+    PROFILE_UPDATE: "/profile",
+    
     CONFIG: "/config",
 
     PRODUCTS: "/products",
