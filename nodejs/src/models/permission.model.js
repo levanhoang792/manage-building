@@ -110,12 +110,10 @@ class Permission {
    */
   static async getRolesWithPermission(permissionId) {
     try {
-      const roles = await db('roles as r')
-        .join('role_permissions as rp', 'r.id', 'rp.role_id')
-        .where('rp.permission_id', permissionId)
-        .select('r.id', 'r.name', 'r.description');
-      
-      return roles;
+      return await db('roles as r')
+          .join('role_permissions as rp', 'r.id', 'rp.role_id')
+          .where('rp.permission_id', permissionId)
+          .select('r.id', 'r.name', 'r.description');
     } catch (error) {
       console.error('Error getting roles with permission:', error);
       throw error;

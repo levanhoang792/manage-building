@@ -110,12 +110,10 @@ class Role {
    */
   static async getRolePermissions(roleId) {
     try {
-      const permissions = await db('permissions as p')
-        .join('role_permissions as rp', 'p.id', 'rp.permission_id')
-        .where('rp.role_id', roleId)
-        .select('p.id', 'p.name', 'p.description');
-      
-      return permissions;
+      return await db('permissions as p')
+          .join('role_permissions as rp', 'p.id', 'rp.permission_id')
+          .where('rp.role_id', roleId)
+          .select('p.id', 'p.name', 'p.description');
     } catch (error) {
       console.error('Error getting role permissions:', error);
       throw error;
@@ -177,12 +175,10 @@ class Role {
    */
   static async getUsersWithRole(roleId) {
     try {
-      const users = await db('users as u')
-        .join('user_roles as ur', 'u.id', 'ur.user_id')
-        .where('ur.role_id', roleId)
-        .select('u.id', 'u.username', 'u.email', 'u.full_name');
-      
-      return users;
+      return await db('users as u')
+          .join('user_roles as ur', 'u.id', 'ur.user_id')
+          .where('ur.role_id', roleId)
+          .select('u.id', 'u.username', 'u.email', 'u.full_name');
     } catch (error) {
       console.error('Error getting users with role:', error);
       throw error;

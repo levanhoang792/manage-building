@@ -30,13 +30,11 @@ exports.verifyToken = (req, res, next) => {
 
   try {
     // Verify token
-    const decoded = jwt.verify(token, jwtConfig.secret, {
+    // Set user in request object
+    req.user = jwt.verify(token, jwtConfig.secret, {
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience
     });
-
-    // Set user in request object
-    req.user = decoded;
     
     // Continue to next middleware
     next();

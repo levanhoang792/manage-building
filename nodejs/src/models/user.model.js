@@ -48,12 +48,10 @@ class User {
    */
   static async getUserRoles(userId) {
     try {
-      const roles = await db('roles as r')
-        .join('user_roles as ur', 'r.id', 'ur.role_id')
-        .where('ur.user_id', userId)
-        .select('r.id', 'r.name', 'r.description');
-      
-      return roles;
+      return await db('roles as r')
+          .join('user_roles as ur', 'r.id', 'ur.role_id')
+          .where('ur.user_id', userId)
+          .select('r.id', 'r.name', 'r.description');
     } catch (error) {
       console.error('Error getting user roles:', error);
       throw error;
@@ -67,13 +65,11 @@ class User {
    */
   static async getUserPermissions(userId) {
     try {
-      const permissions = await db('permissions as p')
-        .join('role_permissions as rp', 'p.id', 'rp.permission_id')
-        .join('user_roles as ur', 'rp.role_id', 'ur.role_id')
-        .where('ur.user_id', userId)
-        .distinct('p.id', 'p.name', 'p.description');
-      
-      return permissions;
+      return await db('permissions as p')
+          .join('role_permissions as rp', 'p.id', 'rp.permission_id')
+          .join('user_roles as ur', 'rp.role_id', 'ur.role_id')
+          .where('ur.user_id', userId)
+          .distinct('p.id', 'p.name', 'p.description');
     } catch (error) {
       console.error('Error getting user permissions:', error);
       throw error;
