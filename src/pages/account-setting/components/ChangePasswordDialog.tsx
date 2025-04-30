@@ -5,9 +5,9 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {cn} from "@/lib/utils";
 import {ChangePasswordFormData} from "@/hooks/users/model";
-import {useChangePassword} from "@/pages/user/hooks/useUserManagement";
 import FieldError from "@/components/FieldError";
 import {toast} from "sonner";
+import {API_RESPONSE_CODE} from "@/routes/api";
 
 const FormSchema: z.ZodType<ChangePasswordFormData> = z.object({
     currentPassword: z.string().nonempty("Current password is required"),
@@ -56,13 +56,21 @@ const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, r
 
     const onSubmit = handleSubmit((data) => {
         changePassword.mutate(data, {
-            onSuccess: () => {
-                toast.success("Password changed successfully");
-                closeDialog();
+            onSuccess: (response) => {
+                if (response && response.r === API_RESPONSE_CODE.SUCCESS) {
+                    toast.success(response.message || "Password changed successfully");
+                    closeDialog();
+                } else {
+                    toast.error(response.message || "Failed to change password");
+                }
             },
             onError: (error) => {
                 console.error(error);
-                toast.error("Failed to change password");
+                if (error?.message === "Current password is incorrect") {
+                    toast.error("Current password is incorrect");
+                } else {
+                    toast.error(error?.message || "Failed to change password");
+                }
             }
         });
     });

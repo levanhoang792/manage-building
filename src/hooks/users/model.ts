@@ -62,3 +62,10 @@ export type ChangePasswordFormData = {
     newPassword: string;
     confirmPassword: string;
 }
+
+export type User = {
+    id: number
+    username: string
+    email: string
+    role: string
+}

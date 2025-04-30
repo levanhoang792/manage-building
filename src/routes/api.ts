@@ -10,6 +10,7 @@ export const API_ROUTES = {
     
     // Profile endpoints
     PROFILE_UPDATE: "/profile",
+    PROFILE_CHANGE_PASSWORD: "/profile/change-password",
     
     CONFIG: "/config",
 
