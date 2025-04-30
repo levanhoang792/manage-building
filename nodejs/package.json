@@ -1,0 +1,36 @@
+{
+  "name": "nodejs-server",
+  "version": "1.0.0",
+  "description": "Independent Node.js server",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node -r module-alias/register src/index.js",
+    "dev": "nodemon -r module-alias/register src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "server"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "module-alias": "^2.2.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "_moduleAliases": {
+    "@": ".",
+    "@src": "src",
+    "@routes": "src/routes",
+    "@middleware": "src/middleware",
+    "@controllers": "src/controllers",
+    "@config": "src/config",
+    "@utils": "src/utils"
+  }
+}
