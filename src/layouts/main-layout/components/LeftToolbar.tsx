@@ -1,10 +1,8 @@
 import {cn} from "@/lib/utils.ts";
-import {Disclosure, DisclosureButton, DisclosurePanel} from "@headlessui/react";
-import {ChevronDownIcon} from "@heroicons/react/20/solid";
 import {Link, useLocation} from "react-router-dom";
 import LogoSVG from "@/assets/icons/logo.svg?react";
 import {ROUTES} from "@/routes/routes";
-import {BuildingOffice2Icon, ChartBarIcon, HomeIcon, UserGroupIcon} from "@heroicons/react/24/outline";
+import {BuildingOffice2Icon, ChartBarIcon, UserGroupIcon} from "@heroicons/react/24/outline";
 
 function LeftToolbar() {
     const location = useLocation();
@@ -52,8 +50,7 @@ function LeftToolbar() {
                     <span>Users</span>
                 </Link>
 
-                {/* Models Section */}
-                <div className="mt-4">
+                {/*<div className="mt-4">
                     <Disclosure as="div" className="w-full">
                         <DisclosureButton
                             className="group px-2 py-2 flex w-full items-center justify-between hover:bg-gray-100 rounded-md">
@@ -70,7 +67,7 @@ function LeftToolbar() {
                             </DisclosurePanel>
                         </Link>
                     </Disclosure>
-                </div>
+                </div>*/}
             </div>
         </div>
     );

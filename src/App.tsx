@@ -10,21 +10,14 @@ import ConfirmOtp from "./pages/forgot-password/ConfirmOtp";
 import ChangePassword from "./pages/forgot-password/ChangePassword";
 import SignUp from "./pages/sign-up/SignUp";
 import Logout from "@/pages/logout/Logout";
-import Model3D from "./pages/models/page";
 import MainLayout from "./layouts/main-layout/MainLayout";
 import {QueryClientProvider} from "@tanstack/react-query";
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {queryClient} from "./utils/api";
-import Create3DModelPage from "./pages/models/create/page";
 import {Toaster} from "sonner";
-import ProductDetail from "@/pages/models/detail/page";
 import {Provider} from "react-redux";
 import {store} from "@/store/store";
 import Dashboard from "@/pages/dashboard/Dashboard";
-import BuildingDetail from "@/pages/building/BuildingDetail";
-import FloorDetail from "@/pages/floor/FloorDetail";
-import BuildingManagement from "@/pages/building/BuildingManagement";
-import FloorManagement from "@/pages/floor/FloorManagement";
 
 function App() {
     return (
@@ -47,18 +40,8 @@ function App() {
                                     <Route path="/" element={<Navigate to={ROUTES.DASHBOARD}/>}/>
                                     <Route path={ROUTES.DASHBOARD} element={<Dashboard/>}/>
 
-                                    {/* Buildings */}
-                                    <Route path={ROUTES.BUILDINGS} element={<BuildingManagement/>}/>
-                                    <Route path={ROUTES.BUILDING_DETAIL} element={<BuildingDetail/>}>
-                                        <Route path="floors" element={<FloorManagement/>}/>
-                                        <Route path="floors/:floorId" element={<FloorDetail/>}/>
-                                    </Route>
-
                                     {/* Other routes */}
                                     <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting/>}/>
-                                    <Route path={ROUTES.MODELS} element={<Model3D/>}/>
-                                    <Route path={ROUTES.MODELS_CREATE} element={<Create3DModelPage/>}/>
-                                    <Route path={ROUTES.MODELS_DETAIL} element={<ProductDetail/>}/>
                                 </Route>
                             </Route>
 
