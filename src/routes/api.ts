@@ -41,13 +41,31 @@ export const API_ROUTES = {
     BUILDING_CREATE: "/buildings",
     BUILDING_UPDATE: "/buildings/:id",
     BUILDING_DELETE: "/buildings/:id",
+    BUILDING_STATUS: "/buildings/:id/status",
 
     // Floor endpoints
-    FLOORS: "/floors",
-    FLOOR_DETAIL: "/floors/:id",
-    FLOOR_CREATE: "/floors",
-    FLOOR_UPDATE: "/floors/:id",
-    FLOOR_DELETE: "/floors/:id",
+    FLOORS: "/buildings/:buildingId/floors",
+    FLOOR_DETAIL: "/buildings/:buildingId/floors/:id",
+    FLOOR_CREATE: "/buildings/:buildingId/floors",
+    FLOOR_UPDATE: "/buildings/:buildingId/floors/:id",
+    FLOOR_DELETE: "/buildings/:buildingId/floors/:id",
+    FLOOR_STATUS: "/buildings/:buildingId/floors/:id/status",
+    FLOOR_UPLOAD_PLAN: "/buildings/:buildingId/floors/:id/upload-plan",
+
+    // Door endpoints
+    DOORS: "/buildings/:buildingId/floors/:floorId/doors",
+    DOOR_DETAIL: "/buildings/:buildingId/floors/:floorId/doors/:id",
+    DOOR_CREATE: "/buildings/:buildingId/floors/:floorId/doors",
+    DOOR_UPDATE: "/buildings/:buildingId/floors/:floorId/doors/:id",
+    DOOR_DELETE: "/buildings/:buildingId/floors/:floorId/doors/:id",
+    DOOR_STATUS: "/buildings/:buildingId/floors/:floorId/doors/:id/status",
+
+    // Door Coordinate endpoints
+    DOOR_COORDINATES: "/buildings/:buildingId/floors/:floorId/doors/:doorId/coordinates",
+    DOOR_COORDINATE_DETAIL: "/buildings/:buildingId/floors/:floorId/doors/:doorId/coordinates/:id",
+    DOOR_COORDINATE_CREATE: "/buildings/:buildingId/floors/:floorId/doors/:doorId/coordinates",
+    DOOR_COORDINATE_UPDATE: "/buildings/:buildingId/floors/:floorId/doors/:doorId/coordinates/:id",
+    DOOR_COORDINATE_DELETE: "/buildings/:buildingId/floors/:floorId/doors/:doorId/coordinates/:id",
 
     // User management endpoints
     USERS: "/users",
@@ -55,14 +73,6 @@ export const API_ROUTES = {
     USER_CREATE: "/users",
     USER_UPDATE: "/users/:id",
     USER_DELETE: "/users/:id",
-
-    // Door status endpoints
-    DOORS: "/doors",
-    DOOR_STATUS: "/doors/:id/status",
-    DOOR_TOGGLE: "/doors/:id/toggle",
-
-    // Dashboard statistics
-    DASHBOARD_STATS: "/dashboard/stats",
 }
 
 export const API_RESPONSE_CODE = {
