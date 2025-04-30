@@ -224,7 +224,7 @@ SELECT 4, id FROM permissions WHERE name IN (
 
 -- Tạo tài khoản Super Admin mặc định (password: admin123 - cần được mã hóa trong thực tế)
 INSERT INTO users (username, email, password, full_name, is_active, is_approved)
-VALUES ('admin', 'admin@example.com', '$2a$12$1InE4YhTu9XYhQcQtWDQZ.Cc65f0o6HsUuGGxnlpK9m5J6Gy.ZOdK', 'System Administrator', TRUE, TRUE);
+VALUES ('admin', 'admin@example.com', '$2b$10$a/JGlmG4ApPpn0FtX5JDfuUrhLeHx5ryTsvYIDBLvliIKcl346TSC', 'System Administrator', TRUE, TRUE);
 
 -- Gán vai trò Super Admin cho tài khoản admin
 INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);
