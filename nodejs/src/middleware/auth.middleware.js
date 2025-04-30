@@ -3,6 +3,8 @@
  */
 const jwt = require('jsonwebtoken');
 const jwtConfig = require('@config/jwt');
+const responseHandler = require('@utils/responseHandler');
+const responseCodes = require('@utils/responseCodes');
 
 /**
  * Verify JWT token middleware
@@ -16,10 +18,11 @@ exports.verifyToken = (req, res, next) => {
   
   // Check if authorization header exists and starts with 'Bearer '
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: 'No token provided'
-    });
+    return responseHandler.error(
+      res, 
+      'No token provided', 
+      responseCodes.UNAUTHORIZED
+    );
   }
 
   // Extract token from authorization header
@@ -41,16 +44,18 @@ exports.verifyToken = (req, res, next) => {
     console.error('Token verification error:', error);
     
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token expired'
-      });
+      return responseHandler.error(
+        res, 
+        'Token expired', 
+        responseCodes.TOKEN_EXPIRED
+      );
     }
     
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid token'
-    });
+    return responseHandler.error(
+      res, 
+      'Invalid token', 
+      responseCodes.UNAUTHORIZED
+    );
   }
 };
 
@@ -63,20 +68,22 @@ exports.hasRoles = (roles) => {
   return (req, res, next) => {
     // Check if user exists in request
     if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Unauthorized'
-      });
+      return responseHandler.error(
+        res, 
+        'Unauthorized', 
+        responseCodes.UNAUTHORIZED
+      );
     }
 
     // Check if user has any of the required roles
     const hasRequiredRole = req.user.roles.some(role => roles.includes(role));
     
     if (!hasRequiredRole) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied: insufficient role permissions'
-      });
+      return responseHandler.error(
+        res, 
+        'Access denied: insufficient role permissions', 
+        responseCodes.INSUFFICIENT_ROLE
+      );
     }
 
     // Continue to next middleware
@@ -93,10 +100,11 @@ exports.hasPermissions = (permissions) => {
   return (req, res, next) => {
     // Check if user exists in request
     if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Unauthorized'
-      });
+      return responseHandler.error(
+        res, 
+        'Unauthorized', 
+        responseCodes.UNAUTHORIZED
+      );
     }
 
     // Check if user has all required permissions
@@ -105,10 +113,11 @@ exports.hasPermissions = (permissions) => {
     );
     
     if (!hasAllPermissions) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied: insufficient permissions'
-      });
+      return responseHandler.error(
+        res, 
+        'Access denied: insufficient permissions', 
+        responseCodes.INSUFFICIENT_PERMISSIONS
+      );
     }
 
     // Continue to next middleware

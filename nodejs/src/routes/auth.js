@@ -18,6 +18,9 @@ router.post('/register', registerValidation, registerController.register);
 // Get current user profile
 router.get('/profile', verifyToken, authController.getProfile);
 
+// Refresh token route
+router.post('/refresh-token', authController.refreshToken);
+
 // Approve user (admin only)
 router.patch('/approve/:userId', verifyToken, hasRoles(['admin']), registerController.approveUser);
 
