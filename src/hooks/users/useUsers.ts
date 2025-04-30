@@ -1,6 +1,6 @@
 import {useMutation} from "@tanstack/react-query";
 import {httpPost} from "@/utils/api";
-import {ReqLogin, ResLogin, ResLogout, ResUserToken} from "@/hooks/users/model";
+import {ChangePasswordFormData, ReqLogin, ResLogin, ResLogout, ResUserToken} from "@/hooks/users/model";
 
 import {API_ROUTES} from "@/routes/api";
 import {ResRequest} from "@/hooks/model";
@@ -85,9 +85,34 @@ const useCheckExpireToken = () => {
     });
 };
 
+/**
+ * Hook để thay đổi mật khẩu người dùng
+ * @returns Mutation object để thay đổi mật khẩu
+ */
+const useChangePassword = () => {
+    return useMutation({
+        mutationFn: async (params: ChangePasswordFormData) => {
+            const resp = await httpPost(
+                {
+                    uri: API_ROUTES.PROFILE_CHANGE_PASSWORD,
+                    options: {body: JSON.stringify(params)}
+                },
+            );
+            return await resp.json() as ResRequest<null>;
+        },
+        onSuccess: (data) => {
+            console.log('Password changed successfully:', data);
+        },
+        onError: (error) => {
+            console.error('Change password mutation error:', error);
+        }
+    });
+};
+
 export {
     /*useUsers,*/
     useLogin,
     useLogout,
-    useCheckExpireToken
+    useCheckExpireToken,
+    useChangePassword
 };

@@ -8,6 +8,8 @@ import {ChangePasswordFormData} from "@/hooks/users/model";
 import FieldError from "@/components/FieldError";
 import {toast} from "sonner";
 import {API_RESPONSE_CODE} from "@/routes/api";
+import {useChangePassword} from "@/hooks/users/useUsers";
+import {EyeIcon, EyeSlashIcon} from "@heroicons/react/24/outline";
 
 const FormSchema: z.ZodType<ChangePasswordFormData> = z.object({
     currentPassword: z.string().nonempty("Current password is required"),
@@ -32,6 +34,9 @@ export interface ChangePasswordDialogRef {
 
 const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, ref: ForwardedRef<ChangePasswordDialogRef>) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const changePassword = useChangePassword();
 
     const {control, handleSubmit, formState: {errors}, reset} = useForm<ChangePasswordFormData>({
@@ -51,6 +56,10 @@ const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, r
     const closeDialog = () => {
         setIsOpen(false);
         reset();
+        // Reset password visibility states
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
         onClose?.();
     };
 
@@ -90,14 +99,27 @@ const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, r
                                 <Field className="mb-4">
                                     <Label className="block text-gray-700 text-sm font-bold mb-2">Current
                                         Password</Label>
-                                    <Input
-                                        {...field}
-                                        type="password"
-                                        className={cn(
-                                            "shadow appearance-none border rounded w-full py-2 px-3",
-                                            "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                        )}
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            {...field}
+                                            type={showCurrentPassword ? "text" : "password"}
+                                            className={cn(
+                                                "shadow appearance-none border rounded w-full py-2 px-3 pr-10",
+                                                "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            )}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                        >
+                                            {showCurrentPassword ? (
+                                                <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                                            ) : (
+                                                <EyeIcon className="h-5 w-5 text-gray-500" />
+                                            )}
+                                        </button>
+                                    </div>
                                     <FieldError error={errors.currentPassword}/>
                                 </Field>
                             )}
@@ -109,14 +131,27 @@ const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, r
                             render={({field}) => (
                                 <Field className="mb-4">
                                     <Label className="block text-gray-700 text-sm font-bold mb-2">New Password</Label>
-                                    <Input
-                                        {...field}
-                                        type="password"
-                                        className={cn(
-                                            "shadow appearance-none border rounded w-full py-2 px-3",
-                                            "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                        )}
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            {...field}
+                                            type={showNewPassword ? "text" : "password"}
+                                            className={cn(
+                                                "shadow appearance-none border rounded w-full py-2 px-3 pr-10",
+                                                "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            )}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                        >
+                                            {showNewPassword ? (
+                                                <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                                            ) : (
+                                                <EyeIcon className="h-5 w-5 text-gray-500" />
+                                            )}
+                                        </button>
+                                    </div>
                                     <FieldError error={errors.newPassword}/>
                                 </Field>
                             )}
@@ -129,14 +164,27 @@ const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, r
                                 <Field className="mb-6">
                                     <Label className="block text-gray-700 text-sm font-bold mb-2">Confirm New
                                         Password</Label>
-                                    <Input
-                                        {...field}
-                                        type="password"
-                                        className={cn(
-                                            "shadow appearance-none border rounded w-full py-2 px-3",
-                                            "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                        )}
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            {...field}
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            className={cn(
+                                                "shadow appearance-none border rounded w-full py-2 px-3 pr-10",
+                                                "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            )}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        >
+                                            {showConfirmPassword ? (
+                                                <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                                            ) : (
+                                                <EyeIcon className="h-5 w-5 text-gray-500" />
+                                            )}
+                                        </button>
+                                    </div>
                                     <FieldError error={errors.confirmPassword}/>
                                 </Field>
                             )}

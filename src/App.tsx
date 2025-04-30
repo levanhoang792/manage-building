@@ -25,7 +25,6 @@ import BuildingDetail from "@/pages/building/BuildingDetail";
 import FloorDetail from "@/pages/floor/FloorDetail";
 import BuildingManagement from "@/pages/building/BuildingManagement";
 import FloorManagement from "@/pages/floor/FloorManagement";
-import UserManagement from "@/pages/user/UserManagement";
 
 function App() {
     return (
@@ -54,9 +53,6 @@ function App() {
                                         <Route path="floors" element={<FloorManagement/>}/>
                                         <Route path="floors/:floorId" element={<FloorDetail/>}/>
                                     </Route>
-
-                                    {/* User */}
-                                    <Route path={ROUTES.USERS} element={<UserManagement/>}/>
 
                                     {/* Other routes */}
                                     <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting/>}/>
