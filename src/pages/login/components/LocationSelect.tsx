@@ -1,6 +1,6 @@
 import {cn} from '@/lib/utils.ts';
 import {Button, Field, Label} from '@headlessui/react';
-import {useState, useRef, useEffect} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {z} from 'zod';
 import {Controller, useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -88,7 +88,7 @@ function LocationSelect() {
     const [mockDoorsState, setMockDoorsState] = useState(mockDoors);
     const imageContainerRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
-    const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+    const [imageDimensions, setImageDimensions] = useState({width: 0, height: 0});
     console.log('------> Line: 58 | LocationSelect.tsx selectedDoor: ', selectedDoor);
 
     // Hàm mô phỏng gọi API
@@ -177,7 +177,7 @@ function LocationSelect() {
         };
 
         const imageElement = imageRef.current;
-        
+
         // Cập nhật ngay khi ảnh được tải
         if (imageElement?.complete) {
             updateDimensions();
@@ -187,11 +187,11 @@ function LocationSelect() {
 
         // Thêm event listener để phát hiện thay đổi kích thước
         const resizeObserver = new ResizeObserver(updateDimensions);
-        
+
         if (imageContainerRef.current) {
             resizeObserver.observe(imageContainerRef.current);
         }
-        
+
         if (imageElement) {
             resizeObserver.observe(imageElement);
         }
@@ -213,21 +213,21 @@ function LocationSelect() {
     const calculateDoorPosition = (x: number, y: number) => {
         // Nếu chưa có kích thước ảnh, sử dụng vị trí phần trăm
         if (imageDimensions.width === 0 || imageDimensions.height === 0) {
-            return { left: `${x}%`, top: `${y}%` };
+            return {left: `${x}%`, top: `${y}%`};
         }
 
         // Lấy kích thước của container
         const containerWidth = imageContainerRef.current?.clientWidth || 0;
         const containerHeight = imageContainerRef.current?.clientHeight || 0;
-        
+
         // Tính offset để căn giữa ảnh trong container
         const offsetX = (containerWidth - imageDimensions.width) / 2;
         const offsetY = (containerHeight - imageDimensions.height) / 2;
-        
+
         // Vị trí theo tỷ lệ phần trăm của ảnh gốc
         const actualX = (x / 100) * imageDimensions.width + offsetX;
         const actualY = (y / 100) * imageDimensions.height + offsetY;
-        
+
         return {
             left: `${actualX}px`,
             top: `${actualY}px`,
@@ -317,13 +317,13 @@ function LocationSelect() {
                 onClose={() => setShowImageModal(false)}
                 className="w-full h-full max-w-full flex flex-col justify-center overflow-hidden"
                 backdropClassName="p-12">
-                <div 
+                <div
                     ref={imageContainerRef}
                     className="flex justify-center items-center flex-grow overflow-hidden relative">
-                    <img 
+                    <img
                         ref={imageRef}
-                        src={ImageBg} 
-                        alt="Floor Layout" 
+                        src={ImageBg}
+                        alt="Floor Layout"
                         className="w-auto h-full object-contain rounded-lg"
                     />
                     {mockDoorsState.map((door) => {

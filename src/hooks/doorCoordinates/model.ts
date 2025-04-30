@@ -1,21 +1,21 @@
-import { ResRequest } from "../model";
+import {ResRequest} from "../model";
 
 export interface DoorCoordinate {
-  id: number;
-  door_id: number;
-  x_coordinate: number;
-  y_coordinate: number;
-  z_coordinate?: number;
-  rotation?: number;
-  created_at: string;
-  updated_at: string;
+    id: number;
+    door_id: number;
+    x_coordinate: number;
+    y_coordinate: number;
+    z_coordinate?: number;
+    rotation?: number;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface DoorCoordinateFormData {
-  x_coordinate: number;
-  y_coordinate: number;
-  z_coordinate?: number;
-  rotation?: number;
+    x_coordinate: number;
+    y_coordinate: number;
+    z_coordinate?: number;
+    rotation?: number;
 }
 
 export type ResDoorCoordinateList = ResRequest<DoorCoordinate[]>;

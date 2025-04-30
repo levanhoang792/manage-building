@@ -17,19 +17,19 @@ export const ROUTES = {
     BUILDING_DETAIL: "/buildings/:id",
     BUILDING_CREATE: "/buildings/create",
     BUILDING_EDIT: "/buildings/edit/:id",
-    
+
     // Floor routes
     BUILDING_FLOORS: "/buildings/:id/floors",
     BUILDING_FLOOR_DETAIL: "/buildings/:id/floors/:floorId",
     BUILDING_FLOOR_CREATE: "/buildings/:id/floors/create",
     BUILDING_FLOOR_EDIT: "/buildings/:id/floors/edit/:floorId",
-    
+
     // Door routes
     BUILDING_FLOOR_DOORS: "/buildings/:id/floors/:floorId/doors",
     BUILDING_FLOOR_DOOR_DETAIL: "/buildings/:id/floors/:floorId/doors/:doorId",
     BUILDING_FLOOR_DOOR_CREATE: "/buildings/:id/floors/:floorId/doors/create",
     BUILDING_FLOOR_DOOR_EDIT: "/buildings/:id/floors/:floorId/doors/edit/:doorId",
-    
+
     // Door Coordinate routes
     BUILDING_FLOOR_DOOR_COORDINATES: "/buildings/:id/floors/:floorId/doors/:doorId/coordinates",
     BUILDING_FLOOR_DOOR_COORDINATE_CREATE: "/buildings/:id/floors/:floorId/doors/:doorId/coordinates/create",

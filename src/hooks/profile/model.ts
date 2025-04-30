@@ -1,4 +1,4 @@
-import { ResLoginUser } from "@/hooks/users/model";
+import {ResLoginUser} from "@/hooks/users/model";
 
 export type ReqUpdateProfile = {
     username: string;

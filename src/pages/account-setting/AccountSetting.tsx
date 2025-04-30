@@ -6,7 +6,7 @@ import ChangePasswordDialog, {ChangePasswordDialogRef} from "@/pages/account-set
 import EditProfileDialog, {EditProfileDialogRef} from "@/pages/account-setting/components/EditProfileDialog";
 import {useRef} from "react";
 import {ResLoginUser} from "@/hooks/users/model";
-import {useSelector, useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/store/store";
 import {setUser} from "@/store/slices/authSlice";
 
@@ -14,7 +14,7 @@ function AccountSetting() {
     const changePasswordDialogRef = useRef<ChangePasswordDialogRef>(null);
     const editProfileDialogRef = useRef<EditProfileDialogRef>(null);
     const dispatch = useDispatch();
-    
+
     // Get user data from Redux store
     const userData = useSelector((state: RootState) => state.auth.user);
     const user = userData?.user || null;
@@ -27,7 +27,7 @@ function AccountSetting() {
     const openEditProfileDialog = () => {
         editProfileDialogRef.current?.openDialog();
     };
-    
+
     // Handle profile update
     const handleProfileUpdate = (updatedUser: ResLoginUser) => {
         if (userData) {
@@ -42,7 +42,7 @@ function AccountSetting() {
         <>
             <div className={cn("max-w-[700px] w-full m-auto mt-6")}>
                 <h1 className={cn("text-2xl font-bold mb-6")}>Account Settings</h1>
-                
+
                 {/* Profile Information Section */}
                 <div className={cn("mb-8")}>
                     <div className={cn("flex items-center justify-between mb-4")}>
@@ -56,7 +56,7 @@ function AccountSetting() {
                             Edit Profile
                         </Button>
                     </div>
-                    
+
                     {loading ? (
                         <div className={cn("animate-pulse bg-gray-200 h-32 rounded-lg")}></div>
                     ) : (
@@ -86,7 +86,7 @@ function AccountSetting() {
                         </div>
                     )}
                 </div>
-                
+
                 {/* Security Section */}
                 <div>
                     <h2 className={cn("text-xl font-bold mb-4")}>Security</h2>
@@ -111,9 +111,9 @@ function AccountSetting() {
             </div>
 
             <ChangePasswordDialog ref={changePasswordDialogRef}/>
-            <EditProfileDialog 
-                ref={editProfileDialogRef} 
-                user={user} 
+            <EditProfileDialog
+                ref={editProfileDialogRef}
+                user={user}
                 onProfileUpdated={handleProfileUpdate}
             />
         </>

@@ -50,14 +50,14 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
     const login = useCallback((data: ReqLogin, callbacks?: CallbackLoginFuncProps) => {
         loginMutation.mutate(data, {
             onSuccess: (res) => {
-                const { data } = res;
+                const {data} = res;
                 if (data.token) {
                     // Store token and user data
                     initializeToken(data.user, data.token);
-                    
+
                     // Show success message
                     toast.success("Login successful");
-                    
+
                     // Navigate to home page
                     navigate(ROUTES.HOME);
 
@@ -69,7 +69,7 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
             },
             onError: (error) => {
                 console.error("Login error:", error);
-                
+
                 // Show error message
                 toast.error(error.message || "Login failed. Please try again.");
 

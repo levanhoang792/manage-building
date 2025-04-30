@@ -114,9 +114,9 @@ const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, r
                                             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                                         >
                                             {showCurrentPassword ? (
-                                                <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                                                <EyeSlashIcon className="h-5 w-5 text-gray-500"/>
                                             ) : (
-                                                <EyeIcon className="h-5 w-5 text-gray-500" />
+                                                <EyeIcon className="h-5 w-5 text-gray-500"/>
                                             )}
                                         </button>
                                     </div>
@@ -146,9 +146,9 @@ const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, r
                                             onClick={() => setShowNewPassword(!showNewPassword)}
                                         >
                                             {showNewPassword ? (
-                                                <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                                                <EyeSlashIcon className="h-5 w-5 text-gray-500"/>
                                             ) : (
-                                                <EyeIcon className="h-5 w-5 text-gray-500" />
+                                                <EyeIcon className="h-5 w-5 text-gray-500"/>
                                             )}
                                         </button>
                                     </div>
@@ -179,9 +179,9 @@ const ChangePasswordDialog = forwardRef(({onClose}: ChangePasswordDialogProps, r
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                         >
                                             {showConfirmPassword ? (
-                                                <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                                                <EyeSlashIcon className="h-5 w-5 text-gray-500"/>
                                             ) : (
-                                                <EyeIcon className="h-5 w-5 text-gray-500" />
+                                                <EyeIcon className="h-5 w-5 text-gray-500"/>
                                             )}
                                         </button>
                                     </div>

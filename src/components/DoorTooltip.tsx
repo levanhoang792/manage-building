@@ -1,5 +1,5 @@
-import { useFloating, offset, shift, flip, inline, type Placement } from '@floating-ui/react';
-import { useState } from 'react';
+import {flip, inline, offset, type Placement, shift, useFloating} from '@floating-ui/react';
+import {useState} from 'react';
 
 interface DoorTooltipProps {
     children: React.ReactNode;
@@ -7,24 +7,24 @@ interface DoorTooltipProps {
     placement?: Placement;
 }
 
-export default function DoorTooltip({ children, content, placement = 'top' }: DoorTooltipProps) {
+export default function DoorTooltip({children, content, placement = 'top'}: DoorTooltipProps) {
     const [isOpen, setIsOpen] = useState(false);
-    
-    const { x, y, strategy, refs, placement: computedPlacement } = useFloating({
+
+    const {x, y, strategy, refs, placement: computedPlacement} = useFloating({
         placement,
         middleware: [
             // Điều chỉnh offset dựa trên vị trí hiển thị
-            offset(({ placement }) => {
+            offset(({placement}) => {
                 // Giảm khoảng cách cho tooltip hiển thị ở dưới
-                if (placement.startsWith('bottom')) return { mainAxis: 5, crossAxis: 0 };
+                if (placement.startsWith('bottom')) return {mainAxis: 5, crossAxis: 0};
                 // Giữ nguyên khoảng cách cho các vị trí khác
-                if (placement.startsWith('top')) return { mainAxis: 10, crossAxis: 0 };
-                if (placement.startsWith('left')) return { mainAxis: 10, crossAxis: 0 };
-                if (placement.startsWith('right')) return { mainAxis: 10, crossAxis: 0 };
+                if (placement.startsWith('top')) return {mainAxis: 10, crossAxis: 0};
+                if (placement.startsWith('left')) return {mainAxis: 10, crossAxis: 0};
+                if (placement.startsWith('right')) return {mainAxis: 10, crossAxis: 0};
                 return 10; // fallback
             }),
             inline(),
-            shift({ padding: 8 }),
+            shift({padding: 8}),
             flip()
         ]
     });
@@ -34,11 +34,11 @@ export default function DoorTooltip({ children, content, placement = 'top' }: Do
 
     return (
         <>
-            <div 
+            <div
                 ref={refs.setReference}
                 onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => setIsOpen(false)}
-                style={{ display: 'inline-block', position: 'relative' }}
+                style={{display: 'inline-block', position: 'relative'}}
             >
                 {children}
             </div>
@@ -53,7 +53,7 @@ export default function DoorTooltip({ children, content, placement = 'top' }: Do
                         pointerEvents: 'none',
                     }}
                 >
-                    <div 
+                    <div
                         className="bg-black/75 text-white p-2 rounded-md text-sm min-w-[200px]"
                         style={{
                             // Giảm margin cho tooltip hiển thị ở dưới
