@@ -1,4 +1,4 @@
-const knex = require('../config/knex');
+const knex = require('@config/knex');
 const TABLE_NAME = 'door_coordinates';
 
 /**
@@ -7,9 +7,9 @@ const TABLE_NAME = 'door_coordinates';
  * @returns {Promise<Array>}
  */
 const getByDoorId = async (doorId) => {
-  return knex(TABLE_NAME)
-    .select('*')
-    .where('door_id', doorId);
+    return knex(TABLE_NAME)
+        .select('*')
+        .where('door_id', doorId);
 };
 
 /**
@@ -19,12 +19,12 @@ const getByDoorId = async (doorId) => {
  * @returns {Promise<Object>}
  */
 const getById = async (doorId, id) => {
-  return knex(TABLE_NAME)
-    .where({
-      'door_id': doorId,
-      'id': id
-    })
-    .first();
+    return knex(TABLE_NAME)
+        .where({
+            'door_id': doorId,
+            'id': id
+        })
+        .first();
 };
 
 /**
@@ -33,14 +33,14 @@ const getById = async (doorId, id) => {
  * @returns {Promise<number>} - ID of created coordinate
  */
 const create = async (coordinate) => {
-  const [id] = await knex(TABLE_NAME)
-    .insert({
-      ...coordinate,
-      created_at: knex.fn.now(),
-      updated_at: knex.fn.now()
-    });
-  
-  return id;
+    const [id] = await knex(TABLE_NAME)
+        .insert({
+            ...coordinate,
+            created_at: knex.fn.now(),
+            updated_at: knex.fn.now()
+        });
+
+    return id;
 };
 
 /**
@@ -51,15 +51,15 @@ const create = async (coordinate) => {
  * @returns {Promise<number>} - Number of updated rows
  */
 const update = async (doorId, id, coordinate) => {
-  return knex(TABLE_NAME)
-    .where({
-      'door_id': doorId,
-      'id': id
-    })
-    .update({
-      ...coordinate,
-      updated_at: knex.fn.now()
-    });
+    return knex(TABLE_NAME)
+        .where({
+            'door_id': doorId,
+            'id': id
+        })
+        .update({
+            ...coordinate,
+            updated_at: knex.fn.now()
+        });
 };
 
 /**
@@ -69,18 +69,18 @@ const update = async (doorId, id, coordinate) => {
  * @returns {Promise<number>} - Number of deleted rows
  */
 const remove = async (doorId, id) => {
-  return knex(TABLE_NAME)
-    .where({
-      'door_id': doorId,
-      'id': id
-    })
-    .del();
+    return knex(TABLE_NAME)
+        .where({
+            'door_id': doorId,
+            'id': id
+        })
+        .del();
 };
 
 module.exports = {
-  getByDoorId,
-  getById,
-  create,
-  update,
-  remove
+    getByDoorId,
+    getById,
+    create,
+    update,
+    remove
 };

@@ -1,5 +1,5 @@
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {httpDelete, httpGet, httpPost, httpPut} from "@/utils/api";
+import {httpDelete, httpGet, httpPatch, httpPost, httpPut} from "@/utils/api";
 import {API_ROUTES} from "@/routes/api";
 import {BuildingFormData, BuildingQueryParams, BuildingStatusData, ResBuilding, ResBuildingList} from "./model";
 
@@ -71,7 +71,7 @@ export const useUpdateBuildingStatus = (id: number | string) => {
     return useMutation({
         mutationFn: async (data: BuildingStatusData) => {
             const uri = replaceParams(API_ROUTES.BUILDING_STATUS, {id});
-            const resp = await httpPut({
+            const resp = await httpPatch({
                 uri,
                 options: {body: JSON.stringify(data)}
             });

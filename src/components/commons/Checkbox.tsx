@@ -1,6 +1,5 @@
 import {Checkbox as CheckboxHeadlessUI} from "@headlessui/react";
 import {cn} from "@/lib/utils";
-import styles from "@/pages/models/page.module.scss";
 import {CheckIcon} from "@heroicons/react/20/solid";
 import {useEffect, useState} from "react";
 
@@ -31,14 +30,13 @@ function Checkbox({defaultValue = false, onChange, className, value}: CheckboxPr
             checked={checkedInternal}
             onChange={onChangeInternal}
             className={cn(
-                styles.checkbox, "group",
-                "outline-none hover:cursor-pointer",
-                "ring-1 ring-[#DDDDE3] ring-inset data-[checked]:ring-[#0A68FF]",
-                "bg-[#F5F5FA] data-[checked]:bg-[#0A68FF]",
+                "group size-5 bg-white/10 block rounded-md p-1",
+                "ring-1 ring-white/15 ring-inset",
+                "data-[checked]:bg-white",
                 (className || "")
             )}
         >
-            <CheckIcon className="hidden size-4 fill-white group-data-[checked]:block"/>
+            <CheckIcon className="hidden size-full fill-black group-data-[checked]:block"/>
         </CheckboxHeadlessUI>
     );
 }

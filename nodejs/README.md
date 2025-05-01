@@ -5,11 +5,13 @@ This is an independent Node.js server project with @ import pattern.
 ## Setup
 
 1. Install dependencies:
+
 ```
 npm install
 ```
 
 2. Create a `.env` file in the root directory with the following variables:
+
 ```
 PORT=3000
 NODE_ENV=development
@@ -18,11 +20,13 @@ NODE_ENV=development
 ## Running the Server
 
 ### Development mode
+
 ```
 npm run dev
 ```
 
 ### Production mode
+
 ```
 npm start
 ```
@@ -94,12 +98,14 @@ The following aliases are configured:
 - `@/src/utils` - Points to the `src/utils` directory
 
 To add more aliases:
+
 1. Update the `_moduleAliases` section in `package.json`
 2. Update the `paths` section in `jsconfig.json`
 
 ## Expanding the Project
 
 Feel free to expand this project by adding:
+
 - Models
 - Database connections
 - Authentication

@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router({ mergeParams: true });
+const router = express.Router({mergeParams: true});
 const doorCoordinateController = require('../controllers/doorCoordinate.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 

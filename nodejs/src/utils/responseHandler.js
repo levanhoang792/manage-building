@@ -10,25 +10,25 @@ const responseCodes = require('@utils/responseCodes');
  * @returns {number} - HTTP status code
  */
 const getHttpStatusCode = (code) => {
-  // Custom codes (1000+) map to their corresponding HTTP status
-  if (code >= 1000) {
-    // Map custom codes to appropriate HTTP status codes
-    switch (code) {
-      case responseCodes.TOKEN_EXPIRED:
-      case responseCodes.INACTIVE_ACCOUNT:
-      case responseCodes.PENDING_APPROVAL:
-      case responseCodes.INVALID_CREDENTIALS:
-        return 401; // Unauthorized
-      case responseCodes.INSUFFICIENT_PERMISSIONS:
-      case responseCodes.INSUFFICIENT_ROLE:
-        return 403; // Forbidden
-      default:
-        return 400; // Default to Bad Request for unknown custom codes
+    // Custom codes (1000+) map to their corresponding HTTP status
+    if (code >= 1000) {
+        // Map custom codes to appropriate HTTP status codes
+        switch (code) {
+            case responseCodes.TOKEN_EXPIRED:
+            case responseCodes.INACTIVE_ACCOUNT:
+            case responseCodes.PENDING_APPROVAL:
+            case responseCodes.INVALID_CREDENTIALS:
+                return 401; // Unauthorized
+            case responseCodes.INSUFFICIENT_PERMISSIONS:
+            case responseCodes.INSUFFICIENT_ROLE:
+                return 403; // Forbidden
+            default:
+                return 400; // Default to Bad Request for unknown custom codes
+        }
     }
-  }
-  
-  // Standard codes (below 1000) map directly to HTTP status codes
-  return code;
+
+    // Standard codes (below 1000) map directly to HTTP status codes
+    return code;
 };
 
 /**
@@ -40,19 +40,19 @@ const getHttpStatusCode = (code) => {
  * @returns {Object} - JSON response
  */
 exports.success = (res, message, code = responseCodes.SUCCESS, data = null) => {
-  const response = {
-    message,
-    r: code,
-  };
+    const response = {
+        message,
+        r: code,
+    };
 
-  if (data !== null) {
-    response.data = data;
-  }
+    if (data !== null) {
+        response.data = data;
+    }
 
-  // Determine HTTP status code
-  const httpStatusCode = getHttpStatusCode(code);
-  
-  return res.status(httpStatusCode).json(response);
+    // Determine HTTP status code
+    const httpStatusCode = getHttpStatusCode(code);
+
+    return res.status(httpStatusCode).json(response);
 };
 
 /**
@@ -64,17 +64,17 @@ exports.success = (res, message, code = responseCodes.SUCCESS, data = null) => {
  * @returns {Object} - JSON response
  */
 exports.error = (res, message, code = responseCodes.BAD_REQUEST, data = null) => {
-  const response = {
-    message,
-    r: code,
-  };
+    const response = {
+        message,
+        r: code,
+    };
 
-  if (data !== null) {
-    response.data = data;
-  }
+    if (data !== null) {
+        response.data = data;
+    }
 
-  // Determine HTTP status code
-  const httpStatusCode = getHttpStatusCode(code);
-  
-  return res.status(httpStatusCode).json(response);
+    // Determine HTTP status code
+    const httpStatusCode = getHttpStatusCode(code);
+
+    return res.status(httpStatusCode).json(response);
 };

@@ -4,6 +4,7 @@ export interface Floor {
     id: number;
     building_id: number;
     name: string;
+    floor_number: number;
     description?: string;
     floor_plan_image?: string;
     status: 'active' | 'inactive';
@@ -13,8 +14,10 @@ export interface Floor {
 
 export interface FloorFormData {
     name: string;
+    floor_number: number;
     description?: string;
     status?: 'active' | 'inactive';
+    floorPlan?: File;
 }
 
 export interface FloorStatusData {

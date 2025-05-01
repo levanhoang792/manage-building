@@ -10,7 +10,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 
 // Load .env file from root directory
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+dotenv.config({path: path.join(__dirname, '../../.env')});
 // Alternative using @/ alias
 // dotenv.config({ path: require('path').join(require('@/'), '.env') });
 
@@ -18,12 +18,12 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
  * Function to get project information
  */
 function getProjectInfo() {
-  return {
-    name: packageInfo.name,
-    version: packageInfo.version,
-    description: packageInfo.description,
-    environment: process.env.NODE_ENV || 'development'
-  };
+    return {
+        name: packageInfo.name,
+        version: packageInfo.version,
+        description: packageInfo.description,
+        environment: process.env.NODE_ENV || 'development'
+    };
 }
 
 /**
@@ -32,11 +32,11 @@ function getProjectInfo() {
  * @returns {string} Absolute path
  */
 function getProjectPath(relativePath) {
-  // Using Node.js path module with @/ alias
-  return path.join(require('@/'), relativePath);
+    // Using Node.js path module with @/ alias
+    return path.join(require('@/'), relativePath);
 }
 
 module.exports = {
-  getProjectInfo,
-  getProjectPath
+    getProjectInfo,
+    getProjectPath
 };

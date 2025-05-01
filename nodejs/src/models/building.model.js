@@ -1,4 +1,4 @@
-const knex = require('../config/knex');
+const knex = require('@config/knex');
 const TABLE_NAME = 'buildings';
 
 /**
@@ -13,49 +13,49 @@ const TABLE_NAME = 'buildings';
  * @returns {Promise<{data: Array, total: number, page: number, limit: number}>}
  */
 const getAll = async (options = {}) => {
-  const {
-    page = 1,
-    limit = 10,
-    search = '',
-    status,
-    sortBy = 'created_at',
-    sortOrder = 'desc'
-  } = options;
+    const {
+        page = 1,
+        limit = 10,
+        search = '',
+        status,
+        sortBy = 'created_at',
+        sortOrder = 'desc'
+    } = options;
 
-  const offset = (page - 1) * limit;
-  
-  // Build query
-  const query = knex(TABLE_NAME)
-    .select('*');
-  
-  // Apply filters
-  if (search) {
-    query.where(builder => {
-      builder.where('name', 'like', `%${search}%`)
-        .orWhere('address', 'like', `%${search}%`);
-    });
-  }
-  
-  if (status) {
-    query.where('status', status);
-  }
-  
-  // Get total count for pagination
-  const countQuery = query.clone();
-  const [{ count }] = await countQuery.count('id as count');
-  
-  // Apply pagination and sorting
-  const data = await query
-    .orderBy(sortBy, sortOrder)
-    .limit(limit)
-    .offset(offset);
-  
-  return {
-    data,
-    total: parseInt(count),
-    page: parseInt(page),
-    limit: parseInt(limit)
-  };
+    const offset = (page - 1) * limit;
+
+    // Build query
+    const query = knex(TABLE_NAME)
+        .select('*');
+
+    // Apply filters
+    if (search) {
+        query.where(builder => {
+            builder.where('name', 'like', `%${search}%`)
+                .orWhere('address', 'like', `%${search}%`);
+        });
+    }
+
+    if (status) {
+        query.where('status', status);
+    }
+
+    // Get total count for pagination
+    const countQuery = query.clone().clearSelect().count('id as count');
+    const [{count}] = await countQuery;
+
+    // Apply pagination and sorting
+    const data = await query
+        .orderBy(sortBy, sortOrder)
+        .limit(limit)
+        .offset(offset);
+
+    return {
+        data,
+        total: parseInt(count),
+        page: parseInt(page),
+        limit: parseInt(limit)
+    };
 };
 
 /**
@@ -64,9 +64,9 @@ const getAll = async (options = {}) => {
  * @returns {Promise<Object>}
  */
 const getById = async (id) => {
-  return knex(TABLE_NAME)
-    .where('id', id)
-    .first();
+    return knex(TABLE_NAME)
+        .where('id', id)
+        .first();
 };
 
 /**
@@ -75,14 +75,14 @@ const getById = async (id) => {
  * @returns {Promise<number>} - ID of created building
  */
 const create = async (building) => {
-  const [id] = await knex(TABLE_NAME)
-    .insert({
-      ...building,
-      created_at: knex.fn.now(),
-      updated_at: knex.fn.now()
-    });
-  
-  return id;
+    const [id] = await knex(TABLE_NAME)
+        .insert({
+            ...building,
+            created_at: knex.fn.now(),
+            updated_at: knex.fn.now()
+        });
+
+    return id;
 };
 
 /**
@@ -92,12 +92,12 @@ const create = async (building) => {
  * @returns {Promise<number>} - Number of updated rows
  */
 const update = async (id, building) => {
-  return knex(TABLE_NAME)
-    .where('id', id)
-    .update({
-      ...building,
-      updated_at: knex.fn.now()
-    });
+    return knex(TABLE_NAME)
+        .where('id', id)
+        .update({
+            ...building,
+            updated_at: knex.fn.now()
+        });
 };
 
 /**
@@ -107,12 +107,12 @@ const update = async (id, building) => {
  * @returns {Promise<number>} - Number of updated rows
  */
 const updateStatus = async (id, status) => {
-  return knex(TABLE_NAME)
-    .where('id', id)
-    .update({
-      status,
-      updated_at: knex.fn.now()
-    });
+    return knex(TABLE_NAME)
+        .where('id', id)
+        .update({
+            status,
+            updated_at: knex.fn.now()
+        });
 };
 
 /**
@@ -121,16 +121,16 @@ const updateStatus = async (id, status) => {
  * @returns {Promise<number>} - Number of deleted rows
  */
 const remove = async (id) => {
-  return knex(TABLE_NAME)
-    .where('id', id)
-    .del();
+    return knex(TABLE_NAME)
+        .where('id', id)
+        .del();
 };
 
 module.exports = {
-  getAll,
-  getById,
-  create,
-  update,
-  updateStatus,
-  remove
+    getAll,
+    getById,
+    create,
+    update,
+    updateStatus,
+    remove
 };

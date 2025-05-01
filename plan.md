@@ -98,39 +98,46 @@ src/
 │   ├── building/                      (cần phát triển mới)
 │   │   ├── BuildingManagement.tsx     (cần phát triển mới)
 │   │   ├── BuildingDetail.tsx         (cần phát triển mới)
+│   │   ├── CreateBuilding.tsx         (cần phát triển mới)
+│   │   ├── EditBuilding.tsx           (cần phát triển mới)
 │   │   └── components/                (cần phát triển mới)
-│   │       ├── BuildingForm.tsx
+│   │       ├── BuildingForm.tsx       (sử dụng components từ @headlessui/react)
 │   │       ├── BuildingList.tsx
-│   │       ├── BuildingItem.tsx
-│   │       └── BuildingFilter.tsx
+│   │       ├── BuildingFilter.tsx
+│   │       └── DeleteConfirmationDialog.tsx
 │   │
 │   ├── floor/                         (cần phát triển mới)
 │   │   ├── FloorManagement.tsx        (cần phát triển mới)
 │   │   ├── FloorDetail.tsx            (cần phát triển mới)
+│   │   ├── CreateFloor.tsx            (cần phát triển mới)
+│   │   ├── EditFloor.tsx              (cần phát triển mới)
 │   │   └── components/                (cần phát triển mới)
-│   │       ├── FloorForm.tsx
+│   │       ├── FloorForm.tsx          (sử dụng components từ @headlessui/react)
 │   │       ├── FloorList.tsx
-│   │       ├── FloorItem.tsx
 │   │       ├── FloorFilter.tsx
-│   │       └── FloorPlanUploader.tsx
+│   │       ├── FloorPlanUploader.tsx
+│   │       └── DeleteConfirmationDialog.tsx
 │   │
 │   └── door/                          (cần phát triển mới)
 │       ├── DoorManagement.tsx         (cần phát triển mới)
 │       ├── DoorDetail.tsx             (cần phát triển mới)
+│       ├── CreateDoor.tsx             (cần phát triển mới)
+│       ├── EditDoor.tsx               (cần phát triển mới)
 │       └── components/                (cần phát triển mới)
-│           ├── DoorForm.tsx
+│           ├── DoorForm.tsx           (sử dụng components từ @headlessui/react)
 │           ├── DoorList.tsx
-│           ├── DoorItem.tsx
 │           ├── DoorFilter.tsx
 │           ├── DoorCoordinateForm.tsx
+│           ├── DeleteConfirmationDialog.tsx
 │           └── CoordinateVisualizer.tsx   (component để hiển thị vị trí cửa)
 │
 ├── components/                        (components dùng chung)
-│   ├── ui/
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   ├── Modal.tsx
-│   │   └── Table.tsx
+│   ├── commons/                      (đã có sẵn từ @headlessui/react)
+│   │   ├── Pagination.tsx
+│   │   ├── Spinner.tsx
+│   │   ├── ImageUpload.tsx
+│   │   ├── Select.tsx
+│   │   └── ErrorMessage.tsx
 │   │
 │   └── layout/
 │       ├── Header.tsx

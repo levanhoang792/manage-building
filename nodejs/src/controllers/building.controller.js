@@ -1,6 +1,6 @@
-const buildingModel = require('../models/building.model');
-const { responseHandler } = require('../utils/responseHandler');
-const responseCodes = require('../utils/responseCodes');
+const buildingModel = require('@src/models/building.model');
+const { success, error } = require('@utils/responseHandler');
+const responseCodes = require('@utils/responseCodes');
 
 /**
  * Get all buildings with pagination and filtering
@@ -8,28 +8,23 @@ const responseCodes = require('../utils/responseCodes');
  * @param {Object} res - Express response object
  */
 const getBuildings = async (req, res) => {
-  try {
-    const { page, limit, search, status, sortBy, sortOrder } = req.query;
-    
-    const result = await buildingModel.getAll({
-      page,
-      limit,
-      search,
-      status,
-      sortBy,
-      sortOrder
-    });
-    
-    return responseHandler(res, responseCodes.SUCCESS, {
-      message: 'Buildings retrieved successfully',
-      ...result
-    });
-  } catch (error) {
-    console.error('Error getting buildings:', error);
-    return responseHandler(res, responseCodes.SERVER_ERROR, {
-      message: 'Failed to retrieve buildings'
-    });
-  }
+    try {
+        const {page, limit, search, status, sortBy, sortOrder} = req.query;
+
+        const result = await buildingModel.getAll({
+            page,
+            limit,
+            search,
+            status,
+            sortBy,
+            sortOrder
+        });
+
+        return success(res, 'Buildings retrieved successfully', responseCodes.SUCCESS, result);
+    } catch (err) {
+        console.error('Error getting buildings:', err);
+        return error(res, 'Failed to retrieve buildings', responseCodes.SERVER_ERROR);
+    }
 };
 
 /**
@@ -38,27 +33,20 @@ const getBuildings = async (req, res) => {
  * @param {Object} res - Express response object
  */
 const getBuildingById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const building = await buildingModel.getById(id);
-    
-    if (!building) {
-      return responseHandler(res, responseCodes.NOT_FOUND, {
-        message: 'Building not found'
-      });
+    try {
+        const {id} = req.params;
+
+        const building = await buildingModel.getById(id);
+
+        if (!building) {
+            return error(res, 'Building not found', responseCodes.NOT_FOUND);
+        }
+
+        return success(res, 'Building retrieved successfully', responseCodes.SUCCESS, building);
+    } catch (err) {
+        console.error('Error getting building:', err);
+        return error(res, 'Failed to retrieve building', responseCodes.SERVER_ERROR);
     }
-    
-    return responseHandler(res, responseCodes.SUCCESS, {
-      message: 'Building retrieved successfully',
-      data: building
-    });
-  } catch (error) {
-    console.error('Error getting building:', error);
-    return responseHandler(res, responseCodes.SERVER_ERROR, {
-      message: 'Failed to retrieve building'
-    });
-  }
 };
 
 /**
@@ -67,28 +55,23 @@ const getBuildingById = async (req, res) => {
  * @param {Object} res - Express response object
  */
 const createBuilding = async (req, res) => {
-  try {
-    const buildingData = req.body;
-    
-    // Set default status if not provided
-    if (!buildingData.status) {
-      buildingData.status = 'active';
+    try {
+        const buildingData = req.body;
+
+        // Set default status if not provided
+        if (!buildingData.status) {
+            buildingData.status = 'active';
+        }
+
+        const id = await buildingModel.create(buildingData);
+
+        const newBuilding = await buildingModel.getById(id);
+
+        return success(res, 'Building created successfully', responseCodes.CREATED, newBuilding);
+    } catch (err) {
+        console.error('Error creating building:', err);
+        return error(res, 'Failed to create building', responseCodes.SERVER_ERROR);
     }
-    
-    const id = await buildingModel.create(buildingData);
-    
-    const newBuilding = await buildingModel.getById(id);
-    
-    return responseHandler(res, responseCodes.CREATED, {
-      message: 'Building created successfully',
-      data: newBuilding
-    });
-  } catch (error) {
-    console.error('Error creating building:', error);
-    return responseHandler(res, responseCodes.SERVER_ERROR, {
-      message: 'Failed to create building'
-    });
-  }
 };
 
 /**
@@ -97,33 +80,26 @@ const createBuilding = async (req, res) => {
  * @param {Object} res - Express response object
  */
 const updateBuilding = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const buildingData = req.body;
-    
-    // Check if building exists
-    const existingBuilding = await buildingModel.getById(id);
-    
-    if (!existingBuilding) {
-      return responseHandler(res, responseCodes.NOT_FOUND, {
-        message: 'Building not found'
-      });
+    try {
+        const {id} = req.params;
+        const buildingData = req.body;
+
+        // Check if building exists
+        const existingBuilding = await buildingModel.getById(id);
+
+        if (!existingBuilding) {
+            return error(res, 'Building not found', responseCodes.NOT_FOUND);
+        }
+
+        await buildingModel.update(id, buildingData);
+
+        const updatedBuilding = await buildingModel.getById(id);
+
+        return success(res, 'Building updated successfully', responseCodes.SUCCESS, updatedBuilding);
+    } catch (err) {
+        console.error('Error updating building:', err);
+        return error(res, 'Failed to update building', responseCodes.SERVER_ERROR);
     }
-    
-    await buildingModel.update(id, buildingData);
-    
-    const updatedBuilding = await buildingModel.getById(id);
-    
-    return responseHandler(res, responseCodes.SUCCESS, {
-      message: 'Building updated successfully',
-      data: updatedBuilding
-    });
-  } catch (error) {
-    console.error('Error updating building:', error);
-    return responseHandler(res, responseCodes.SERVER_ERROR, {
-      message: 'Failed to update building'
-    });
-  }
 };
 
 /**
@@ -132,39 +108,30 @@ const updateBuilding = async (req, res) => {
  * @param {Object} res - Express response object
  */
 const updateBuildingStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-    
-    if (!status || !['active', 'inactive'].includes(status)) {
-      return responseHandler(res, responseCodes.BAD_REQUEST, {
-        message: 'Invalid status. Status must be either "active" or "inactive"'
-      });
+    try {
+        const {id} = req.params;
+        const {status} = req.body;
+
+        if (!status || !['active', 'inactive'].includes(status)) {
+            return error(res, 'Invalid status. Status must be either "active" or "inactive"', responseCodes.BAD_REQUEST);
+        }
+
+        // Check if building exists
+        const existingBuilding = await buildingModel.getById(id);
+
+        if (!existingBuilding) {
+            return error(res, 'Building not found', responseCodes.NOT_FOUND);
+        }
+
+        await buildingModel.updateStatus(id, status);
+
+        const updatedBuilding = await buildingModel.getById(id);
+
+        return success(res, 'Building status updated successfully', responseCodes.SUCCESS, updatedBuilding);
+    } catch (err) {
+        console.error('Error updating building status:', err);
+        return error(res, 'Failed to update building status', responseCodes.SERVER_ERROR);
     }
-    
-    // Check if building exists
-    const existingBuilding = await buildingModel.getById(id);
-    
-    if (!existingBuilding) {
-      return responseHandler(res, responseCodes.NOT_FOUND, {
-        message: 'Building not found'
-      });
-    }
-    
-    await buildingModel.updateStatus(id, status);
-    
-    const updatedBuilding = await buildingModel.getById(id);
-    
-    return responseHandler(res, responseCodes.SUCCESS, {
-      message: 'Building status updated successfully',
-      data: updatedBuilding
-    });
-  } catch (error) {
-    console.error('Error updating building status:', error);
-    return responseHandler(res, responseCodes.SERVER_ERROR, {
-      message: 'Failed to update building status'
-    });
-  }
 };
 
 /**
@@ -173,36 +140,30 @@ const updateBuildingStatus = async (req, res) => {
  * @param {Object} res - Express response object
  */
 const deleteBuilding = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // Check if building exists
-    const existingBuilding = await buildingModel.getById(id);
-    
-    if (!existingBuilding) {
-      return responseHandler(res, responseCodes.NOT_FOUND, {
-        message: 'Building not found'
-      });
+    try {
+        const {id} = req.params;
+
+        // Check if building exists
+        const existingBuilding = await buildingModel.getById(id);
+
+        if (!existingBuilding) {
+            return error(res, 'Building not found', responseCodes.NOT_FOUND);
+        }
+
+        await buildingModel.remove(id);
+
+        return success(res, 'Building deleted successfully', responseCodes.SUCCESS);
+    } catch (err) {
+        console.error('Error deleting building:', err);
+        return error(res, 'Failed to delete building', responseCodes.SERVER_ERROR);
     }
-    
-    await buildingModel.remove(id);
-    
-    return responseHandler(res, responseCodes.SUCCESS, {
-      message: 'Building deleted successfully'
-    });
-  } catch (error) {
-    console.error('Error deleting building:', error);
-    return responseHandler(res, responseCodes.SERVER_ERROR, {
-      message: 'Failed to delete building'
-    });
-  }
 };
 
 module.exports = {
-  getBuildings,
-  getBuildingById,
-  createBuilding,
-  updateBuilding,
-  updateBuildingStatus,
-  deleteBuilding
+    getBuildings,
+    getBuildingById,
+    createBuilding,
+    updateBuilding,
+    updateBuildingStatus,
+    deleteBuilding
 };

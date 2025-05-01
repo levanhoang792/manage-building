@@ -44,13 +44,13 @@ export const API_ROUTES = {
     BUILDING_STATUS: "/buildings/:id/status",
 
     // Floor endpoints
-    FLOORS: "/buildings/:buildingId/floors",
-    FLOOR_DETAIL: "/buildings/:buildingId/floors/:id",
-    FLOOR_CREATE: "/buildings/:buildingId/floors",
-    FLOOR_UPDATE: "/buildings/:buildingId/floors/:id",
-    FLOOR_DELETE: "/buildings/:buildingId/floors/:id",
-    FLOOR_STATUS: "/buildings/:buildingId/floors/:id/status",
-    FLOOR_UPLOAD_PLAN: "/buildings/:buildingId/floors/:id/upload-plan",
+    FLOORS: "/buildings/:id/floors",
+    FLOOR_DETAIL: "/buildings/:id/floors/:floorId",
+    FLOOR_CREATE: "/buildings/:id/floors",
+    FLOOR_UPDATE: "/buildings/:id/floors/:floorId",
+    FLOOR_DELETE: "/buildings/:id/floors/:floorId",
+    FLOOR_STATUS: "/buildings/:id/floors/:floorId/status",
+    FLOOR_UPLOAD_PLAN: "/buildings/:id/floors/:floorId/upload-plan",
 
     // Door endpoints
     DOORS: "/buildings/:buildingId/floors/:floorId/doors",

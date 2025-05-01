@@ -8,6 +8,7 @@ const METHOD = {
     GET: "GET",
     POST: "POST",
     PUT: "PUT",
+    PATCH: "PATCH",
     DELETE: "DELETE"
 }
 
@@ -59,7 +60,7 @@ const httpRequest = async ({uri, options}: HttpRequest) => {
         try {
             errorJson = await response.json(); // Parse lỗi trước khi reject
         } catch {
-            errorJson = {msg: "Unknown error", r: response.status, data: null, errors: null};
+            errorJson = {message: "Unknown error", r: response.status, data: null, errors: null};
         }
 
         if (response.status === 401) Cookies.remove(COOKIES.TOKEN);
@@ -70,7 +71,7 @@ const httpRequest = async ({uri, options}: HttpRequest) => {
         const msg = "API Request failed exception: " + error;
         console.error(msg);
         return Promise.reject({
-            msg: msg,
+            message: msg,
             r: 500,
             data: null,
             errors: null
@@ -136,11 +137,19 @@ const httpDelete = ({uri, options}: HttpRequest) => {
     });
 }
 
+const httpPatch = ({uri, options}: HttpRequest) => {
+    return httpRequest({
+        uri: uri,
+        options: {method: METHOD.PATCH, ...options}
+    });
+}
+
 export {
     METHOD,
     queryClient,
     httpGet,
     httpPost,
     httpPut,
+    httpPatch,
     httpDelete
 }

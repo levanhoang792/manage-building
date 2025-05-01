@@ -1,4 +1,4 @@
-const knex = require('../config/knex');
+const knex = require('@config/knex');
 const TABLE_NAME = 'floors';
 
 /**
@@ -14,47 +14,47 @@ const TABLE_NAME = 'floors';
  * @returns {Promise<{data: Array, total: number, page: number, limit: number}>}
  */
 const getAllByBuilding = async (buildingId, options = {}) => {
-  const {
-    page = 1,
-    limit = 10,
-    search = '',
-    status,
-    sortBy = 'created_at',
-    sortOrder = 'desc'
-  } = options;
+    const {
+        page = 1,
+        limit = 10,
+        search = '',
+        status,
+        sortBy = 'created_at',
+        sortOrder = 'desc'
+    } = options;
 
-  const offset = (page - 1) * limit;
-  
-  // Build query
-  const query = knex(TABLE_NAME)
-    .select('*')
-    .where('building_id', buildingId);
-  
-  // Apply filters
-  if (search) {
-    query.where('name', 'like', `%${search}%`);
-  }
-  
-  if (status) {
-    query.where('status', status);
-  }
-  
-  // Get total count for pagination
-  const countQuery = query.clone();
-  const [{ count }] = await countQuery.count('id as count');
-  
-  // Apply pagination and sorting
-  const data = await query
-    .orderBy(sortBy, sortOrder)
-    .limit(limit)
-    .offset(offset);
-  
-  return {
-    data,
-    total: parseInt(count),
-    page: parseInt(page),
-    limit: parseInt(limit)
-  };
+    const offset = (page - 1) * limit;
+
+    // Build query
+    const query = knex(TABLE_NAME)
+        .select('*')
+        .where('building_id', buildingId);
+
+    // Apply filters
+    if (search) {
+        query.where('name', 'like', `%${search}%`);
+    }
+
+    if (status) {
+        query.where('status', status);
+    }
+
+    // Get total count for pagination
+    const countQuery = query.clone().clearSelect().count('id as count');
+    const [{count}] = await countQuery;
+
+    // Apply pagination and sorting
+    const data = await query
+        .orderBy(sortBy, sortOrder)
+        .limit(limit)
+        .offset(offset);
+
+    return {
+        data,
+        total: parseInt(count),
+        page: parseInt(page),
+        limit: parseInt(limit)
+    };
 };
 
 /**
@@ -64,12 +64,35 @@ const getAllByBuilding = async (buildingId, options = {}) => {
  * @returns {Promise<Object>}
  */
 const getById = async (buildingId, id) => {
-  return knex(TABLE_NAME)
-    .where({
-      'building_id': buildingId,
-      'id': id
-    })
-    .first();
+    return knex(TABLE_NAME)
+        .where({
+            'building_id': buildingId,
+            'id': id
+        })
+        .first();
+};
+
+/**
+ * Check if a floor with the same name or floor number exists in the building
+ * @param {number} buildingId - Building ID
+ * @param {string} name - Floor name
+ * @param {number} floorNumber - Floor number
+ * @param {number} [excludeId] - Floor ID to exclude from check (for updates)
+ * @returns {Promise<Object>} - Existing floor if found
+ */
+const checkDuplicate = async (buildingId, name, floorNumber, excludeId = null) => {
+    const query = knex(TABLE_NAME)
+        .where('building_id', buildingId)
+        .where(function() {
+            this.where('name', name)
+                .orWhere('floor_number', floorNumber);
+        });
+    
+    if (excludeId) {
+        query.whereNot('id', excludeId);
+    }
+    
+    return query.first();
 };
 
 /**
@@ -78,14 +101,14 @@ const getById = async (buildingId, id) => {
  * @returns {Promise<number>} - ID of created floor
  */
 const create = async (floor) => {
-  const [id] = await knex(TABLE_NAME)
-    .insert({
-      ...floor,
-      created_at: knex.fn.now(),
-      updated_at: knex.fn.now()
-    });
-  
-  return id;
+    const [id] = await knex(TABLE_NAME)
+        .insert({
+            ...floor,
+            created_at: knex.fn.now(),
+            updated_at: knex.fn.now()
+        });
+
+    return id;
 };
 
 /**
@@ -96,15 +119,15 @@ const create = async (floor) => {
  * @returns {Promise<number>} - Number of updated rows
  */
 const update = async (buildingId, id, floor) => {
-  return knex(TABLE_NAME)
-    .where({
-      'building_id': buildingId,
-      'id': id
-    })
-    .update({
-      ...floor,
-      updated_at: knex.fn.now()
-    });
+    return knex(TABLE_NAME)
+        .where({
+            'building_id': buildingId,
+            'id': id
+        })
+        .update({
+            ...floor,
+            updated_at: knex.fn.now()
+        });
 };
 
 /**
@@ -115,15 +138,15 @@ const update = async (buildingId, id, floor) => {
  * @returns {Promise<number>} - Number of updated rows
  */
 const updateFloorPlan = async (buildingId, id, imagePath) => {
-  return knex(TABLE_NAME)
-    .where({
-      'building_id': buildingId,
-      'id': id
-    })
-    .update({
-      floor_plan_image: imagePath,
-      updated_at: knex.fn.now()
-    });
+    return knex(TABLE_NAME)
+        .where({
+            'building_id': buildingId,
+            'id': id
+        })
+        .update({
+            floor_plan_image: imagePath,
+            updated_at: knex.fn.now()
+        });
 };
 
 /**
@@ -134,15 +157,15 @@ const updateFloorPlan = async (buildingId, id, imagePath) => {
  * @returns {Promise<number>} - Number of updated rows
  */
 const updateStatus = async (buildingId, id, status) => {
-  return knex(TABLE_NAME)
-    .where({
-      'building_id': buildingId,
-      'id': id
-    })
-    .update({
-      status,
-      updated_at: knex.fn.now()
-    });
+    return knex(TABLE_NAME)
+        .where({
+            'building_id': buildingId,
+            'id': id
+        })
+        .update({
+            status,
+            updated_at: knex.fn.now()
+        });
 };
 
 /**
@@ -152,20 +175,21 @@ const updateStatus = async (buildingId, id, status) => {
  * @returns {Promise<number>} - Number of deleted rows
  */
 const remove = async (buildingId, id) => {
-  return knex(TABLE_NAME)
-    .where({
-      'building_id': buildingId,
-      'id': id
-    })
-    .del();
+    return knex(TABLE_NAME)
+        .where({
+            'building_id': buildingId,
+            'id': id
+        })
+        .del();
 };
 
 module.exports = {
-  getAllByBuilding,
-  getById,
-  create,
-  update,
-  updateFloorPlan,
-  updateStatus,
-  remove
+    getAllByBuilding,
+    getById,
+    checkDuplicate,
+    create,
+    update,
+    updateFloorPlan,
+    updateStatus,
+    remove
 };

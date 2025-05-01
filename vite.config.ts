@@ -15,15 +15,25 @@ export default ({mode}: { mode: string }) => {
             },
         },
         server: {
-            proxy: env.VITE_ENDPOINT_API_PROXY_PASS ? {
-                '/api': { // Proxy all requests starting with /api
-                    target: env.VITE_ENDPOINT_API_PROXY_PASS, // Backend server
-                    changeOrigin: true,
-                    secure: false, // Set to false if the backend uses self-signed SSL
-                    prependPath: false
-                    // rewrite: (path) => path.replace(/^\/api/, ''), // Remove /api prefix before sending request
-                },
-            } : {},
+            proxy: {
+                ...(env.VITE_ENDPOINT_API_PROXY_PASS ? {
+                    '/api': { // Proxy all requests starting with /api
+                        target: env.VITE_ENDPOINT_API_PROXY_PASS, // Backend server
+                        changeOrigin: true,
+                        secure: false, // Set to false if the backend uses self-signed SSL
+                        prependPath: false
+                        // rewrite: (path) => path.replace(/^\/api/, ''), // Remove /api prefix before sending request
+                    },
+                } : {}),
+                ...(env.VITE_ENDPOINT_UPLOADS_PROXY_PASS ? {
+                    '/uploads': { // Proxy all requests starting with /uploads
+                        target: env.VITE_ENDPOINT_UPLOADS_PROXY_PASS, // Backend server for uploads
+                        changeOrigin: true,
+                        secure: false,
+                        prependPath: false
+                    },
+                } : {})
+            }
         }
     })
 }

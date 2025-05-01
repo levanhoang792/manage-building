@@ -19,6 +19,15 @@ import {Provider} from "react-redux";
 import {store} from "@/store/store";
 import Dashboard from "@/pages/dashboard/Dashboard";
 
+// Building pages
+import BuildingManagement from "@/pages/building/BuildingManagement";
+import BuildingDetail from "@/pages/building/BuildingDetail";
+import CreateBuilding from "@/pages/building/CreateBuilding";
+import EditBuilding from "@/pages/building/EditBuilding";
+
+// Floor pages
+import {CreateFloor, EditFloor, FloorDetail, FloorManagement} from "@/pages/floor";
+
 function App() {
     return (
         <Router>
@@ -42,6 +51,18 @@ function App() {
 
                                     {/* Other routes */}
                                     <Route path={ROUTES.ACCOUNT_SETTING} element={<AccountSetting/>}/>
+
+                                    {/* Building routes */}
+                                    <Route path={ROUTES.BUILDINGS} element={<BuildingManagement/>}/>
+                                    <Route path={ROUTES.BUILDING_DETAIL} element={<BuildingDetail/>}/>
+                                    <Route path={ROUTES.BUILDING_CREATE} element={<CreateBuilding/>}/>
+                                    <Route path={ROUTES.BUILDING_EDIT} element={<EditBuilding/>}/>
+
+                                    {/* Floor routes */}
+                                    <Route path={ROUTES.BUILDING_FLOORS} element={<FloorManagement/>}/>
+                                    <Route path={ROUTES.BUILDING_FLOOR_DETAIL} element={<FloorDetail/>}/>
+                                    <Route path={ROUTES.BUILDING_FLOOR_CREATE} element={<CreateFloor/>}/>
+                                    <Route path={ROUTES.BUILDING_FLOOR_EDIT} element={<EditFloor/>}/>
                                 </Route>
                             </Route>
 

@@ -13,48 +13,48 @@ const responseCodes = require('@utils/responseCodes');
  * @param {Function} next - Express next function
  */
 exports.verifyToken = (req, res, next) => {
-  // Get authorization header
-  const authHeader = req.headers.authorization;
-  
-  // Check if authorization header exists and starts with 'Bearer '
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return responseHandler.error(
-      res, 
-      'No token provided', 
-      responseCodes.UNAUTHORIZED
-    );
-  }
+    // Get authorization header
+    const authHeader = req.headers.authorization;
 
-  // Extract token from authorization header
-  const token = authHeader.split(' ')[1];
-
-  try {
-    // Verify token
-    // Set user in request object
-    req.user = jwt.verify(token, jwtConfig.secret, {
-      issuer: jwtConfig.issuer,
-      audience: jwtConfig.audience
-    });
-    
-    // Continue to next middleware
-    next();
-  } catch (error) {
-    console.error('Token verification error:', error);
-    
-    if (error.name === 'TokenExpiredError') {
-      return responseHandler.error(
-        res, 
-        'Token expired', 
-        responseCodes.TOKEN_EXPIRED
-      );
+    // Check if authorization header exists and starts with 'Bearer '
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return responseHandler.error(
+            res,
+            'No token provided',
+            responseCodes.UNAUTHORIZED
+        );
     }
-    
-    return responseHandler.error(
-      res, 
-      'Invalid token', 
-      responseCodes.UNAUTHORIZED
-    );
-  }
+
+    // Extract token from authorization header
+    const token = authHeader.split(' ')[1];
+
+    try {
+        // Verify token
+        // Set user in request object
+        req.user = jwt.verify(token, jwtConfig.secret, {
+            issuer: jwtConfig.issuer,
+            audience: jwtConfig.audience
+        });
+
+        // Continue to next middleware
+        next();
+    } catch (error) {
+        console.error('Token verification error:', error);
+
+        if (error.name === 'TokenExpiredError') {
+            return responseHandler.error(
+                res,
+                'Token expired',
+                responseCodes.TOKEN_EXPIRED
+            );
+        }
+
+        return responseHandler.error(
+            res,
+            'Invalid token',
+            responseCodes.UNAUTHORIZED
+        );
+    }
 };
 
 /**
@@ -63,30 +63,30 @@ exports.verifyToken = (req, res, next) => {
  * @returns {Function} - Express middleware
  */
 exports.hasRoles = (roles) => {
-  return (req, res, next) => {
-    // Check if user exists in request
-    if (!req.user) {
-      return responseHandler.error(
-        res, 
-        'Unauthorized', 
-        responseCodes.UNAUTHORIZED
-      );
-    }
+    return (req, res, next) => {
+        // Check if user exists in request
+        if (!req.user) {
+            return responseHandler.error(
+                res,
+                'Unauthorized',
+                responseCodes.UNAUTHORIZED
+            );
+        }
 
-    // Check if user has any of the required roles
-    const hasRequiredRole = req.user.roles.some(role => roles.includes(role));
-    
-    if (!hasRequiredRole) {
-      return responseHandler.error(
-        res, 
-        'Access denied: insufficient role permissions', 
-        responseCodes.INSUFFICIENT_ROLE
-      );
-    }
+        // Check if user has any of the required roles
+        const hasRequiredRole = req.user.roles.some(role => roles.includes(role));
 
-    // Continue to next middleware
-    next();
-  };
+        if (!hasRequiredRole) {
+            return responseHandler.error(
+                res,
+                'Access denied: insufficient role permissions',
+                responseCodes.INSUFFICIENT_ROLE
+            );
+        }
+
+        // Continue to next middleware
+        next();
+    };
 };
 
 /**
@@ -95,30 +95,30 @@ exports.hasRoles = (roles) => {
  * @returns {Function} - Express middleware
  */
 exports.hasPermissions = (permissions) => {
-  return (req, res, next) => {
-    // Check if user exists in request
-    if (!req.user) {
-      return responseHandler.error(
-        res, 
-        'Unauthorized', 
-        responseCodes.UNAUTHORIZED
-      );
-    }
+    return (req, res, next) => {
+        // Check if user exists in request
+        if (!req.user) {
+            return responseHandler.error(
+                res,
+                'Unauthorized',
+                responseCodes.UNAUTHORIZED
+            );
+        }
 
-    // Check if user has all required permissions
-    const hasAllPermissions = permissions.every(permission => 
-      req.user.permissions.includes(permission)
-    );
-    
-    if (!hasAllPermissions) {
-      return responseHandler.error(
-        res, 
-        'Access denied: insufficient permissions', 
-        responseCodes.INSUFFICIENT_PERMISSIONS
-      );
-    }
+        // Check if user has all required permissions
+        const hasAllPermissions = permissions.every(permission =>
+            req.user.permissions.includes(permission)
+        );
 
-    // Continue to next middleware
-    next();
-  };
+        if (!hasAllPermissions) {
+            return responseHandler.error(
+                res,
+                'Access denied: insufficient permissions',
+                responseCodes.INSUFFICIENT_PERMISSIONS
+            );
+        }
+
+        // Continue to next middleware
+        next();
+    };
 };
