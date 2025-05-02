@@ -28,6 +28,9 @@ import EditBuilding from "@/pages/building/EditBuilding";
 // Floor pages
 import {CreateFloor, EditFloor, FloorDetail, FloorManagement} from "@/pages/floor";
 
+// Door pages
+import {CreateDoor, DoorCoordinateManagement, DoorDetail, DoorManagement, EditDoor} from "@/pages/door";
+
 function App() {
     return (
         <Router>
@@ -63,6 +66,16 @@ function App() {
                                     <Route path={ROUTES.BUILDING_FLOOR_DETAIL} element={<FloorDetail/>}/>
                                     <Route path={ROUTES.BUILDING_FLOOR_CREATE} element={<CreateFloor/>}/>
                                     <Route path={ROUTES.BUILDING_FLOOR_EDIT} element={<EditFloor/>}/>
+
+                                    {/* Door routes */}
+                                    <Route path={ROUTES.BUILDING_FLOOR_DOORS} element={<DoorManagement/>}/>
+                                    <Route path={ROUTES.BUILDING_FLOOR_DOOR_DETAIL} element={<DoorDetail/>}/>
+                                    <Route path={ROUTES.BUILDING_FLOOR_DOOR_CREATE} element={<CreateDoor/>}/>
+                                    <Route path={ROUTES.BUILDING_FLOOR_DOOR_EDIT} element={<EditDoor/>}/>
+
+                                    {/* Door Coordinate routes */}
+                                    <Route path={ROUTES.BUILDING_FLOOR_DOOR_COORDINATES}
+                                           element={<DoorCoordinateManagement/>}/>
                                 </Route>
                             </Route>
 

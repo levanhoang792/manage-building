@@ -73,6 +73,13 @@ export const API_ROUTES = {
     USER_CREATE: "/users",
     USER_UPDATE: "/users/:id",
     USER_DELETE: "/users/:id",
+    
+    // Door types endpoints
+    DOOR_TYPES: "/door-types",
+    DOOR_TYPE_DETAIL: "/door-types/:id",
+    DOOR_TYPE_CREATE: "/door-types",
+    DOOR_TYPE_UPDATE: "/door-types/:id",
+    DOOR_TYPE_DELETE: "/door-types/:id",
 }
 
 export const API_RESPONSE_CODE = {

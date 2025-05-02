@@ -5,7 +5,7 @@ export interface Door {
     floor_id: number;
     name: string;
     description?: string;
-    type: 'main' | 'emergency' | 'service' | 'other';
+    door_type_id: number;
     status: 'active' | 'inactive' | 'maintenance';
     created_at: string;
     updated_at: string;
@@ -14,7 +14,7 @@ export interface Door {
 export interface DoorFormData {
     name: string;
     description?: string;
-    type?: 'main' | 'emergency' | 'service' | 'other';
+    door_type_id?: number;
     status?: 'active' | 'inactive' | 'maintenance';
 }
 
@@ -26,7 +26,7 @@ export interface DoorQueryParams {
     page?: number;
     limit?: number;
     search?: string;
-    type?: string;
+    door_type_id?: number;
     status?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
