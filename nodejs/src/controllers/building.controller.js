@@ -1,4 +1,4 @@
-const buildingModel = require('@src/models/building.model');
+const buildingModel = require('@models/building.model');
 const { success, error } = require('@utils/responseHandler');
 const responseCodes = require('@utils/responseCodes');
 

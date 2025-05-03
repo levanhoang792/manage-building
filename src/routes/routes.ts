@@ -35,9 +35,28 @@ export const ROUTES = {
     BUILDING_FLOOR_DOOR_COORDINATE_CREATE: "/buildings/:id/floors/:floorId/doors/:doorId/coordinates/create",
     BUILDING_FLOOR_DOOR_COORDINATE_EDIT: "/buildings/:id/floors/:floorId/doors/:doorId/coordinates/edit/:coordinateId",
 
+    // Door Type routes
+    DOOR_TYPES: "/door-types",
+    DOOR_TYPE_CREATE: "/door-types/create",
+    DOOR_TYPE_EDIT: "/door-types/edit/:id",
+
     // Admin routes
     DASHBOARD: "/dashboard",
+
+    // User management routes
     USERS: "/users",
     USER_CREATE: "/users/create",
     USER_EDIT: "/users/:id",
+    USER_DETAIL: "/users/:id",
+    USER_PENDING: "/users/pending",
+
+    // Role management routes
+    ROLES: "/roles",
+    ROLE_CREATE: "/roles/create",
+    ROLE_EDIT: "/roles/edit/:id",
+    ROLE_DETAIL: "/roles/:id",
+    ROLE_PERMISSIONS: "/roles/:id/permissions",
+
+    // Permission management routes
+    PERMISSIONS: "/permissions",
 };

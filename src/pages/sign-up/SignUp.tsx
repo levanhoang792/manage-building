@@ -22,7 +22,9 @@ const FormSchema: z.ZodType<RegisterFormData> = z.object({
         .nonempty("Password is required")
         .min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string()
-        .nonempty("Confirm password is required")
+        .nonempty("Confirm password is required"),
+    fullName: z.string()
+        .nonempty("Full name is required")
 }).refine(data => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
     message: "Confirm password must match password"
@@ -38,18 +40,20 @@ function SignUp() {
             email: "",
             username: "",
             password: "",
-            confirmPassword: ""
+            confirmPassword: "",
+            fullName: ""
         }
     });
 
     const onSubmit = handleSubmit((data) => {
         register.mutate(data, {
-            onSuccess: () => {
-                toast.success("Registration successful");
+            onSuccess: (response) => {
+                toast.success(response.message || "Registration successful. Your account is pending approval.");
                 navigate(ROUTES.LOGIN);
             },
-            onError: () => {
-                toast.error("Registration failed. Please try again.");
+            onError: (error: any) => {
+                const errorMessage = error?.response?.data?.message || "Registration failed. Please try again.";
+                toast.error(errorMessage);
             }
         });
     });
@@ -115,6 +119,31 @@ function SignUp() {
                         )}
                     />
                     <FieldError error={errors.username}/>
+                    
+                    <Controller
+                        control={control}
+                        name="fullName"
+                        render={({field}) => (
+                            <Field className={cn("mt-5")}>
+                                <Label className="text-sm/6 font-medium text-white hidden">Full Name</Label>
+                                <div className={cn("relative")}>
+                                    <Input
+                                        {...field}
+                                        className={cn(
+                                            "block w-full rounded-full border-0 bg-white/5 text-white py-2 pl-4 pr-10 text-sm/6",
+                                            "outline-none outline-1 -outline-offset-2 outline-white/25",
+                                            "focus:outline-none data-[focus]:outline-1 data-[focus]:-outline-offset-2 data-[focus]:outline-white/50 transition-all"
+                                        )}
+                                        placeholder="Full Name"
+                                    />
+                                    <UserIcon
+                                        className={cn("size-5 absolute top-1/2 -translate-y-1/2 right-0 mr-4 fill-white")}
+                                    />
+                                </div>
+                            </Field>
+                        )}
+                    />
+                    <FieldError error={errors.fullName}/>
 
                     <Controller
                         control={control}

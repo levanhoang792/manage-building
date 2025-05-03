@@ -1,7 +1,13 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {httpDelete, httpGet, httpPost, httpPut} from "@/utils/api";
 import {API_ROUTES} from "@/routes/api";
-import {DoorCoordinateFormData, ResDoorCoordinate, ResDoorCoordinateList} from "./model";
+import {
+    DoorCoordinate,
+    DoorCoordinateFormData,
+    ResDoorCoordinate,
+    ResDoorCoordinateList,
+    ResMultipleDoorCoordinates
+} from "./model";
 
 // Hàm helper để thay thế các tham số trong URL
 const replaceParams = (url: string, params: Record<string, string | number>) => {
@@ -96,5 +102,41 @@ export const useDeleteDoorCoordinate = (
             const resp = await httpDelete({uri});
             return await resp.json();
         }
+    });
+};
+
+// Hook lấy tọa độ của nhiều cửa cùng lúc
+export const useGetMultipleDoorCoordinates = (
+    buildingId: number | string,
+    floorId: number | string,
+    doorIds: (number | string)[]
+) => {
+    const queryClient = useQueryClient();
+    
+    return useQuery<ResMultipleDoorCoordinates>({
+        queryKey: ['multipleDoorCoordinates', buildingId, floorId, doorIds],
+        queryFn: async () => {
+            // Lấy tọa độ cho từng cửa
+            const promises = doorIds.map(async (doorId) => {
+                // Kiểm tra xem dữ liệu đã có trong cache chưa
+                const cachedData = queryClient.getQueryData<ResDoorCoordinateList>(['doorCoordinates', buildingId, floorId, doorId]);
+                if (cachedData) {
+                    return { doorId, data: cachedData };
+                }
+                
+                // Nếu chưa có trong cache, gọi API
+                const uri = replaceParams(API_ROUTES.DOOR_COORDINATES, {buildingId, floorId, doorId});
+                const resp = await httpGet({uri});
+                const data = await resp.json() as ResDoorCoordinateList;
+                
+                // Lưu vào cache
+                queryClient.setQueryData(['doorCoordinates', buildingId, floorId, doorId], data);
+                
+                return { doorId, data };
+            });
+            
+            return Promise.all(promises);
+        },
+        enabled: !!buildingId && !!floorId && doorIds.length > 0
     });
 };

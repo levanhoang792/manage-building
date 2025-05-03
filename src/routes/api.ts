@@ -3,7 +3,7 @@ export const API_ROUTES = {
     AUTH_REFRESH_TOKEN: "/auth/refresh-token",
 
     LOGOUT: "/logout",
-    REGISTER: "/register",
+    REGISTER: "/auth/register",
     FORGOT_PASSWORD_EMAIL: "/forgot-password-email",
     FORGOT_PASSWORD_OTP: "/forgot-password-otp",
     FORGOT_PASSWORD_RESET: "/forgot-password-reset",
@@ -73,7 +73,31 @@ export const API_ROUTES = {
     USER_CREATE: "/users",
     USER_UPDATE: "/users/:id",
     USER_DELETE: "/users/:id",
-    
+    USER_APPROVE: "/users/:id/approve",
+    USER_REJECT: "/users/:id/reject",
+    USER_PENDING: "/users/pending",
+
+    // Role management endpoints
+    ROLES: "/roles",
+    ROLE_DETAIL: "/roles/:id",
+    ROLE_CREATE: "/roles",
+    ROLE_UPDATE: "/roles/:id",
+    ROLE_DELETE: "/roles/:id",
+
+    // Permission management endpoints
+    PERMISSIONS: "/permissions",
+    PERMISSION_DETAIL: "/permissions/:id",
+
+    // Role-Permission management endpoints
+    ROLE_PERMISSIONS: "/roles/:id/permissions",
+    ROLE_PERMISSION_ASSIGN: "/roles/:id/permissions",
+    ROLE_PERMISSION_REMOVE: "/roles/:id/permissions/:permissionId",
+
+    // User-Role management endpoints
+    USER_ROLES: "/users/:id/roles",
+    USER_ROLE_ASSIGN: "/users/:id/roles",
+    USER_ROLE_REMOVE: "/users/:id/roles/:roleId",
+
     // Door types endpoints
     DOOR_TYPES: "/door-types",
     DOOR_TYPE_DETAIL: "/door-types/:id",

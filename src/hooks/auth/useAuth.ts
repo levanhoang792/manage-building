@@ -24,11 +24,21 @@ export const useLogin = () => {
 export const useRegister = () => {
     return useMutation({
         mutationFn: async (data: RegisterFormData) => {
-            const resp = await httpPost({
-                uri: API_ROUTES.REGISTER,
-                options: {body: JSON.stringify(data)}
-            });
-            return await resp.json() as ResAuth;
+            try {
+                const resp = await httpPost({
+                    uri: API_ROUTES.REGISTER,
+                    options: {body: JSON.stringify(data)}
+                });
+                
+                if (!resp.ok) {
+                    const errorData = await resp.json();
+                    throw { response: { data: errorData } };
+                }
+                
+                return await resp.json() as ResAuth;
+            } catch (error) {
+                throw error;
+            }
         }
     });
 };

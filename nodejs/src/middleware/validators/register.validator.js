@@ -22,8 +22,8 @@ exports.registerValidation = [
     body('password')
         .notEmpty().withMessage('Password is required')
         .isString().withMessage('Password must be a string')
-        .isLength({min: 6}).withMessage('Password must be at least 6 characters')
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+        .isLength({min: 6}).withMessage('Password must be at least 6 characters'),
+        // .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
 
     body('confirmPassword')
         .notEmpty().withMessage('Password confirmation is required')

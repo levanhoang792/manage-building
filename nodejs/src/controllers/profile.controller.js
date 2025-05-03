@@ -2,8 +2,8 @@
  * Profile controller
  */
 const {validationResult} = require('express-validator');
-const User = require('@src/models/user.model');
-const Auth = require('@src/models/auth.model');
+const User = require('@models/user.model');
+const Auth = require('@models/auth.model');
 const responseHandler = require('@utils/responseHandler');
 const responseCodes = require('@utils/responseCodes');
 

@@ -10,6 +10,15 @@ router.use('/auth', require('@routes/auth'));
 // Profile routes
 router.use('/profile', require('@routes/profile'));
 
+// User management routes
+router.use('/users', require('@routes/user'));
+
+// Role management routes
+router.use('/roles', require('@routes/role'));
+
+// Permission management routes
+router.use('/permissions', require('@routes/permission'));
+
 // Door types routes
 router.use('/door-types', require('@routes/doorType'));
 

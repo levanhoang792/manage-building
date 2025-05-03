@@ -41,14 +41,48 @@ class Role {
     }
 
     /**
-     * Get all roles
-     * @returns {Promise<Array>}
+     * Get all roles with pagination and search
+     * @param {number} page - Page number (starts from 1)
+     * @param {number} limit - Number of items per page
+     * @param {string} searchQuery - Optional search query
+     * @returns {Promise<{roles: Array, total: number, page: number, totalPages: number}>}
      */
-    static async getAll() {
+    static async getAll(page = 1, limit = 10, searchQuery = '') {
         try {
-            return await db('roles')
+            // Calculate offset
+            const offset = (page - 1) * limit;
+
+            // Build query
+            let query = db('roles');
+
+            // Apply search filter if provided
+            if (searchQuery) {
+                query = query.where(function() {
+                    this.where('name', 'like', `%${searchQuery}%`)
+                        .orWhere('description', 'like', `%${searchQuery}%`);
+                });
+            }
+
+            // Get total count
+            const countQuery = query.clone().clearSelect().count('id as count');
+            const [{count}] = await countQuery;
+
+            // Get paginated results
+            const roles = await query
                 .select('*')
+                .limit(limit)
+                .offset(offset)
                 .orderBy('id');
+
+            // Calculate total pages
+            const totalPages = Math.ceil(count / limit);
+
+            return {
+                roles,
+                total: count,
+                page,
+                totalPages
+            };
         } catch (error) {
             console.error('Error getting all roles:', error);
             throw error;

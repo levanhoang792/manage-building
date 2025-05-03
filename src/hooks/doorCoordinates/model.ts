@@ -18,5 +18,11 @@ export interface DoorCoordinateFormData {
     rotation?: number;
 }
 
+export interface DoorCoordinateItem {
+    doorId: number | string;
+    data: ResDoorCoordinateList;
+}
+
 export type ResDoorCoordinateList = ResRequest<DoorCoordinate[]>;
 export type ResDoorCoordinate = ResRequest<DoorCoordinate>;
+export type ResMultipleDoorCoordinates = DoorCoordinateItem[];

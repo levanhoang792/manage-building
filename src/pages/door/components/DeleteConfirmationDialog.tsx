@@ -10,13 +10,15 @@ interface DeleteConfirmationDialogProps {
     message: string;
 }
 
-const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
-                                                                               isOpen,
-                                                                               onClose,
-                                                                               onConfirm,
-                                                                               title,
-                                                                               message
-                                                                           }) => {
+const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = (
+    {
+        isOpen,
+        onClose,
+        onConfirm,
+        title,
+        message
+    }
+) => {
     return (
         <Transition show={isOpen} as={React.Fragment}>
             <Dialog as="div" className="relative z-10" onClose={onClose}>

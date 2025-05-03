@@ -178,6 +178,7 @@ INSERT INTO permissions (name, description) VALUES
 ('role.create', 'Tạo vai trò mới'),
 ('role.edit', 'Chỉnh sửa vai trò'),
 ('role.delete', 'Xóa vai trò'),
+('permission.view', 'Xem danh sách quyền'),
 ('permission.assign', 'Gán quyền cho vai trò'),
 
 -- Quyền quản lý tòa nhà
@@ -198,7 +199,19 @@ INSERT INTO permissions (name, description) VALUES
 ('door.create', 'Tạo cửa mới'),
 ('door.edit', 'Chỉnh sửa thông tin cửa'),
 ('door.delete', 'Xóa cửa'),
-('door.coordinate', 'Quản lý tọa độ cửa');
+('door.coordinate', 'Quản lý tọa độ cửa'),
+
+-- Quyền quản lý loại cửa
+('doorType.view', 'Xem danh sách loại cửa'),
+('doorType.create', 'Tạo loại cửa mới'),
+('doorType.edit', 'Chỉnh sửa thông tin loại cửa'),
+('doorType.delete', 'Xóa loại cửa'),
+
+-- Quyền quản lý tọa độ cửa
+('doorCoordinate.view', 'Xem danh sách tọa độ cửa'),
+('doorCoordinate.create', 'Tạo tọa độ cửa mới'),
+('doorCoordinate.edit', 'Chỉnh sửa thông tin tọa độ cửa'),
+('doorCoordinate.delete', 'Xóa tọa độ cửa');
 
 -- Gán quyền cho vai trò Super Admin
 INSERT INTO role_permissions (role_id, permission_id)
@@ -224,7 +237,7 @@ SELECT 4, id FROM permissions WHERE name IN (
 
 -- Tạo tài khoản Super Admin mặc định (password: admin123 - cần được mã hóa trong thực tế)
 INSERT INTO users (username, email, password, full_name, is_active, is_approved)
-VALUES ('admin', 'admin@example.com', '$2b$10$a/JGlmG4ApPpn0FtX5JDfuUrhLeHx5ryTsvYIDBLvliIKcl346TSC', 'System Administrator', TRUE, TRUE);
+VALUES ('admin', 'admin@example.com', '$2b$10$Lp5tdV.myhIuEaxaTWjeguG8NUBoUFWuGJEy1ilPBd/FB3OQsIqpS', 'System Administrator', TRUE, TRUE);
 
 -- Gán vai trò Super Admin cho tài khoản admin
 INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);

@@ -2,7 +2,7 @@
  * Door Type Service
  * Handles business logic for door types
  */
-const doorTypeModel = require('@src/models/doorType.model');
+const doorTypeModel = require('@models/doorType.model');
 
 /**
  * Get all door types

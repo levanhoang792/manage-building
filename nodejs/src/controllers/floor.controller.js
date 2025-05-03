@@ -1,5 +1,5 @@
-const floorModel = require('@src/models/floor.model');
-const buildingModel = require('@src/models/building.model');
+const floorModel = require('@models/floor.model');
+const buildingModel = require('@models/building.model');
 const { success, error } = require('@utils/responseHandler');
 const responseCodes = require('@utils/responseCodes');
 const path = require('path');

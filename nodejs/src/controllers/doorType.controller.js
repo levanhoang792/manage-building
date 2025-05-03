@@ -2,7 +2,7 @@
  * Door Type Controller
  * Handles HTTP requests for door types
  */
-const doorTypeService = require('@src/services/doorTypeService');
+const doorTypeService = require('@services/doorTypeService');
 const { success, error } = require('@utils/responseHandler');
 const { CREATED, OK, BAD_REQUEST, NOT_FOUND, CONFLICT } = require('@utils/responseCodes');
 

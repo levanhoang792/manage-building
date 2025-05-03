@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router({mergeParams: true});
 const floorController = require('../controllers/floor.controller');
 const authMiddleware = require('../middleware/auth.middleware');
+const permissionMiddleware = require('../middleware/permission.middleware');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -41,48 +42,77 @@ const upload = multer({
  * @desc Get all floors for a building
  * @access Private
  */
-router.get('/', authMiddleware.verifyToken, floorController.getFloors);
+router.get('/', 
+    authMiddleware.verifyToken, 
+    permissionMiddleware.hasPermission('floor.view'),
+    floorController.getFloors
+);
 
 /**
  * @route GET /api/buildings/:buildingId/floors/:id
  * @desc Get floor by ID
  * @access Private
  */
-router.get('/:id', authMiddleware.verifyToken, floorController.getFloorById);
+router.get('/:id', 
+    authMiddleware.verifyToken, 
+    permissionMiddleware.hasPermission('floor.view'),
+    floorController.getFloorById
+);
 
 /**
  * @route POST /api/buildings/:buildingId/floors
  * @desc Create new floor
  * @access Private
  */
-router.post('/', authMiddleware.verifyToken, floorController.createFloor);
+router.post('/', 
+    authMiddleware.verifyToken, 
+    permissionMiddleware.hasPermission('floor.create'),
+    floorController.createFloor
+);
 
 /**
  * @route PUT /api/buildings/:buildingId/floors/:id
  * @desc Update floor
  * @access Private
  */
-router.put('/:id', authMiddleware.verifyToken, floorController.updateFloor);
+router.put('/:id', 
+    authMiddleware.verifyToken, 
+    permissionMiddleware.hasPermission('floor.edit'),
+    floorController.updateFloor
+);
 
 /**
  * @route PATCH /api/buildings/:buildingId/floors/:id/status
  * @desc Update floor status
  * @access Private
  */
-router.patch('/:id/status', authMiddleware.verifyToken, floorController.updateFloorStatus);
+router.patch('/:id/status', 
+    authMiddleware.verifyToken, 
+    permissionMiddleware.hasPermission('floor.edit'),
+    floorController.updateFloorStatus
+);
 
 /**
  * @route POST /api/buildings/:buildingId/floors/:id/upload-plan
  * @desc Upload floor plan image
  * @access Private
  */
-router.post('/:id/upload-plan', authMiddleware.verifyToken, upload.single('floorPlan'), floorController.uploadFloorPlan);
+router.post('/:id/upload-plan', 
+    authMiddleware.verifyToken, 
+    permissionMiddleware.hasPermission('floor.edit'),
+    upload.single('floorPlan'), 
+    floorController.uploadFloorPlan
+);
 
 /**
  * @route DELETE /api/buildings/:buildingId/floors/:id
  * @desc Delete floor
  * @access Private
  */
-router.delete('/:id', authMiddleware.verifyToken, floorController.deleteFloor);
+router.delete('/:id', 
+    authMiddleware.verifyToken, 
+    permissionMiddleware.hasPermission('floor.delete'),
+    floorController.deleteFloor
+);
 
 module.exports = router;

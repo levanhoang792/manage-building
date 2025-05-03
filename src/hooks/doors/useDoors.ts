@@ -1,5 +1,5 @@
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {httpDelete, httpGet, httpPost, httpPut} from "@/utils/api";
+import {httpDelete, httpGet, httpPatch, httpPost, httpPut} from "@/utils/api";
 import {API_ROUTES} from "@/routes/api";
 import {DoorFormData, DoorQueryParams, DoorStatusData, ResDoor, ResDoorList} from "./model";
 
@@ -90,7 +90,7 @@ export const useUpdateDoorStatus = (
     return useMutation({
         mutationFn: async (data: DoorStatusData) => {
             const uri = replaceParams(API_ROUTES.DOOR_STATUS, {buildingId, floorId, id});
-            const resp = await httpPut({
+            const resp = await httpPatch({
                 uri,
                 options: {body: JSON.stringify(data)}
             });

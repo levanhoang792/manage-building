@@ -31,6 +31,15 @@ import {CreateFloor, EditFloor, FloorDetail, FloorManagement} from "@/pages/floo
 // Door pages
 import {CreateDoor, DoorCoordinateManagement, DoorDetail, DoorManagement, EditDoor} from "@/pages/door";
 
+// Door Type pages
+import {DoorTypeManagement} from "@/pages/door-type";
+
+// User management pages
+import {CreateUser, EditUser, PendingUsers, UserManagement} from "@/pages/users";
+
+// Role management pages
+import {CreateRole, EditRole, RoleManagement, RolePermissions} from "@/pages/roles";
+
 function App() {
     return (
         <Router>
@@ -76,6 +85,21 @@ function App() {
                                     {/* Door Coordinate routes */}
                                     <Route path={ROUTES.BUILDING_FLOOR_DOOR_COORDINATES}
                                            element={<DoorCoordinateManagement/>}/>
+
+                                    {/* Door Type routes */}
+                                    <Route path={ROUTES.DOOR_TYPES} element={<DoorTypeManagement/>}/>
+
+                                    {/* User management routes */}
+                                    <Route path={ROUTES.USERS} element={<UserManagement/>}/>
+                                    <Route path={ROUTES.USER_CREATE} element={<CreateUser/>}/>
+                                    <Route path={ROUTES.USER_EDIT} element={<EditUser/>}/>
+                                    <Route path={ROUTES.USER_PENDING} element={<PendingUsers/>}/>
+
+                                    {/* Role management routes */}
+                                    <Route path={ROUTES.ROLES} element={<RoleManagement/>}/>
+                                    <Route path={ROUTES.ROLE_CREATE} element={<CreateRole/>}/>
+                                    <Route path={ROUTES.ROLE_EDIT} element={<EditRole/>}/>
+                                    <Route path={ROUTES.ROLE_PERMISSIONS} element={<RolePermissions/>}/>
                                 </Route>
                             </Route>
 

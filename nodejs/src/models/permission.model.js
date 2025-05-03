@@ -41,16 +41,87 @@ class Permission {
     }
 
     /**
-     * Get all permissions
-     * @returns {Promise<Array>}
+     * Get all permissions with pagination and search
+     * @param {number} page - Page number (starts from 1)
+     * @param {number} limit - Number of items per page
+     * @param {string} searchQuery - Optional search query
+     * @returns {Promise<{permissions: Array, total: number, page: number, totalPages: number}>}
      */
-    static async getAll() {
+    static async getAll(page = 1, limit = 10, searchQuery = '') {
         try {
-            return await db('permissions')
+            // Calculate offset
+            const offset = (page - 1) * limit;
+
+            // Build query
+            let query = db('permissions');
+
+            // Apply search filter if provided
+            if (searchQuery) {
+                query = query.where(function() {
+                    this.where('name', 'like', `%${searchQuery}%`)
+                        .orWhere('description', 'like', `%${searchQuery}%`);
+                });
+            }
+
+            // Get total count
+            const countQuery = query.clone().clearSelect().count('id as count');
+            const [{count}] = await countQuery;
+
+            // Get paginated results
+            const permissions = await query
                 .select('*')
+                .limit(limit)
+                .offset(offset)
                 .orderBy('id');
+
+            // Calculate total pages
+            const totalPages = Math.ceil(count / limit);
+
+            return {
+                permissions,
+                total: count,
+                page,
+                totalPages
+            };
         } catch (error) {
             console.error('Error getting all permissions:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Get all permissions without pagination
+     * @param {string} searchQuery - Optional search query
+     * @returns {Promise<{permissions: Array, total: number}>}
+     */
+    static async getAllWithoutPagination(searchQuery = '') {
+        try {
+            // Build query
+            let query = db('permissions');
+
+            // Apply search filter if provided
+            if (searchQuery) {
+                query = query.where(function() {
+                    this.where('name', 'like', `%${searchQuery}%`)
+                        .orWhere('description', 'like', `%${searchQuery}%`);
+                });
+            }
+
+            // Get total count
+            const countQuery = query.clone().clearSelect().count('id as count');
+            const [{count}] = await countQuery;
+
+            // Get all results without pagination
+            const permissions = await query
+                .select('*')
+                .orderBy('id');
+
+            return {
+                permissions,
+                total: count
+            };
+        } catch (error) {
+            console.error('Error getting all permissions without pagination:', error);
             throw error;
         }
     }

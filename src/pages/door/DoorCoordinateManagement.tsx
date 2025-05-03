@@ -1,20 +1,21 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {
-  DoorCoordinate,
-  DoorCoordinateFormData,
-  useCreateDoorCoordinate,
-  useDeleteDoorCoordinate,
-  useGetDoorCoordinates,
-  useUpdateDoorCoordinate
+    DoorCoordinate,
+    DoorCoordinateFormData,
+    useCreateDoorCoordinate,
+    useDeleteDoorCoordinate,
+    useGetDoorCoordinates,
+    useUpdateDoorCoordinate
 } from '@/hooks/doorCoordinates';
-import {useGetDoorDetail} from '@/hooks/doors';
+import {Door, useGetDoorDetail, useGetDoors} from '@/hooks/doors';
 import {useGetFloorDetail} from '@/hooks/floors';
 import {useGetBuildingDetail} from '@/hooks/buildings';
 import {ArrowLeftIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
 import DoorCoordinateForm from './components/DoorCoordinateForm';
 import CoordinateVisualizer from './components/CoordinateVisualizer';
 import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
+import DoorChangeConfirmationDialog from './components/DoorChangeConfirmationDialog';
 
 const DoorCoordinateManagement: React.FC = () => {
     const {id, floorId, doorId} = useParams<{ id: string; floorId: string; doorId: string }>();
@@ -31,6 +32,9 @@ const DoorCoordinateManagement: React.FC = () => {
     const [selectedCoordinate, setSelectedCoordinate] = useState<DoorCoordinate | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [coordinateToDelete, setCoordinateToDelete] = useState<DoorCoordinate | null>(null);
+    const [isDoorChangeDialogOpen, setIsDoorChangeDialogOpen] = useState(false);
+    const [selectedDoor, setSelectedDoor] = useState<Door | null>(null);
+    const [isDoorChanging, setIsDoorChanging] = useState(false);
 
     // Fetch data
     const {data: coordinatesData, isLoading: isLoadingCoordinates, refetch: refetchCoordinates} =
@@ -41,6 +45,9 @@ const DoorCoordinateManagement: React.FC = () => {
         useGetFloorDetail(id || '0', floorId || '0');
     const {data: buildingData, isLoading: isLoadingBuilding} =
         useGetBuildingDetail(id || '0');
+    // Lấy danh sách tất cả các cửa trên tầng
+    const {data: doorsData, isLoading: isLoadingDoors} =
+        useGetDoors(id || '0', floorId || '0', {limit: 100});
 
     // Mutations
     const createCoordinateMutation = useCreateDoorCoordinate(id || '0', floorId || '0', doorId || '0');
@@ -138,9 +145,31 @@ const DoorCoordinateManagement: React.FC = () => {
         setSelectedCoordinate(null);
     };
 
-    const isLoading = isLoadingCoordinates || isLoadingDoor || isLoadingFloor || isLoadingBuilding;
+    // Xử lý khi người dùng bấm vào cửa khác
+    const handleDoorSelect = (door: Door) => {
+        if (door.id.toString() === doorId) return; // Không làm gì nếu bấm vào cửa hiện tại
+        
+        setSelectedDoor(door);
+        setIsDoorChangeDialogOpen(true);
+    };
+
+    // Xác nhận chuyển sang cửa khác
+    const handleDoorChangeConfirm = () => {
+        if (!selectedDoor) return;
+        
+        setIsDoorChanging(true);
+        // Thêm timeout ngắn để hiển thị trạng thái loading
+        setTimeout(() => {
+            navigate(`/buildings/${id}/floors/${floorId}/doors/${selectedDoor.id}/coordinates`);
+            setIsDoorChanging(false);
+            setIsDoorChangeDialogOpen(false);
+        }, 500);
+    };
+
+    const isLoading = isLoadingCoordinates || isLoadingDoor || isLoadingFloor || isLoadingBuilding || isLoadingDoors;
     const coordinates = coordinatesData?.data || [];
     const floorPlanImage = floorData?.data?.floor_plan_image || '';
+    const doors = doorsData?.data?.data || [];
 
     return (
         <div className="container mx-auto px-4 py-6">
@@ -191,6 +220,9 @@ const DoorCoordinateManagement: React.FC = () => {
                                     onCoordinateAdd={handleCoordinateAdd}
                                     isEditable={true}
                                     selectedCoordinateId={selectedCoordinate?.id}
+                                    allDoors={doors}
+                                    currentDoorId={parseInt(doorId || '0')}
+                                    onDoorSelect={handleDoorSelect}
                                 />
                                 {!floorPlanImage && (
                                     <div className="mt-2 text-sm text-red-500">
@@ -306,6 +338,15 @@ const DoorCoordinateManagement: React.FC = () => {
                 onConfirm={handleDeleteCoordinate}
                 title="Xóa tọa độ"
                 message="Bạn có chắc chắn muốn xóa tọa độ này không? Hành động này không thể hoàn tác."
+            />
+
+            {/* Dialog xác nhận chuyển sang cửa khác */}
+            <DoorChangeConfirmationDialog
+                isOpen={isDoorChangeDialogOpen}
+                onClose={() => setIsDoorChangeDialogOpen(false)}
+                onConfirm={handleDoorChangeConfirm}
+                doorName={selectedDoor?.name || ""}
+                isLoading={isDoorChanging}
             />
         </div>
     );

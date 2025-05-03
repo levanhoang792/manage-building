@@ -37,7 +37,7 @@ const DoorFilter: React.FC<DoorFilterProps> = ({onFilterChange, initialFilters})
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const {name, value} = e.target;
-        
+
         // Xử lý đặc biệt cho door_type_id để chuyển đổi thành số hoặc undefined
         if (name === 'door_type_id') {
             const doorTypeId = value === '' ? undefined : parseInt(value);
@@ -152,7 +152,8 @@ const DoorFilter: React.FC<DoorFilterProps> = ({onFilterChange, initialFilters})
                             </label>
                             {isLoadingConfig ? (
                                 <div className="mt-1 flex items-center">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
+                                    <div
+                                        className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
                                     <span className="text-sm text-gray-500">Đang tải loại cửa...</span>
                                 </div>
                             ) : (

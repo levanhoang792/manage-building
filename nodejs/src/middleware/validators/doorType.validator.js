@@ -3,7 +3,7 @@
  * Validates request data for door type endpoints
  */
 const { body, param, validationResult } = require('express-validator');
-const { errorResponse } = require('@utils/responseHandler');
+const { error } = require('@utils/responseHandler');
 const { BAD_REQUEST } = require('@utils/responseCodes');
 
 /**
@@ -16,7 +16,7 @@ const validateDoorTypeId = [
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return errorResponse(res, errors.array()[0].msg, BAD_REQUEST);
+            return error(res, errors.array()[0].msg, BAD_REQUEST);
         }
         next();
     }
@@ -40,7 +40,7 @@ const validateCreateDoorType = [
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return errorResponse(res, errors.array()[0].msg, BAD_REQUEST);
+            return error(res, errors.array()[0].msg, BAD_REQUEST);
         }
         next();
     }
@@ -66,7 +66,7 @@ const validateUpdateDoorType = [
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return errorResponse(res, errors.array()[0].msg, BAD_REQUEST);
+            return error(res, errors.array()[0].msg, BAD_REQUEST);
         }
         next();
     }

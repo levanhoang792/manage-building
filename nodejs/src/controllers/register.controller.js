@@ -2,9 +2,9 @@
  * Registration controller
  */
 const {validationResult} = require('express-validator');
-const Auth = require('@src/models/auth.model');
-const User = require('@src/models/user.model');
-const Role = require('@src/models/role.model');
+const Auth = require('@models/auth.model');
+const User = require('@models/user.model');
+const Role = require('@models/role.model');
 const responseHandler = require('@utils/responseHandler');
 const responseCodes = require('@utils/responseCodes');
 

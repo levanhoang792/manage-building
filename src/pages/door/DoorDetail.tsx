@@ -1,12 +1,14 @@
 import React, {useEffect} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {useGetDoorDetail, useUpdateDoorStatus} from '@/hooks/doors';
+import {useGetDoorDetail, useGetDoors, useUpdateDoorStatus} from '@/hooks/doors';
 import {useGetFloorDetail} from '@/hooks/floors';
 import {useGetBuildingDetail} from '@/hooks/buildings';
 import {useDoorTypes} from '@/hooks/doorTypes';
+import {useGetDoorCoordinates} from '@/hooks/doorCoordinates';
 import {ArrowLeftIcon, PencilIcon} from '@heroicons/react/24/outline';
 import {format} from 'date-fns';
 import {vi} from 'date-fns/locale';
+import CoordinateVisualizer from './components/CoordinateVisualizer';
 
 const DoorDetail: React.FC = () => {
     const {id, floorId, doorId} = useParams<{ id: string; floorId: string; doorId: string }>();
@@ -28,6 +30,10 @@ const DoorDetail: React.FC = () => {
         useGetBuildingDetail(id || '0');
     const {data: doorTypesData, isLoading: isLoadingDoorTypes} =
         useDoorTypes();
+    const {data: doorCoordinatesData, isLoading: isLoadingDoorCoordinates} =
+        useGetDoorCoordinates(id || '0', floorId || '0', doorId || '0');
+    const {data: doorsData, isLoading: isLoadingDoors} =
+        useGetDoors(id || '0', floorId || '0', {limit: 100});
 
     // Mutations
     const updateStatusMutation = useUpdateDoorStatus(id || '0', floorId || '0', doorId || '0');
@@ -49,7 +55,7 @@ const DoorDetail: React.FC = () => {
         navigate(`/buildings/${id}/floors/${floorId}/doors`);
     };
 
-    const isLoading = isLoadingDoor || isLoadingFloor || isLoadingBuilding || isLoadingDoorTypes;
+    const isLoading = isLoadingDoor || isLoadingFloor || isLoadingBuilding || isLoadingDoorTypes || isLoadingDoorCoordinates || isLoadingDoors;
     const door = doorData?.data;
 
     if (isLoading) {
@@ -252,11 +258,34 @@ const DoorDetail: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Placeholder for coordinate visualization */}
-                        <div
-                            className="border border-dashed border-gray-300 rounded-lg p-6 flex items-center justify-center">
-                            <p className="text-gray-500">Hiển thị vị trí cửa trên sơ đồ tầng</p>
-                        </div>
+                        {floorData?.data?.floor_plan_image ? (
+                            <div className="relative">
+                                <CoordinateVisualizer
+                                    floorPlanImage={floorData.data.floor_plan_image}
+                                    coordinates={doorCoordinatesData?.data || []}
+                                    isEditable={false}
+                                    allDoors={doorsData?.data?.data || []}
+                                    currentDoorId={parseInt(doorId || '0')}
+                                    onDoorSelect={(door) => navigate(`/buildings/${id}/floors/${floorId}/doors/${door.id}`)}
+                                />
+                                {(!doorCoordinatesData?.data || doorCoordinatesData.data.length === 0) && (
+                                    <div
+                                        className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-70 rounded-lg">
+                                        <p className="text-gray-700 font-medium">
+                                            Chưa có tọa độ nào được thiết lập cho cửa này
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div
+                                className="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center">
+                                <p className="text-gray-500 mb-2">Chưa có sơ đồ tầng</p>
+                                <p className="text-sm text-gray-400">
+                                    Vui lòng tải lên sơ đồ tầng trong phần quản lý tầng
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
