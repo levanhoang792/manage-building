@@ -1,13 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {httpDelete, httpGet, httpPost, httpPut} from "@/utils/api";
 import {API_ROUTES} from "@/routes/api";
-import {
-    DoorCoordinate,
-    DoorCoordinateFormData,
-    ResDoorCoordinate,
-    ResDoorCoordinateList,
-    ResMultipleDoorCoordinates
-} from "./model";
+import {DoorCoordinateFormData, ResDoorCoordinate, ResDoorCoordinateList, ResMultipleDoorCoordinates} from "./model";
 
 // Hàm helper để thay thế các tham số trong URL
 const replaceParams = (url: string, params: Record<string, string | number>) => {
@@ -112,7 +106,7 @@ export const useGetMultipleDoorCoordinates = (
     doorIds: (number | string)[]
 ) => {
     const queryClient = useQueryClient();
-    
+
     return useQuery<ResMultipleDoorCoordinates>({
         queryKey: ['multipleDoorCoordinates', buildingId, floorId, doorIds],
         queryFn: async () => {
@@ -121,20 +115,20 @@ export const useGetMultipleDoorCoordinates = (
                 // Kiểm tra xem dữ liệu đã có trong cache chưa
                 const cachedData = queryClient.getQueryData<ResDoorCoordinateList>(['doorCoordinates', buildingId, floorId, doorId]);
                 if (cachedData) {
-                    return { doorId, data: cachedData };
+                    return {doorId, data: cachedData};
                 }
-                
+
                 // Nếu chưa có trong cache, gọi API
                 const uri = replaceParams(API_ROUTES.DOOR_COORDINATES, {buildingId, floorId, doorId});
                 const resp = await httpGet({uri});
                 const data = await resp.json() as ResDoorCoordinateList;
-                
+
                 // Lưu vào cache
                 queryClient.setQueryData(['doorCoordinates', buildingId, floorId, doorId], data);
-                
-                return { doorId, data };
+
+                return {doorId, data};
             });
-            
+
             return Promise.all(promises);
         },
         enabled: !!buildingId && !!floorId && doorIds.length > 0
