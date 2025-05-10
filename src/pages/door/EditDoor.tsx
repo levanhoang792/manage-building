@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useNavigate, useParams, useLocation} from 'react-router-dom';
 import {DoorFormData, useGetDoorDetail, useUpdateDoor} from '@/hooks/doors';
 import {useGetFloorDetail} from '@/hooks/floors';
 import {useGetBuildingDetail} from '@/hooks/buildings';
@@ -10,6 +10,11 @@ import {toast} from 'sonner';
 const EditDoor: React.FC = () => {
     const {id, floorId, doorId} = useParams<{ id: string; floorId: string; doorId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Lấy tham số returnTo từ URL query parameters (nếu có)
+    const queryParams = new URLSearchParams(location.search);
+    const returnTo = queryParams.get('returnTo');
 
     // Kiểm tra nếu không có id, floorId hoặc doorId, chuyển hướng về trang buildings
     useEffect(() => {
@@ -37,7 +42,15 @@ const EditDoor: React.FC = () => {
             setErrorMessage(undefined);
             await updateDoorMutation.mutateAsync(data);
             toast.success('Cập nhật cửa thành công');
-            navigate(`/buildings/${id}/floors/${floorId}/doors/${doorId}`);
+            
+            // Nếu có tham số returnTo, quay về màn hình đó
+            if (returnTo) {
+                const decodedReturnTo = decodeURIComponent(returnTo);
+                navigate(decodedReturnTo);
+            } else {
+                // Mặc định chuyển đến trang chi tiết cửa
+                navigate(`/buildings/${id}/floors/${floorId}/doors/${doorId}`);
+            }
         } catch (error) {
             console.error('Error updating door:', error);
             const message = 'Không thể cập nhật cửa. Vui lòng thử lại.';
@@ -47,7 +60,14 @@ const EditDoor: React.FC = () => {
     };
 
     const handleBack = () => {
-        navigate(`/buildings/${id}/floors/${floorId}/doors/${doorId}`);
+        // Nếu có tham số returnTo, quay về màn hình đó
+        if (returnTo) {
+            const decodedReturnTo = decodeURIComponent(returnTo);
+            navigate(decodedReturnTo);
+        } else {
+            // Mặc định quay về trang chi tiết cửa
+            navigate(`/buildings/${id}/floors/${floorId}/doors/${doorId}`);
+        }
     };
 
     const handleFormClose = () => {

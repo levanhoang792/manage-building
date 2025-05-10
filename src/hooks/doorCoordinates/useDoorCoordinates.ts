@@ -70,16 +70,42 @@ export const useUpdateDoorCoordinate = (
     buildingId: number | string,
     floorId: number | string,
     doorId: number | string,
-    id: number | string
+    defaultId?: number | string
 ) => {
+    const queryClient = useQueryClient();
+    
     return useMutation({
         mutationFn: async (data: DoorCoordinateFormData) => {
-            const uri = replaceParams(API_ROUTES.DOOR_COORDINATE_UPDATE, {buildingId, floorId, doorId, id});
+            // Sử dụng ID từ data nếu có, ngược lại sử dụng defaultId
+            const coordinateId = data.id || defaultId;
+            
+            if (!coordinateId) {
+                throw new Error('Coordinate ID is required');
+            }
+            
+            const uri = replaceParams(API_ROUTES.DOOR_COORDINATE_UPDATE, {
+                buildingId, 
+                floorId, 
+                doorId, 
+                id: coordinateId
+            });
+            
             const resp = await httpPut({
                 uri,
-                options: {body: JSON.stringify(data)}
+                options: {body: JSON.stringify({
+                    x_coordinate: data.x_coordinate,
+                    y_coordinate: data.y_coordinate,
+                    z_coordinate: data.z_coordinate,
+                    rotation: data.rotation
+                })}
             });
+            
             return await resp.json() as ResDoorCoordinate;
+        },
+        onSuccess: () => {
+            // Invalidate related queries to refresh data
+            queryClient.invalidateQueries({queryKey: ['doorCoordinates', buildingId, floorId, doorId]});
+            queryClient.invalidateQueries({queryKey: ['multipleDoorCoordinates']});
         }
     });
 };

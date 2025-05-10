@@ -58,6 +58,41 @@ exports.verifyToken = (req, res, next) => {
 };
 
 /**
+ * Optional verify JWT token middleware
+ * Doesn't require authentication but will set user if token is provided
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
+exports.optionalVerifyToken = (req, res, next) => {
+    // Get authorization header
+    const authHeader = req.headers.authorization;
+
+    // If no token is provided, continue without authentication
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return next();
+    }
+
+    // Extract token from authorization header
+    const token = authHeader.split(' ')[1];
+
+    try {
+        // Verify token
+        // Set user in request object
+        req.user = jwt.verify(token, jwtConfig.secret, {
+            issuer: jwtConfig.issuer,
+            audience: jwtConfig.audience
+        });
+    } catch (error) {
+        // If token is invalid, continue without setting user
+        console.error('Optional token verification error:', error);
+    }
+
+    // Continue to next middleware
+    next();
+};
+
+/**
  * Check if user has required roles
  * @param {Array} roles - Array of required roles
  * @returns {Function} - Express middleware

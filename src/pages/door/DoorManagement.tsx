@@ -93,7 +93,10 @@ const DoorManagement: React.FC = () => {
     };
 
     const handleEditDoor = (door: Door) => {
-        navigate(`/buildings/${id}/floors/${floorId}/doors/edit/${door.id}`);
+        // Thêm tham số returnTo để quay về trang danh sách cửa sau khi chỉnh sửa
+        const currentPath = `/buildings/${id}/floors/${floorId}/doors`;
+        const encodedReturnTo = encodeURIComponent(currentPath);
+        navigate(`/buildings/${id}/floors/${floorId}/doors/edit/${door.id}?returnTo=${encodedReturnTo}`);
     };
 
     const handleViewDoor = (door: Door) => {
@@ -120,7 +123,12 @@ const DoorManagement: React.FC = () => {
                     <div className="mt-4 md:mt-0">
                         <button
                             type="button"
-                            onClick={() => setIsFormOpen(true)}
+                            onClick={() => {
+                                // Chuyển đến trang tạo cửa mới với tham số returnTo
+                                const currentPath = `/buildings/${id}/floors/${floorId}/doors`;
+                                const encodedReturnTo = encodeURIComponent(currentPath);
+                                navigate(`/buildings/${id}/floors/${floorId}/doors/create?returnTo=${encodedReturnTo}`);
+                            }}
                             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true"/>

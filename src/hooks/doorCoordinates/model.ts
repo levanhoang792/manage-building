@@ -12,6 +12,7 @@ export interface DoorCoordinate {
 }
 
 export interface DoorCoordinateFormData {
+    id?: number; // Thêm id để có thể truyền vào khi cập nhật
     x_coordinate: number;
     y_coordinate: number;
     z_coordinate?: number;

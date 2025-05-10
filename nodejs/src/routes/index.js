@@ -34,4 +34,13 @@ router.use('/buildings/:buildingId/floors/:floorId/doors', require('@routes/door
 // Door coordinate routes (nested under doors)
 router.use('/buildings/:buildingId/floors/:floorId/doors/:doorId/coordinates', require('@routes/doorCoordinate'));
 
+// Door lock routes (nested under doors)
+router.use('/buildings/:buildingId/floors/:floorId/doors/:id/lock', require('@routes/doorLock'));
+
+// Door requests by door routes (nested under doors)
+router.use('/buildings/:buildingId/floors/:floorId/doors/:id/requests', require('@routes/doorRequestsByDoor'));
+
+// Door requests routes
+router.use('/door-requests', require('@routes/doorRequest'));
+
 module.exports = router;

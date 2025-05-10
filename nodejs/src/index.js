@@ -1,12 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
 require('dotenv').config();
 const logger = require('@/src/middleware/logger');
 const appConfig = require('@/src/config/app');
+const socketService = require('@/src/services/socket.service');
 
 const app = express();
 const PORT = appConfig.port;
+
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+socketService.initialize(server);
 
 // Middleware
 app.use(cors(appConfig.corsOptions));
@@ -35,6 +43,6 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

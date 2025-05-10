@@ -4,13 +4,17 @@ import {useGetDoorDetail, useGetDoors, useUpdateDoorStatus} from '@/hooks/doors'
 import {useGetFloorDetail} from '@/hooks/floors';
 import {useGetBuildingDetail} from '@/hooks/buildings';
 import {useDoorTypes} from '@/hooks/doorTypes';
-import {useGetDoorCoordinates} from '@/hooks/doorCoordinates';
+import {useGetDoorCoordinates, useUpdateDoorCoordinate} from '@/hooks/doorCoordinates';
+import {httpPut} from '@/utils/api';
 import {ArrowLeftIcon, PencilIcon} from '@heroicons/react/24/outline';
 import {format} from 'date-fns';
 import {vi} from 'date-fns/locale';
 import CoordinateVisualizer from './components/CoordinateVisualizer';
+import {toast} from 'sonner';
+import {QueryClient} from "@tanstack/react-query";
 
 const DoorDetail: React.FC = () => {
+    const queryClient = new QueryClient();
     const {id, floorId, doorId} = useParams<{ id: string; floorId: string; doorId: string }>();
     const navigate = useNavigate();
 
@@ -37,6 +41,7 @@ const DoorDetail: React.FC = () => {
 
     // Mutations
     const updateStatusMutation = useUpdateDoorStatus(id || '0', floorId || '0', doorId || '0');
+    const updateCoordinateMutation = useUpdateDoorCoordinate(id || '0', floorId || '0', doorId || '0', undefined);
 
     const handleStatusChange = async (status: 'active' | 'inactive' | 'maintenance') => {
         try {
@@ -48,7 +53,10 @@ const DoorDetail: React.FC = () => {
     };
 
     const handleEdit = () => {
-        navigate(`/buildings/${id}/floors/${floorId}/doors/edit/${doorId}`);
+        // Thêm tham số returnTo để quay về trang chi tiết cửa sau khi chỉnh sửa
+        const currentPath = `/buildings/${id}/floors/${floorId}/doors/${doorId}`;
+        const encodedReturnTo = encodeURIComponent(currentPath);
+        navigate(`/buildings/${id}/floors/${floorId}/doors/edit/${doorId}?returnTo=${encodedReturnTo}`);
     };
 
     const handleBack = () => {
@@ -267,6 +275,95 @@ const DoorDetail: React.FC = () => {
                                     allDoors={doorsData?.data?.data || []}
                                     currentDoorId={parseInt(doorId || '0')}
                                     onDoorSelect={(door) => navigate(`/buildings/${id}/floors/${floorId}/doors/${door.id}`)}
+                                    enableDrag={true}
+                                    disableDoorNavigation={true}
+                                    onCoordinateUpdate={async (coordinate, x, y) => {
+                                        try {
+                                            // Lấy doorId từ coordinate thay vì từ URL
+                                            const coordinateDoorId = coordinate.door_id.toString();
+                                            
+                                            console.log('Updating coordinate in DoorDetail:', {
+                                                id: coordinate.id,
+                                                door_id: coordinate.door_id,
+                                                x_coordinate: x,
+                                                y_coordinate: y,
+                                                rotation: coordinate.rotation,
+                                                currentDoorId: doorId,
+                                                coordinateDoorId
+                                            });
+
+                                            // Cập nhật cache trước khi gọi API
+                                            // 1. Cập nhật cache cho doorCoordinates của cửa đang được kéo thả
+                                            const doorCoordinatesCache = queryClient.getQueryData(['doorCoordinates', id, floorId, coordinateDoorId]);
+                                            if (doorCoordinatesCache) {
+                                                const updatedCache = {
+                                                    ...doorCoordinatesCache,
+                                                    data: doorCoordinatesCache.data.map(c => 
+                                                        c.id === coordinate.id 
+                                                            ? {...c, x_coordinate: x, y_coordinate: y} 
+                                                            : c
+                                                    )
+                                                };
+                                                
+                                                queryClient.setQueryData(['doorCoordinates', id, floorId, coordinateDoorId], updatedCache);
+                                            }
+                                            
+                                            // 2. Cập nhật cache cho multipleDoorCoordinates
+                                            const multipleCoordinatesCache = queryClient.getQueryData([
+                                                'multipleDoorCoordinates', id, floorId, doorsData?.data?.data.map(d => d.id)
+                                            ]);
+                                            
+                                            if (multipleCoordinatesCache) {
+                                                const updatedCache = multipleCoordinatesCache.map(item => {
+                                                    if (item.doorId.toString() === coordinateDoorId) {
+                                                        return {
+                                                            ...item,
+                                                            data: {
+                                                                ...item.data,
+                                                                data: item.data.data.map(c => 
+                                                                    c.id === coordinate.id 
+                                                                        ? {...c, x_coordinate: x, y_coordinate: y} 
+                                                                        : c
+                                                                )
+                                                            }
+                                                        };
+                                                    }
+                                                    return item;
+                                                });
+                                                
+                                                queryClient.setQueryData(
+                                                    ['multipleDoorCoordinates', id, floorId, doorsData?.data?.data.map(d => d.id)],
+                                                    updatedCache
+                                                );
+                                            }
+
+                                            // Sử dụng API trực tiếp thay vì hook
+                                            const uri = `/buildings/${id}/floors/${floorId}/doors/${coordinateDoorId}/coordinates/${coordinate.id}`;
+                                            
+                                            // Sử dụng httpPut từ utils/api
+                                            const response = await httpPut({
+                                                uri,
+                                                options: {
+                                                    body: JSON.stringify({
+                                                        x_coordinate: x,
+                                                        y_coordinate: y,
+                                                        rotation: coordinate.rotation
+                                                    })
+                                                }
+                                            });
+                                            
+                                            // Sau khi API thành công, cập nhật lại dữ liệu
+                                            await refetchDoor();
+                                            
+                                            toast.success('Cập nhật tọa độ thành công');
+                                        } catch (error) {
+                                            console.error('Error updating coordinate:', error);
+                                            toast.error('Không thể cập nhật tọa độ. Vui lòng thử lại.');
+                                            
+                                            // Nếu có lỗi, refetch để lấy lại dữ liệu chính xác
+                                            await refetchDoor();
+                                        }
+                                    }}
                                 />
                                 {(!doorCoordinatesData?.data || doorCoordinatesData.data.length === 0) && (
                                     <div
