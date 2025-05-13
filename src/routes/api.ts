@@ -104,6 +104,17 @@ export const API_ROUTES = {
     DOOR_TYPE_CREATE: "/door-types",
     DOOR_TYPE_UPDATE: "/door-types/:id",
     DOOR_TYPE_DELETE: "/door-types/:id",
+    
+    // Door Request endpoints
+    DOOR_REQUESTS: "/door-requests",
+    DOOR_REQUEST_DETAIL: "/door-requests/:id",
+    DOOR_REQUEST_CREATE: "/door-requests",
+    DOOR_REQUEST_UPDATE_STATUS: "/door-requests/:id/status",
+    DOOR_REQUEST_BY_DOOR: "/buildings/:buildingId/floors/:floorId/doors/:id/requests",
+    
+    // Door Lock endpoints
+    DOOR_LOCK_UPDATE: "/buildings/:buildingId/floors/:floorId/doors/:id/lock",
+    DOOR_LOCK_HISTORY: "/buildings/:buildingId/floors/:floorId/doors/:id/lock-history",
 }
 
 export const API_RESPONSE_CODE = {

@@ -146,6 +146,8 @@ export const useGetMultipleDoorCoordinates = (
 
                 // Nếu chưa có trong cache, gọi API
                 const uri = replaceParams(API_ROUTES.DOOR_COORDINATES, {buildingId, floorId, doorId});
+                console.log(`Calling API for door ${doorId} with URI: ${uri}`);
+                console.log(`Parameters: buildingId=${buildingId}, floorId=${floorId}, doorId=${doorId}`);
                 const resp = await httpGet({uri});
                 const data = await resp.json() as ResDoorCoordinateList;
 

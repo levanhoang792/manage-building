@@ -16,6 +16,8 @@ interface CoordinateVisualizerProps {
     enableDrag?: boolean; // Cho phép kéo thả các cửa
     disableDoorNavigation?: boolean; // Tắt chuyển hướng khi click vào cửa khác
     onCoordinateUpdate?: (coordinate: DoorCoordinate, x: number, y: number) => void; // Callback khi cập nhật tọa độ
+    buildingId?: string | number; // ID của tòa nhà
+    floorId?: string | number; // ID của tầng
 }
 
 const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
@@ -31,7 +33,9 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
         onDoorSelect,
         enableDrag = false,
         disableDoorNavigation = false,
-        onCoordinateUpdate
+        onCoordinateUpdate,
+        buildingId: propsBuildingId,
+        floorId: propsFloorId
     }
 ) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -76,10 +80,24 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
         return otherDoors.map(door => door.id);
     }, [otherDoors]);
 
-    // Lấy buildingId và floorId từ URL hiện tại
-    const buildingId = React.useMemo(() => window.location.pathname.split('/')[2] || '0', []);
-    const floorId = React.useMemo(() => window.location.pathname.split('/')[4] || '0', []);
+    // Sử dụng buildingId và floorId từ props hoặc từ URL nếu không có
+    const buildingId = React.useMemo(() => {
+        if (propsBuildingId) return propsBuildingId;
+        // Fallback: lấy từ URL nếu không có trong props
+        return window.location.pathname.split('/')[2] || '0';
+    }, [propsBuildingId]);
+    
+    const floorId = React.useMemo(() => {
+        if (propsFloorId) return propsFloorId;
+        // Fallback: lấy từ URL nếu không có trong props
+        return window.location.pathname.split('/')[4] || '0';
+    }, [propsFloorId]);
 
+    // Log để debug
+    console.log('CoordinateVisualizer - buildingId:', buildingId);
+    console.log('CoordinateVisualizer - floorId:', floorId);
+    console.log('CoordinateVisualizer - otherDoorIds:', otherDoorIds);
+    
     // Sử dụng hook để lấy tọa độ của tất cả các cửa khác
     const {data: multipleDoorCoordinatesData, isLoading: isLoadingMultipleCoordinates} = useGetMultipleDoorCoordinates(
         buildingId,
@@ -89,7 +107,12 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
 
     // Cập nhật state khi có dữ liệu mới
     useEffect(() => {
+        console.log('useEffect for doorCoordinates triggered');
+        console.log('multipleDoorCoordinatesData:', multipleDoorCoordinatesData);
+        console.log('otherDoors:', otherDoors);
+        
         if (!multipleDoorCoordinatesData || !otherDoors || otherDoors.length === 0) {
+            console.log('No data available, setting empty doorCoordinates');
             setDoorCoordinates([]);
             return;
         }
@@ -99,6 +122,8 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
             const doorId = item.doorId;
             const door = otherDoors.find(d => d.id.toString() === doorId.toString());
 
+            console.log(`Processing door ID ${doorId}, found:`, door);
+
             if (!door) return null;
 
             return {
@@ -107,6 +132,7 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
             } as { door: Door, coordinates: DoorCoordinate[] };
         }).filter(Boolean) as { door: Door, coordinates: DoorCoordinate[] }[];
 
+        console.log('Setting doorCoordinates:', doorCoords);
         setDoorCoordinates(doorCoords);
     }, [multipleDoorCoordinatesData, otherDoors]);
 
@@ -152,10 +178,26 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                     y = coordinate.y_coordinate * scale;
                 }
 
-                // Vẽ điểm tọa độ cho cửa khác với màu khác
+                // Vẽ điểm tọa độ cho cửa khác với màu dựa trên trạng thái đóng/mở
                 context.beginPath();
                 context.arc(x, y, isDragged ? 8 : 6, 0, 2 * Math.PI);
-                context.fillStyle = isDragged ? '#10b981' : '#3b82f6'; // Màu xanh lá cây khi đang kéo, xanh dương khi bình thường
+                
+                // Xác định màu dựa trên trạng thái đóng/mở của cửa
+                let fillColor;
+                if (isDragged) {
+                    fillColor = '#10b981'; // Màu xanh lá cây khi đang kéo
+                } else if (door.lock_status === 'open') {
+                    fillColor = '#10b981'; // Màu xanh lá cây cho cửa đang mở
+                    console.log(`Door ${door.id} (${door.name}) is OPEN`);
+                } else if (door.lock_status === 'closed') {
+                    fillColor = '#ef4444'; // Màu đỏ cho cửa đang đóng
+                    console.log(`Door ${door.id} (${door.name}) is CLOSED`);
+                } else {
+                    fillColor = '#3b82f6'; // Màu xanh dương mặc định nếu không có trạng thái
+                    console.log(`Door ${door.id} (${door.name}) has NO STATUS`);
+                }
+                
+                context.fillStyle = fillColor;
                 context.fill();
                 context.strokeStyle = '#ffffff';
                 context.lineWidth = 2;
@@ -187,8 +229,19 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                 context.fillStyle = 'rgba(255, 255, 255, 0.7)';
                 context.fillRect(bgX, bgY, bgWidth, bgHeight);
 
-                // Vẽ văn bản
-                context.fillStyle = isDragged ? '#10b981' : '#3b82f6';
+                // Vẽ văn bản với màu dựa trên trạng thái đóng/mở
+                let textColor;
+                if (isDragged) {
+                    textColor = '#10b981'; // Màu xanh lá cây khi đang kéo
+                } else if (door.lock_status === 'open') {
+                    textColor = '#10b981'; // Màu xanh lá cây cho cửa đang mở
+                } else if (door.lock_status === 'closed') {
+                    textColor = '#ef4444'; // Màu đỏ cho cửa đang đóng
+                } else {
+                    textColor = '#3b82f6'; // Màu xanh dương mặc định
+                }
+                
+                context.fillStyle = textColor;
                 context.fillText(doorLabel, textX, textY);
 
                 // Vẽ góc quay (nếu có)
@@ -201,7 +254,20 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                     context.beginPath();
                     context.moveTo(x, y);
                     context.lineTo(endX, endY);
-                    context.strokeStyle = isDragged ? '#10b981' : '#3b82f6';
+                    
+                    // Xác định màu dựa trên trạng thái đóng/mở
+                    let lineColor;
+                    if (isDragged) {
+                        lineColor = '#10b981'; // Màu xanh lá cây khi đang kéo
+                    } else if (door.lock_status === 'open') {
+                        lineColor = '#10b981'; // Màu xanh lá cây cho cửa đang mở
+                    } else if (door.lock_status === 'closed') {
+                        lineColor = '#ef4444'; // Màu đỏ cho cửa đang đóng
+                    } else {
+                        lineColor = '#3b82f6'; // Màu xanh dương mặc định
+                    }
+                    
+                    context.strokeStyle = lineColor;
                     context.lineWidth = 2;
                     context.stroke();
                 }
@@ -228,7 +294,39 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
             // Vẽ điểm tọa độ
             context.beginPath();
             context.arc(x, y, isSelected || isDragged ? 8 : 6, 0, 2 * Math.PI);
-            context.fillStyle = isDragged ? '#10b981' : (isSelected ? '#4f46e5' : '#ef4444');
+            
+            // Xác định màu dựa trên trạng thái đóng/mở của cửa hiện tại
+            let fillColor;
+            if (isDragged) {
+                fillColor = '#10b981'; // Màu xanh lá cây khi đang kéo
+            } else if (isSelected) {
+                fillColor = '#4f46e5'; // Màu tím khi được chọn
+            } else if (currentDoorId && allDoors) {
+                // Tìm cửa hiện tại trong danh sách cửa
+                const currentDoor = allDoors.find(door => door.id === currentDoorId);
+                console.log('Current door for coordinate:', currentDoor);
+                
+                if (currentDoor) {
+                    if (currentDoor.lock_status === 'open') {
+                        fillColor = '#10b981'; // Màu xanh lá cây cho cửa đang mở
+                        console.log(`Current door ${currentDoor.id} (${currentDoor.name}) is OPEN`);
+                    } else if (currentDoor.lock_status === 'closed') {
+                        fillColor = '#ef4444'; // Màu đỏ cho cửa đang đóng
+                        console.log(`Current door ${currentDoor.id} (${currentDoor.name}) is CLOSED`);
+                    } else {
+                        fillColor = '#ef4444'; // Màu đỏ mặc định nếu không có trạng thái
+                        console.log(`Current door ${currentDoor.id} (${currentDoor.name}) has NO STATUS`);
+                    }
+                } else {
+                    fillColor = '#ef4444'; // Màu đỏ mặc định nếu không tìm thấy cửa
+                    console.log('Current door not found in allDoors');
+                }
+            } else {
+                fillColor = '#ef4444'; // Màu đỏ mặc định
+                console.log('No currentDoorId or allDoors');
+            }
+            
+            context.fillStyle = fillColor;
             context.fill();
             context.strokeStyle = '#ffffff';
             context.lineWidth = 2;
@@ -258,8 +356,31 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                 context.fillStyle = 'rgba(255, 255, 255, 0.7)';
                 context.fillRect(bgX, bgY, bgWidth, bgHeight);
 
-                // Vẽ văn bản
-                context.fillStyle = isDragged ? '#10b981' : (isSelected ? '#4f46e5' : '#ef4444');
+                // Vẽ văn bản với màu dựa trên trạng thái đóng/mở
+                let textColor;
+                if (isDragged) {
+                    textColor = '#10b981'; // Màu xanh lá cây khi đang kéo
+                } else if (isSelected) {
+                    textColor = '#4f46e5'; // Màu tím khi được chọn
+                } else if (currentDoorId && allDoors) {
+                    // Tìm cửa hiện tại trong danh sách cửa
+                    const currentDoor = allDoors.find(door => door.id === currentDoorId);
+                    if (currentDoor) {
+                        if (currentDoor.lock_status === 'open') {
+                            textColor = '#10b981'; // Màu xanh lá cây cho cửa đang mở
+                        } else if (currentDoor.lock_status === 'closed') {
+                            textColor = '#ef4444'; // Màu đỏ cho cửa đang đóng
+                        } else {
+                            textColor = '#ef4444'; // Màu đỏ mặc định nếu không có trạng thái
+                        }
+                    } else {
+                        textColor = '#ef4444'; // Màu đỏ mặc định nếu không tìm thấy cửa
+                    }
+                } else {
+                    textColor = '#ef4444'; // Màu đỏ mặc định
+                }
+                
+                context.fillStyle = textColor;
                 context.fillText(label, textX, textY);
             }
 
@@ -273,7 +394,32 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                 context.beginPath();
                 context.moveTo(x, y);
                 context.lineTo(endX, endY);
-                context.strokeStyle = isDragged ? '#10b981' : (isSelected ? '#4f46e5' : '#ef4444');
+                
+                // Xác định màu dựa trên trạng thái đóng/mở
+                let lineColor;
+                if (isDragged) {
+                    lineColor = '#10b981'; // Màu xanh lá cây khi đang kéo
+                } else if (isSelected) {
+                    lineColor = '#4f46e5'; // Màu tím khi được chọn
+                } else if (currentDoorId && allDoors) {
+                    // Tìm cửa hiện tại trong danh sách cửa
+                    const currentDoor = allDoors.find(door => door.id === currentDoorId);
+                    if (currentDoor) {
+                        if (currentDoor.lock_status === 'open') {
+                            lineColor = '#10b981'; // Màu xanh lá cây cho cửa đang mở
+                        } else if (currentDoor.lock_status === 'closed') {
+                            lineColor = '#ef4444'; // Màu đỏ cho cửa đang đóng
+                        } else {
+                            lineColor = '#ef4444'; // Màu đỏ mặc định nếu không có trạng thái
+                        }
+                    } else {
+                        lineColor = '#ef4444'; // Màu đỏ mặc định nếu không tìm thấy cửa
+                    }
+                } else {
+                    lineColor = '#ef4444'; // Màu đỏ mặc định
+                }
+                
+                context.strokeStyle = lineColor;
                 context.lineWidth = 2;
                 context.stroke();
             }
@@ -313,9 +459,11 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
         drawCanvas();
     }, [floorPlanImage, coordinates, doorCoordinates, scale, selectedCoordinateId, isImageLoaded]);
 
-    // Xử lý sự kiện mousedown trên canvas (bắt đầu kéo)
+    // Xử lý sự kiện mousedown trên canvas (bắt đầu kéo hoặc chọn cửa)
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (!canvasRef.current) return;
+
+        console.log('Mouse down on canvas!'); // Debug log
 
         // Reset trạng thái justDragged khi bắt đầu một tương tác mới
         setJustDragged(false);
@@ -329,6 +477,8 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
         const x = (e.clientX - rect.left) / scale;
         const y = (e.clientY - rect.top) / scale;
 
+        console.log('Mouse down coordinates:', { x, y, scale }); // Debug log
+
         setCurrentMousePos({x, y});
 
         // Kiểm tra xem click có trúng tọa độ của cửa hiện tại không
@@ -340,6 +490,8 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
         });
 
         if (clickedCoordinate) {
+            console.log('Clicked on current door coordinate:', clickedCoordinate); // Debug log
+            
             if (enableDrag) {
                 // Bắt đầu kéo tọa độ của cửa hiện tại
                 setIsDragging(true);
@@ -365,6 +517,10 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                 const distance = Math.sqrt(Math.pow(x - coordX, 2) + Math.pow(y - coordY, 2));
 
                 if (distance * scale < 10) { // 10px là bán kính để xác định click trúng
+                    console.log('Clicked on other door in mouseDown:', door); // Debug log
+                    console.log('disableDoorNavigation:', disableDoorNavigation); // Debug log
+                    console.log('onDoorSelect exists:', !!onDoorSelect); // Debug log
+                    
                     if (enableDrag) {
                         // Bắt đầu kéo tọa độ của cửa khác
                         setIsDragging(true);
@@ -372,7 +528,9 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                         setDraggedDoor(door);
                         setDragStartPos({x, y});
                         return;
-                    } else if (onDoorSelect && !disableDoorNavigation) {
+                    } else if (onDoorSelect) {
+                        // Luôn gọi onDoorSelect nếu có, bỏ qua disableDoorNavigation
+                        console.log('Calling onDoorSelect with door in mouseDown:', door); // Debug log
                         onDoorSelect(door);
                         return;
                     }
@@ -508,13 +666,18 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (!canvasRef.current || isDragging) return;
 
+        console.log('Canvas clicked!'); // Debug log
+
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX - rect.left) / scale;
         const y = (e.clientY - rect.top) / scale;
 
+        console.log('Click coordinates:', { x, y, scale }); // Debug log
+
         // Kiểm tra xem có phải vừa kéo thả xong không
         if (justDragged) {
+            console.log('Ignoring click because just dragged'); // Debug log
             // Nếu vừa kéo thả xong, không xử lý click
             return;
         }
@@ -527,9 +690,12 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
             return distance * scale < 10; // 10px là bán kính để xác định click trúng
         });
 
-        if (clickedCoordinate && onCoordinateSelect && isEditable) {
-            onCoordinateSelect(clickedCoordinate);
-            return;
+        if (clickedCoordinate) {
+            console.log('Clicked on current door coordinate:', clickedCoordinate); // Debug log
+            if (onCoordinateSelect && isEditable) {
+                onCoordinateSelect(clickedCoordinate);
+                return;
+            }
         }
 
         // Kiểm tra xem click có trúng tọa độ của cửa khác không
@@ -544,15 +710,26 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                 const coordY = coordinate.y_coordinate;
                 const distance = Math.sqrt(Math.pow(x - coordX, 2) + Math.pow(y - coordY, 2));
 
-                if (distance * scale < 10 && onDoorSelect && !disableDoorNavigation) { // 10px là bán kính để xác định click trúng
-                    onDoorSelect(door);
-                    return;
+                if (distance * scale < 10) { // 10px là bán kính để xác định click trúng
+                    console.log('Clicked on other door:', door); // Debug log
+                    console.log('disableDoorNavigation:', disableDoorNavigation); // Debug log
+                    console.log('onDoorSelect exists:', !!onDoorSelect); // Debug log
+                    
+                    // Luôn gọi onDoorSelect nếu có, bỏ qua disableDoorNavigation
+                    if (onDoorSelect) {
+                        console.log('Calling onDoorSelect with door:', door); // Debug log
+                        onDoorSelect(door);
+                        return;
+                    }
                 }
             }
         }
 
+        console.log('No door found at click position'); // Debug log
+
         // Nếu không trúng tọa độ nào và đang ở chế độ chỉnh sửa, thêm tọa độ mới
         if (onCoordinateAdd && isEditable) {
+            console.log('Adding new coordinate'); // Debug log
             onCoordinateAdd(x, y);
         }
     };
@@ -598,11 +775,11 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                     <canvas
                         ref={canvasRef}
                         onClick={handleCanvasClick}
-                        onMouseDown={enableDrag ? handleMouseDown : undefined}
+                        onMouseDown={handleMouseDown} // Luôn xử lý sự kiện mouseDown để phát hiện click vào cửa
                         onMouseMove={enableDrag ? handleMouseMove : undefined}
                         onMouseUp={enableDrag ? handleMouseUp : undefined}
                         onMouseLeave={enableDrag ? handleMouseUp : undefined}
-                        className={`w-full ${isEditable ? 'cursor-crosshair' : (enableDrag ? 'cursor-move' : 'cursor-default')}`}
+                        className={`w-full ${isEditable ? 'cursor-crosshair' : (enableDrag ? 'cursor-move' : 'cursor-pointer')}`}
                     />
                 )}
             </div>
@@ -618,16 +795,28 @@ const CoordinateVisualizer: React.FC<CoordinateVisualizerProps> = (
                     </p>
                 )}
                 {doorCoordinates.some(item => item.coordinates && item.coordinates.length > 0) && (
-                    <p className="mt-1">
-                        <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1"></span>
-                        Các điểm màu xanh là vị trí của các cửa
-                        khác. {!disableDoorNavigation && !enableDrag && "Click vào để chuyển sang cấu hình cho cửa đó."}
-                    </p>
+                    <>
+                        <p className="mt-1">
+                            <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-1"></span>
+                            Các điểm màu xanh lá cây là vị trí của các cửa đang mở.
+                            {!disableDoorNavigation && !enableDrag && " Click vào để chuyển sang cấu hình cho cửa đó."}
+                        </p>
+                        <p className="mt-1">
+                            <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-1"></span>
+                            Các điểm màu đỏ là vị trí của các cửa đang đóng.
+                            {!disableDoorNavigation && !enableDrag && " Click vào để chuyển sang cấu hình cho cửa đó."}
+                        </p>
+                        <p className="mt-1">
+                            <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1"></span>
+                            Các điểm màu xanh dương là vị trí của các cửa chưa có trạng thái.
+                            {!disableDoorNavigation && !enableDrag && " Click vào để chuyển sang cấu hình cho cửa đó."}
+                        </p>
+                    </>
                 )}
                 {coordinates.length > 0 && (
                     <p className="mt-1">
-                        <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-1"></span>
-                        Các điểm màu đỏ là vị trí của cửa hiện tại.
+                        <span className="inline-block w-3 h-3 bg-purple-500 rounded-full mr-1"></span>
+                        Các điểm màu tím là vị trí của cửa đang được chọn.
                     </p>
                 )}
                 {isLoadingMultipleCoordinates && (

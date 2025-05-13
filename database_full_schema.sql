@@ -11,7 +11,7 @@
  Target Server Version : 80041 (8.0.41)
  File Encoding         : 65001
 
- Date: 08/05/2025 08:08:25
+ Date: 12/05/2025 23:12:11
 */
 
 SET NAMES utf8mb4;
@@ -33,11 +33,18 @@ CREATE TABLE `activity_logs`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `user_id`(`user_id` ASC) USING BTREE,
   CONSTRAINT `activity_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of activity_logs
 -- ----------------------------
+INSERT INTO `activity_logs` VALUES (1, 1, 'Created door request', 'door_request', 1, '{\"door_id\":6,\"door_name\":\"Door 6\",\"requester_name\":\"ádadas\",\"purpose\":\"ấccsacs\"}', '::1', '2025-05-12 15:21:09');
+INSERT INTO `activity_logs` VALUES (2, 1, 'Created door request', 'door_request', 2, '{\"door_id\":1,\"door_name\":\"Door 1\",\"requester_name\":\"sadadsa\",\"purpose\":\"094552612\"}', '::1', '2025-05-12 15:29:24');
+INSERT INTO `activity_logs` VALUES (3, 1, 'Changed door lock status due to request approval', 'door', 1, '{\"door_name\":\"Door 1\",\"previous_status\":\"closed\",\"new_status\":\"open\",\"request_id\":\"2\"}', '::1', '2025-05-12 15:48:13');
+INSERT INTO `activity_logs` VALUES (4, 1, 'Approved door request', 'door_request', 2, '{\"requester_name\":\"sadadsa\",\"door_id\":1,\"door_name\":\"Door 1\",\"reason\":\"asdasdasd\"}', '::1', '2025-05-12 15:48:13');
+INSERT INTO `activity_logs` VALUES (5, 1, 'Rejected door request', 'door_request', 1, '{\"requester_name\":\"ádadas\",\"door_id\":6,\"door_name\":\"Door 6\",\"reason\":\"zxczxc\"}', '::1', '2025-05-12 15:49:44');
+INSERT INTO `activity_logs` VALUES (6, 1, 'Created door request', 'door_request', 3, '{\"door_id\":1,\"door_name\":\"Door 1\",\"requester_name\":\"sadasd\",\"purpose\":\"adadd\"}', '::1', '2025-05-12 15:59:22');
+INSERT INTO `activity_logs` VALUES (7, 1, 'Rejected door request', 'door_request', 3, '{\"requester_name\":\"sadasd\",\"door_id\":1,\"door_name\":\"Door 1\",\"reason\":\"ádadas\"}', '::1', '2025-05-12 16:00:08');
 
 -- ----------------------------
 -- Table structure for building_status_history
@@ -56,7 +63,7 @@ CREATE TABLE `building_status_history`  (
   INDEX `changed_by`(`changed_by` ASC) USING BTREE,
   CONSTRAINT `building_status_history_ibfk_1` FOREIGN KEY (`building_id`) REFERENCES `buildings` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `building_status_history_ibfk_2` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of building_status_history
@@ -105,14 +112,16 @@ CREATE TABLE `door_coordinates`  (
   INDEX `created_by`(`created_by` ASC) USING BTREE,
   CONSTRAINT `door_coordinates_ibfk_1` FOREIGN KEY (`door_id`) REFERENCES `doors` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `door_coordinates_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of door_coordinates
 -- ----------------------------
-INSERT INTO `door_coordinates` VALUES (5, 2, 34, 450, 0, 0, '2025-05-03 04:30:45', '2025-05-03 04:30:45', NULL);
-INSERT INTO `door_coordinates` VALUES (6, 2, 285, 573, 0, 0, '2025-05-03 04:31:08', '2025-05-03 04:31:08', NULL);
-INSERT INTO `door_coordinates` VALUES (8, 1, 974, 405, 0, 0, '2025-05-05 10:09:28', '2025-05-05 10:09:28', NULL);
+INSERT INTO `door_coordinates` VALUES (5, 2, 976.286, 400.55, 0, 0, '2025-05-03 04:30:45', '2025-05-10 03:17:02', NULL);
+INSERT INTO `door_coordinates` VALUES (6, 2, 41.3483, 462.022, 0, 0, '2025-05-03 04:31:08', '2025-05-10 03:17:27', NULL);
+INSERT INTO `door_coordinates` VALUES (8, 1, 1084.04, 134.831, 0, 0, '2025-05-05 10:09:28', '2025-05-10 03:07:07', NULL);
+INSERT INTO `door_coordinates` VALUES (9, 5, 251.685, 176.18, 0, 0, '2025-05-10 01:00:22', '2025-05-12 14:38:24', NULL);
+INSERT INTO `door_coordinates` VALUES (10, 6, 406.292, 95.2809, 0, 0, '2025-05-10 01:05:47', '2025-05-12 14:38:27', NULL);
 
 -- ----------------------------
 -- Table structure for door_lock_history
@@ -134,11 +143,13 @@ CREATE TABLE `door_lock_history`  (
   CONSTRAINT `door_lock_history_ibfk_1` FOREIGN KEY (`door_id`) REFERENCES `doors` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `door_lock_history_ibfk_2` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
   CONSTRAINT `door_lock_history_ibfk_3` FOREIGN KEY (`request_id`) REFERENCES `door_requests` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of door_lock_history
 -- ----------------------------
+INSERT INTO `door_lock_history` VALUES (1, 1, 'closed', 'open', NULL, NULL, NULL, '2025-05-12 15:48:13');
+INSERT INTO `door_lock_history` VALUES (2, 1, 'closed', 'open', 1, 2, 'Approved door request from sadadsa', '2025-05-12 15:48:13');
 
 -- ----------------------------
 -- Table structure for door_requests
@@ -154,6 +165,7 @@ CREATE TABLE `door_requests`  (
   `status` enum('pending','approved','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'pending',
   `processed_by` int NULL DEFAULT NULL,
   `processed_at` timestamp NULL DEFAULT NULL,
+  `reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
@@ -161,11 +173,14 @@ CREATE TABLE `door_requests`  (
   INDEX `processed_by`(`processed_by` ASC) USING BTREE,
   CONSTRAINT `door_requests_ibfk_1` FOREIGN KEY (`door_id`) REFERENCES `doors` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `door_requests_ibfk_2` FOREIGN KEY (`processed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of door_requests
 -- ----------------------------
+INSERT INTO `door_requests` VALUES (1, 6, 'ádadas', '0292331222', 'hoanglv@stringee.com', 'ấccsacs', 'rejected', 1, '2025-05-12 15:49:44', NULL, '2025-05-12 15:21:09', '2025-05-12 15:49:44');
+INSERT INTO `door_requests` VALUES (2, 1, 'sadadsa', '094552612', 'sadadsa@gmail.com', '094552612', 'approved', 1, '2025-05-12 15:48:13', NULL, '2025-05-12 15:29:24', '2025-05-12 15:48:13');
+INSERT INTO `door_requests` VALUES (3, 1, 'sadasd', '229390121', 'hoanglv@faaas.com', 'adadd', 'rejected', 1, '2025-05-12 16:00:08', 'ádadas', '2025-05-12 15:59:22', '2025-05-12 16:00:08');
 
 -- ----------------------------
 -- Table structure for door_status_history
@@ -237,13 +252,17 @@ CREATE TABLE `doors`  (
   CONSTRAINT `doors_ibfk_1` FOREIGN KEY (`floor_id`) REFERENCES `floors` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `doors_ibfk_2` FOREIGN KEY (`door_type_id`) REFERENCES `door_types` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `doors_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of doors
 -- ----------------------------
-INSERT INTO `doors` VALUES (1, 1, 1, 'Door 1', '', 'active', 'closed', '2025-05-03 03:16:23', '2025-05-05 10:09:35', NULL);
+INSERT INTO `doors` VALUES (1, 1, 1, 'Door 1', '', 'active', 'open', '2025-05-03 03:16:23', '2025-05-12 15:48:13', NULL);
 INSERT INTO `doors` VALUES (2, 1, 1, 'Door 2', '', 'active', 'closed', '2025-05-03 03:17:54', '2025-05-03 03:17:54', NULL);
+INSERT INTO `doors` VALUES (3, 1, 1, 'Door 3', '', 'active', 'closed', '2025-05-10 00:55:52', '2025-05-10 00:55:52', NULL);
+INSERT INTO `doors` VALUES (4, 1, 3, 'Door 4', '', 'active', 'closed', '2025-05-10 00:57:00', '2025-05-10 00:57:00', NULL);
+INSERT INTO `doors` VALUES (5, 1, 1, 'Door 5', '', 'active', 'closed', '2025-05-10 01:00:22', '2025-05-10 01:00:22', NULL);
+INSERT INTO `doors` VALUES (6, 1, 1, 'Door 6', '', 'active', 'closed', '2025-05-10 01:05:47', '2025-05-10 01:05:47', NULL);
 
 -- ----------------------------
 -- Table structure for floor_maps
@@ -266,7 +285,7 @@ CREATE TABLE `floor_maps`  (
   INDEX `created_by`(`created_by` ASC) USING BTREE,
   CONSTRAINT `floor_maps_ibfk_1` FOREIGN KEY (`floor_id`) REFERENCES `floors` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `floor_maps_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of floor_maps
@@ -289,7 +308,7 @@ CREATE TABLE `floor_status_history`  (
   INDEX `changed_by`(`changed_by` ASC) USING BTREE,
   CONSTRAINT `floor_status_history_ibfk_1` FOREIGN KEY (`floor_id`) REFERENCES `floors` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `floor_status_history_ibfk_2` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of floor_status_history
@@ -320,7 +339,7 @@ CREATE TABLE `floors`  (
 -- ----------------------------
 -- Records of floors
 -- ----------------------------
-INSERT INTO `floors` VALUES (1, 1, 1, 'Building 1 Floor', '', '/uploads/floor-plans/floor-plan-1-1-1746242157179-344076982.png', 'active', '2025-05-03 03:15:57', '2025-05-03 03:15:57', NULL);
+INSERT INTO `floors` VALUES (1, 1, 1, 'Building 1 Floor', '', '/uploads/floor-plans/floor-plan-1-1-1746242157179-344076982.png', 'active', '2025-05-03 03:15:57', '2025-05-10 00:46:27', NULL);
 
 -- ----------------------------
 -- Table structure for permissions
@@ -552,7 +571,7 @@ CREATE TABLE `user_approval_history`  (
   INDEX `approved_by`(`approved_by` ASC) USING BTREE,
   CONSTRAINT `user_approval_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `user_approval_history_ibfk_2` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user_approval_history

@@ -86,8 +86,12 @@ const createRequest = async (req, res) => {
             return error(res, 'Missing required fields: door_id, requester_name, and purpose are required', responseCodes.BAD_REQUEST);
         }
 
+        // Ensure door_id is a number
+        const doorId = parseInt(door_id, 10);
+        console.log('Creating door request with door_id:', doorId, 'type:', typeof doorId);
+
         // Check if door exists and is active
-        const door = await doorModel.getById(null, door_id);
+        const door = await doorModel.getById(null, doorId);
 
         if (!door) {
             return error(res, 'Door not found', responseCodes.NOT_FOUND);
@@ -99,7 +103,7 @@ const createRequest = async (req, res) => {
 
         // Create request
         const requestData = {
-            door_id,
+            door_id: doorId, // Use the parsed doorId
             requester_name,
             requester_phone: requester_phone || null,
             requester_email: requester_email || null,
@@ -172,8 +176,8 @@ const updateRequestStatus = async (req, res) => {
             return error(res, `Door request is already ${request.status}`, responseCodes.BAD_REQUEST);
         }
 
-        // Update request status
-        await doorRequestModel.updateStatus(id, status, userId);
+        // Update request status with reason
+        await doorRequestModel.updateStatus(id, status, userId, reason);
 
         // If approved, open the door
         if (status === 'approved') {

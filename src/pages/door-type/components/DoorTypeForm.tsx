@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {Controller, useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
-import {Dialog, DialogPanel, Transition, TransitionChild} from '@headlessui/react';
+import {Dialog, DialogPanel, DialogTitle, Transition, TransitionChild} from '@headlessui/react';
 import {XMarkIcon} from '@heroicons/react/24/outline';
 import {CreateDoorTypeDto, DoorType, UpdateDoorTypeDto} from '@/hooks/doorTypes/model';
 import {useCreateDoorType, useUpdateDoorType} from '@/hooks/doorTypes';
@@ -135,9 +135,9 @@ const DoorTypeForm: React.FC<DoorTypeFormProps> = ({
 
                                 <div className="sm:flex sm:items-start">
                                     <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                        <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
+                                        <DialogTitle as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                                             {mode === 'create' ? 'Add Door Type' : mode === 'edit' ? 'Edit Door Type' : 'Door Type Details'}
-                                        </Dialog.Title>
+                                        </DialogTitle>
                                         <div className="mt-4">
                                             {error && (
                                                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">

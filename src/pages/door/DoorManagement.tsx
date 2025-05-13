@@ -34,7 +34,7 @@ const DoorManagement: React.FC = () => {
 
     // Fetch data chỉ khi có id và floorId
     const {data: doorsData, isLoading: isLoadingDoors, refetch: refetchDoors} =
-        useGetDoors(id || '0', floorId || '0', filters);
+        useGetDoors(id || undefined, floorId || undefined, filters);
     const {data: floorData, isLoading: isLoadingFloor} =
         useGetFloorDetail(id || '0', floorId || '0');
     const {data: buildingData, isLoading: isLoadingBuilding} =

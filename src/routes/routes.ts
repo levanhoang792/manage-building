@@ -42,6 +42,9 @@ export const ROUTES = {
 
     // Admin routes
     DASHBOARD: "/dashboard",
+    
+    // Door Monitoring Dashboard
+    DOOR_MONITORING: "/door-monitoring",
 
     // User management routes
     USERS: "/users",
@@ -59,4 +62,20 @@ export const ROUTES = {
 
     // Permission management routes
     PERMISSIONS: "/permissions",
+    
+    // Door Request routes
+    DOOR_REQUESTS: "/door-requests",
+    DOOR_REQUEST_DETAIL: "/door-requests/:id",
+    DOOR_REQUEST_CREATE: "/door-requests/create",
+    DOOR_REQUEST_BUILDING_FLOOR_DOOR: "/buildings/:id/floors/:floorId/doors/:doorId/requests",
+    
+    // Door Lock Management routes
+    DOOR_LOCK_MANAGEMENT: "/door-lock-management",
+    DOOR_LOCK_BUILDING: "/buildings/:id/door-lock",
+    DOOR_LOCK_BUILDING_FLOOR: "/buildings/:id/floors/:floorId/door-lock",
+    
+    // Door Lock Request routes
+    DOOR_LOCK_REQUEST: "/door-lock-request",
+    DOOR_LOCK_REQUEST_BUILDING: "/buildings/:id/door-request",
+    DOOR_LOCK_REQUEST_BUILDING_FLOOR: "/buildings/:id/floors/:floorId/door-request",
 };

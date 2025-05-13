@@ -47,7 +47,7 @@ const DoorCoordinateManagement: React.FC = () => {
         useGetBuildingDetail(id || '0');
     // Lấy danh sách tất cả các cửa trên tầng
     const {data: doorsData, isLoading: isLoadingDoors} =
-        useGetDoors(id || '0', floorId || '0', {limit: 100});
+        useGetDoors(id || undefined, floorId || undefined, {limit: 100});
 
     // Mutations
     const createCoordinateMutation = useCreateDoorCoordinate(id || '0', floorId || '0', doorId || '0');

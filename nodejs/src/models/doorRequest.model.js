@@ -42,7 +42,7 @@ const getAll = async (options = {}) => {
             'f.name as floor_name',
             'f.floor_number',
             'b.name as building_name',
-            knex.raw(`CONCAT(u.first_name, ' ', u.last_name) as processed_by_name`),
+            'u.full_name as processed_by_name', // Changed from CONCAT(first_name, last_name)
             'u.email as processed_by_email'
         ])
         .leftJoin('doors as d', `${TABLE_NAME}.door_id`, 'd.id')
@@ -85,8 +85,8 @@ const getAll = async (options = {}) => {
         query.where(`${TABLE_NAME}.created_at`, '<=', endDate);
     }
 
-    // Get total count for pagination
-    const countQuery = query.clone().clearSelect().count('id as count');
+    // Get total count for pagination - FIX: Specify table name for id column
+    const countQuery = query.clone().clearSelect().count(`${TABLE_NAME}.id as count`);
     const [{ count }] = await countQuery;
 
     // Apply pagination and sorting
@@ -116,7 +116,7 @@ const getById = async (id) => {
             'f.name as floor_name',
             'f.floor_number',
             'b.name as building_name',
-            knex.raw(`CONCAT(u.first_name, ' ', u.last_name) as processed_by_name`),
+            'u.full_name as processed_by_name', // Changed from CONCAT(first_name, last_name)
             'u.email as processed_by_email'
         ])
         .leftJoin('doors as d', `${TABLE_NAME}.door_id`, 'd.id')
@@ -157,7 +157,7 @@ const getByDoorId = async (doorId, options = {}) => {
     const query = knex(TABLE_NAME)
         .select([
             `${TABLE_NAME}.*`,
-            knex.raw(`CONCAT(u.first_name, ' ', u.last_name) as processed_by_name`),
+            'u.full_name as processed_by_name', // Changed from CONCAT(first_name, last_name)
             'u.email as processed_by_email'
         ])
         .leftJoin('users as u', `${TABLE_NAME}.processed_by`, 'u.id')
@@ -177,8 +177,8 @@ const getByDoorId = async (doorId, options = {}) => {
         query.where(`${TABLE_NAME}.created_at`, '<=', endDate);
     }
 
-    // Get total count for pagination
-    const countQuery = query.clone().clearSelect().count('id as count');
+    // Get total count for pagination - FIX: Specify table name for id column
+    const countQuery = query.clone().clearSelect().count(`${TABLE_NAME}.id as count`);
     const [{ count }] = await countQuery;
 
     // Apply pagination and sorting
@@ -216,16 +216,18 @@ const create = async (request) => {
  * @param {number} id - Request ID
  * @param {string} status - New status ('approved' or 'rejected')
  * @param {number} userId - User ID who processed the request
+ * @param {string} reason - Reason for approval or rejection
  * @returns {Promise<number>} - Number of updated rows
  */
-const updateStatus = async (id, status, userId) => {
+const updateStatus = async (id, status, userId, reason) => {
     return knex(TABLE_NAME)
         .where('id', id)
         .update({
             status,
             processed_by: userId,
             processed_at: knex.fn.now(),
-            updated_at: knex.fn.now()
+            updated_at: knex.fn.now(),
+            reason: reason || null
         });
 };
 

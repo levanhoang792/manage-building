@@ -65,17 +65,19 @@ const getAllByFloor = async (floorId, options = {}) => {
 
 /**
  * Get door by ID
- * @param {number} floorId - Floor ID
+ * @param {number} floorId - Floor ID (optional)
  * @param {number} id - Door ID
  * @returns {Promise<Object>}
  */
 const getById = async (floorId, id) => {
-    return knex(TABLE_NAME)
-        .where({
-            'floor_id': floorId,
-            'id': id
-        })
-        .first();
+    const query = knex(TABLE_NAME).where('id', id);
+    
+    // Only add floor_id condition if it's provided
+    if (floorId) {
+        query.where('floor_id', floorId);
+    }
+    
+    return query.first();
 };
 
 /**

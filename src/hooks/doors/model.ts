@@ -7,6 +7,7 @@ export interface Door {
     description?: string;
     door_type_id: number;
     status: 'active' | 'inactive' | 'maintenance';
+    lock_status?: 'open' | 'closed';
     created_at: string;
     updated_at: string;
 }

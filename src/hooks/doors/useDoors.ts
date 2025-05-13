@@ -22,6 +22,8 @@ export const useGetDoors = (
         queryKey: ['doors', buildingId, floorId, params],
         queryFn: async () => {
             const uri = replaceParams(API_ROUTES.DOORS, {buildingId, floorId});
+            console.log(`useGetDoors - Calling API with URI: ${uri}`);
+            console.log(`useGetDoors - Parameters: buildingId=${buildingId}, floorId=${floorId}`);
             const resp = await httpGet({
                 uri,
                 options: {body: JSON.stringify(params)}

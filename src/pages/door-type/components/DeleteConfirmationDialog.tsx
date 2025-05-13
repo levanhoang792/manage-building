@@ -1,5 +1,5 @@
 import React from 'react';
-import {Dialog, DialogPanel, Transition, TransitionChild} from '@headlessui/react';
+import {Dialog, DialogPanel, DialogTitle, Transition, TransitionChild} from '@headlessui/react';
 import {ExclamationTriangleIcon} from '@heroicons/react/24/outline';
 
 interface DeleteConfirmationDialogProps {
@@ -51,10 +51,10 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
                                         <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true"/>
                                     </div>
                                     <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                                        <Dialog.Title as="h3"
+                                        <DialogTitle as="h3"
                                                       className="text-base font-semibold leading-6 text-gray-900">
                                             {title}
-                                        </Dialog.Title>
+                                        </DialogTitle>
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500">{message}</p>
                                         </div>

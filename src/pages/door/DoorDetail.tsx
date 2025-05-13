@@ -37,7 +37,7 @@ const DoorDetail: React.FC = () => {
     const {data: doorCoordinatesData, isLoading: isLoadingDoorCoordinates} =
         useGetDoorCoordinates(id || '0', floorId || '0', doorId || '0');
     const {data: doorsData, isLoading: isLoadingDoors} =
-        useGetDoors(id || '0', floorId || '0', {limit: 100});
+        useGetDoors(id || '', floorId || '', {limit: 100});
 
     // Mutations
     const updateStatusMutation = useUpdateDoorStatus(id || '0', floorId || '0', doorId || '0');
@@ -281,7 +281,7 @@ const DoorDetail: React.FC = () => {
                                         try {
                                             // Lấy doorId từ coordinate thay vì từ URL
                                             const coordinateDoorId = coordinate.door_id.toString();
-                                            
+
                                             console.log('Updating coordinate in DoorDetail:', {
                                                 id: coordinate.id,
                                                 door_id: coordinate.door_id,
@@ -298,21 +298,21 @@ const DoorDetail: React.FC = () => {
                                             if (doorCoordinatesCache) {
                                                 const updatedCache = {
                                                     ...doorCoordinatesCache,
-                                                    data: doorCoordinatesCache.data.map(c => 
-                                                        c.id === coordinate.id 
-                                                            ? {...c, x_coordinate: x, y_coordinate: y} 
+                                                    data: doorCoordinatesCache.data.map(c =>
+                                                        c.id === coordinate.id
+                                                            ? {...c, x_coordinate: x, y_coordinate: y}
                                                             : c
                                                     )
                                                 };
-                                                
+
                                                 queryClient.setQueryData(['doorCoordinates', id, floorId, coordinateDoorId], updatedCache);
                                             }
-                                            
+
                                             // 2. Cập nhật cache cho multipleDoorCoordinates
                                             const multipleCoordinatesCache = queryClient.getQueryData([
                                                 'multipleDoorCoordinates', id, floorId, doorsData?.data?.data.map(d => d.id)
                                             ]);
-                                            
+
                                             if (multipleCoordinatesCache) {
                                                 const updatedCache = multipleCoordinatesCache.map(item => {
                                                     if (item.doorId.toString() === coordinateDoorId) {
@@ -320,9 +320,9 @@ const DoorDetail: React.FC = () => {
                                                             ...item,
                                                             data: {
                                                                 ...item.data,
-                                                                data: item.data.data.map(c => 
-                                                                    c.id === coordinate.id 
-                                                                        ? {...c, x_coordinate: x, y_coordinate: y} 
+                                                                data: item.data.data.map(c =>
+                                                                    c.id === coordinate.id
+                                                                        ? {...c, x_coordinate: x, y_coordinate: y}
                                                                         : c
                                                                 )
                                                             }
@@ -330,7 +330,7 @@ const DoorDetail: React.FC = () => {
                                                     }
                                                     return item;
                                                 });
-                                                
+
                                                 queryClient.setQueryData(
                                                     ['multipleDoorCoordinates', id, floorId, doorsData?.data?.data.map(d => d.id)],
                                                     updatedCache
@@ -339,7 +339,7 @@ const DoorDetail: React.FC = () => {
 
                                             // Sử dụng API trực tiếp thay vì hook
                                             const uri = `/buildings/${id}/floors/${floorId}/doors/${coordinateDoorId}/coordinates/${coordinate.id}`;
-                                            
+
                                             // Sử dụng httpPut từ utils/api
                                             const response = await httpPut({
                                                 uri,
@@ -351,15 +351,15 @@ const DoorDetail: React.FC = () => {
                                                     })
                                                 }
                                             });
-                                            
+
                                             // Sau khi API thành công, cập nhật lại dữ liệu
                                             await refetchDoor();
-                                            
+
                                             toast.success('Cập nhật tọa độ thành công');
                                         } catch (error) {
                                             console.error('Error updating coordinate:', error);
                                             toast.error('Không thể cập nhật tọa độ. Vui lòng thử lại.');
-                                            
+
                                             // Nếu có lỗi, refetch để lấy lại dữ liệu chính xác
                                             await refetchDoor();
                                         }

@@ -10,7 +10,10 @@ import {
     KeyIcon,
     ShieldCheckIcon,
     UserGroupIcon,
-    UserIcon
+    UserIcon,
+    DocumentTextIcon,
+    LockOpenIcon,
+    EyeIcon
 } from "@heroicons/react/24/outline";
 import {Disclosure, DisclosureButton, DisclosurePanel} from "@headlessui/react";
 import {ChevronDownIcon} from "@heroicons/react/20/solid";
@@ -70,6 +73,30 @@ function LeftToolbar() {
                 <Link to={ROUTES.DOOR_TYPES} className={menuItemClass(isActive(ROUTES.DOOR_TYPES))}>
                     <KeyIcon className="size-5"/>
                     <span>Door Types</span>
+                </Link>
+                
+                {/* Door Requests */}
+                <Link to={ROUTES.DOOR_REQUESTS} className={menuItemClass(isActive(ROUTES.DOOR_REQUESTS))}>
+                    <DocumentTextIcon className="size-5"/>
+                    <span>Door Requests</span>
+                </Link>
+                
+                {/* Door Lock Management */}
+                <Link to={ROUTES.DOOR_LOCK_MANAGEMENT} className={menuItemClass(isActive(ROUTES.DOOR_LOCK_MANAGEMENT))}>
+                    <LockOpenIcon className="size-5"/>
+                    <span>Door Lock Management</span>
+                </Link>
+                
+                {/* Door Lock Request */}
+                <Link to={ROUTES.DOOR_LOCK_REQUEST} className={menuItemClass(isActive(ROUTES.DOOR_LOCK_REQUEST))}>
+                    <DocumentTextIcon className="size-5"/>
+                    <span>Request Door Access</span>
+                </Link>
+                
+                {/* Door Monitoring Dashboard */}
+                <Link to={ROUTES.DOOR_MONITORING} className={menuItemClass(isActive(ROUTES.DOOR_MONITORING))}>
+                    <EyeIcon className="size-5"/>
+                    <span>Giám sát cửa</span>
                 </Link>
 
                 {/* User Management Group */}
