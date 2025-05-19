@@ -29,7 +29,7 @@ const DoorMonitoring: React.FC = () => {
 
     // Fetch floors data for selected building
     const {data: floorsData, isLoading: isLoadingFloors, refetch: refetchFloors} =
-        useGetFloors(selectedBuildingId || '0');
+        useGetFloors(selectedBuildingId ?? '');
 
     // Set buildings data when it's loaded
     useEffect(() => {
@@ -175,15 +175,16 @@ const DoorMonitoring: React.FC = () => {
     console.log('Selected floor IDs:', selectedFloorIds);
 
     return (
-        <div className="container mx-auto px-4 py-6 h-screen flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Giám sát trạng thái cửa</h1>
+        <div className="h-[calc(100vh-var(--header-height)-2rem)] flex flex-col p-4">
+            {/* Header section */}
+            <div className="flex justify-between items-center h-12">
+                <h1 className="text-xl font-bold text-gray-900">Giám sát trạng thái cửa</h1>
                 <button
                     id="refresh-button"
                     onClick={handleRefresh}
-                    className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300"
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300"
                 >
-                    <ArrowPathIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true"/>
+                    <ArrowPathIcon className="-ml-1 mr-2 h-4 w-4" aria-hidden="true"/>
                     Làm mới
                 </button>
             </div>
@@ -198,24 +199,24 @@ const DoorMonitoring: React.FC = () => {
             )}
 
             {/* Buildings row - Row 1 */}
-            <div className="mb-6 relative">
-                <h2 className="text-lg font-medium text-gray-900 mb-3 flex items-center">
-                    <BuildingOffice2Icon className="h-5 w-5 mr-2 text-indigo-600"/>
+            <div className="h-28 mt-1 flex flex-col overflow-hidden">
+                <h2 className="text-base font-medium text-gray-900 mb-1 flex items-center flex-shrink-0">
+                    <BuildingOffice2Icon className="h-4 w-4 mr-1.5 text-indigo-600"/>
                     Tòa nhà
                 </h2>
-                <div className="flex items-center">
+                <div className="flex items-center flex-1 min-h-0 py-0">
                     <motion.button
                         whileHover={{scale: 1.1}}
                         whileTap={{scale: 0.9}}
                         onClick={() => scrollBuildings('left')}
-                        className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 mr-2 shadow-sm"
+                        className="p-1.5 rounded-full bg-gray-200 hover:bg-gray-300 mr-2 shadow-sm flex-shrink-0"
                     >
-                        <ChevronLeftIcon className="h-5 w-5 text-gray-600"/>
+                        <ChevronLeftIcon className="h-4 w-4 text-gray-600"/>
                     </motion.button>
 
                     <div
                         ref={buildingsScrollRef}
-                        className="flex-1 overflow-x-auto flex space-x-4 py-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                        className="flex-1 overflow-x-auto flex space-x-3 px-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 min-h-0"
                         style={{scrollbarWidth: 'thin'}}
                     >
                         {buildings.map((building) => (
@@ -227,21 +228,21 @@ const DoorMonitoring: React.FC = () => {
                                 animate={{opacity: 1, y: 0}}
                                 transition={{duration: 0.3}}
                                 onClick={() => handleBuildingSelect(building.id.toString())}
-                                className={`flex-shrink-0 p-4 rounded-lg shadow-md cursor-pointer min-w-[200px] max-w-[250px] ${
+                                className={`flex-shrink-0 p-2 rounded-lg shadow-md cursor-pointer min-w-[180px] w-[250px] overflow-hidden ${
                                     selectedBuildingId === building.id.toString()
-                                        ? 'bg-indigo-100 border-2 border-indigo-500'
+                                        ? 'bg-indigo-100 border border-indigo-500'
                                         : 'bg-white hover:bg-gray-50'
                                 }`}
                             >
-                                <div className="flex items-center mb-2">
-                                    <BuildingOffice2Icon className={`h-5 w-5 mr-2 ${
+                                <div className="flex items-center overflow-hidden">
+                                    <BuildingOffice2Icon className={`h-4 w-4 flex-shrink-0 mr-1.5 ${
                                         building.status === 'active' ? 'text-green-600' : 'text-red-600'
                                     }`}/>
-                                    <h3 className="font-medium text-gray-900 truncate">{building.name}</h3>
+                                    <h3 className="font-medium text-sm text-gray-900 truncate">{building.name}</h3>
                                 </div>
-                                <p className="text-sm text-gray-500 mt-1 truncate">{building.address}</p>
+                                <p className="text-xs text-gray-500 mt-0.5 truncate pl-5.5">{building.address}</p>
                                 <div
-                                    className={`mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    className={`mt-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
                                         building.status === 'active'
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-red-100 text-red-800'
@@ -256,30 +257,30 @@ const DoorMonitoring: React.FC = () => {
                         whileHover={{scale: 1.1}}
                         whileTap={{scale: 0.9}}
                         onClick={() => scrollBuildings('right')}
-                        className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 ml-2 shadow-sm"
+                        className="p-1.5 rounded-full bg-gray-200 hover:bg-gray-300 ml-2 shadow-sm flex-shrink-0"
                     >
-                        <ChevronRightIcon className="h-5 w-5 text-gray-600"/>
+                        <ChevronRightIcon className="h-4 w-4 text-gray-600"/>
                     </motion.button>
                 </div>
             </div>
 
             {/* Main content - Row 2 */}
-            <div className="flex-1 grid grid-cols-4 gap-6 overflow-hidden">
+            <div className="flex-1 grid grid-cols-4 gap-3 mt-2 min-h-0">
                 {/* Floors list - Column 1 */}
-                <div className="col-span-1 bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="p-4 border-b border-gray-200">
-                        <h2 className="text-lg font-medium text-gray-900 flex items-center">
-                            <MapIcon className="h-5 w-5 mr-2 text-indigo-600"/>
+                <div className="col-span-1 bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-gray-200 shrink-0">
+                        <h2 className="text-base font-medium text-gray-900 flex items-center">
+                            <MapIcon className="h-4 w-4 mr-1.5 text-indigo-600"/>
                             Danh sách tầng
                         </h2>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 mt-0.5">
                             {selectedBuildingId
                                 ? `Tòa nhà: ${buildings.find(b => b.id.toString() === selectedBuildingId)?.name}`
                                 : 'Chọn tòa nhà để xem danh sách tầng'}
                         </p>
                     </div>
 
-                    <div className="overflow-y-auto p-4" style={{maxHeight: 'calc(100vh - 300px)'}}>
+                    <div className="overflow-y-auto flex-1 p-2">
                         {isLoadingFloors ? (
                             <div className="flex justify-center items-center py-10">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -295,7 +296,7 @@ const DoorMonitoring: React.FC = () => {
                                         animate={{opacity: 1, x: 0}}
                                         transition={{duration: 0.3, delay: index * 0.05}}
                                         onClick={() => handleFloorSelect(String(floor.id))}
-                                        className={`p-3 rounded-md cursor-pointer shadow-sm ${
+                                        className={`p-2 rounded-md cursor-pointer shadow-sm ${
                                             selectedFloorIds.includes(String(floor.id))
                                                 ? 'bg-indigo-100 border border-indigo-500'
                                                 : 'bg-gray-50 hover:bg-gray-100'
@@ -305,13 +306,13 @@ const DoorMonitoring: React.FC = () => {
                                         <div className="flex justify-between items-center">
                                             <div>
                                                 <h3 className="font-medium text-gray-900 flex items-center">
-                          <span
-                              className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-800 mr-2 text-xs font-bold">
-                            {index + 1}
-                          </span>
+                                                    <span
+                                                        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-800 mr-2 text-xs font-bold">
+                                                        {index + 1}
+                                                    </span>
                                                     {floor.name}
                                                 </h3>
-                                                <p className="text-sm text-gray-500 mt-1 ml-8">{floor.description || 'Không có mô tả'}</p>
+                                                <p className="text-xs text-gray-500 mt-0.5 ml-7">{floor.description || 'Không có mô tả'}</p>
                                             </div>
                                             <div
                                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -349,14 +350,10 @@ const DoorMonitoring: React.FC = () => {
                 </div>
 
                 {/* Floor visualizers - Columns 2-4 */}
-                <div className="col-span-3 grid grid-cols-2 gap-6">
+                <div className="col-span-3 grid grid-cols-2 gap-4 h-full">
                     <AnimatePresence mode="wait">
                         {selectedFloorIds.map((floorId, index) => {
-                            console.log(`Rendering floor ${floorId}, index ${index}`);
-                            console.log('All floors:', floors);
-                            // Chuyển đổi ID sang string để so sánh
                             const floor = floors.find(f => String(f.id) === String(floorId));
-                            console.log('Found floor:', floor);
                             
                             return floor ? (
                                 <motion.div
@@ -365,23 +362,25 @@ const DoorMonitoring: React.FC = () => {
                                     animate={{opacity: 1, y: 0}}
                                     exit={{opacity: 0, y: -20}}
                                     transition={{duration: 0.3, delay: index * 0.1}}
-                                    className="bg-white rounded-lg shadow-md overflow-hidden"
+                                    className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full"
                                     data-floor-id={floorId}
                                 >
-                                    <div className="p-4 border-b border-gray-200 bg-indigo-50">
-                                        <h3 className="text-lg font-medium text-gray-900">
-                                            {floor.name} - ID: {floorId}
-                                        </h3>
-                                        <p className="text-sm text-gray-500">
-                                            Building ID: {selectedBuildingId}
-                                        </p>
+                                    <div className="p-2 border-b border-gray-200 bg-indigo-50 shrink-0 flex justify-between items-center">
+                                        <div className="flex items-center">
+                                            <MapIcon className="h-4 w-4 text-indigo-600 mr-1.5" />
+                                            <h3 className="text-base font-medium text-gray-900">
+                                                {floor.name}
+                                            </h3>
+                                        </div>
                                     </div>
                                     
-                                    <FloorVisualizer
-                                        buildingId={selectedBuildingId || '0'}
-                                        floorId={floorId}
-                                        floorName={floor.name}
-                                    />
+                                    <div className="flex-1 overflow-hidden">
+                                        <FloorVisualizer
+                                            buildingId={selectedBuildingId || '0'}
+                                            floorId={floorId}
+                                            floorName={floor.name}
+                                        />
+                                    </div>
                                 </motion.div>
                             ) : (
                                 <div key={floorId} className="bg-red-100 p-4 rounded-lg">

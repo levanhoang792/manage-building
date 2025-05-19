@@ -1,0 +1,24 @@
+.settingItem {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.settingItem:hover {
+  background-color: #f3f4f6;
+  cursor: pointer;
+}
+.settingItem:not(:last-child) {
+  border-bottom-width: 0;
+}
+.settingItem:first-child {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+.settingItem:last-child {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}/*# sourceMappingURL=AccountSetting.module.css.map */

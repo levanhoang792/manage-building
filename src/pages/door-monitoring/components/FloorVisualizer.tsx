@@ -72,6 +72,7 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
             { path: 'data.data.floor_plan', value: floorData?.data?.data?.floor_plan }
         ];
         
+        
         for (const field of possibleFields) {
             if (field.value) {
                 console.log(`Setting floor plan URL from ${field.path}:`, field.value);
@@ -604,24 +605,43 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
 
     return (
         <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                <div>
-                    <h3 className="font-medium text-gray-900">{floorName}</h3>
-                    <p className="text-sm text-gray-500">
-                        {doors.length} cửa • {Object.values(doorCoordinates).flat().length} tọa độ
-                    </p>
+            <div className="p-2 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 text-xs">
+                        <div className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-1"></span>
+                            <span>Mở</span>
+                        </div>
+                        <div className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-1"></span>
+                            <span>Đóng</span>
+                        </div>
+                        <div className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-1"></span>
+                            <span>Bảo trì</span>
+                        </div>
+                        <div className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-gray-500 mr-1"></span>
+                            <span>Không hoạt động</span>
+                        </div>
+                    </div>
                 </div>
-                <button
-                    onClick={toggleZoom}
-                    className="p-2 rounded-full hover:bg-gray-100"
-                    title={isZoomed ? "Thu nhỏ" : "Phóng to"}
-                >
-                    {isZoomed ? (
-                        <ArrowsPointingInIcon className="h-5 w-5 text-gray-600"/>
-                    ) : (
-                        <ArrowsPointingOutIcon className="h-5 w-5 text-gray-600"/>
-                    )}
-                </button>
+                <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-500">
+                        {doors.length} cửa • {Object.values(doorCoordinates).flat().length} tọa độ
+                    </span>
+                    <button
+                        onClick={toggleZoom}
+                        className="p-1.5 rounded-full hover:bg-gray-200"
+                        title={isZoomed ? "Thu nhỏ" : "Phóng to"}
+                    >
+                        {isZoomed ? (
+                            <ArrowsPointingInIcon className="h-4 w-4 text-gray-600"/>
+                        ) : (
+                            <ArrowsPointingOutIcon className="h-4 w-4 text-gray-600"/>
+                        )}
+                    </button>
+                </div>
             </div>
 
             <div
@@ -703,28 +723,6 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
-
-            {/* Legend */}
-            <div className="p-3 border-t border-gray-200 bg-gray-50">
-                <div className="flex items-center space-x-4 text-xs">
-                    <div className="flex items-center">
-                        <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-1"></span>
-                        <span>Mở</span>
-                    </div>
-                    <div className="flex items-center">
-                        <span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-1"></span>
-                        <span>Đóng</span>
-                    </div>
-                    <div className="flex items-center">
-                        <span className="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-1"></span>
-                        <span>Bảo trì</span>
-                    </div>
-                    <div className="flex items-center">
-                        <span className="inline-block w-3 h-3 rounded-full bg-gray-500 mr-1"></span>
-                        <span>Không hoạt động</span>
-                    </div>
-                </div>
             </div>
         </div>
     );
