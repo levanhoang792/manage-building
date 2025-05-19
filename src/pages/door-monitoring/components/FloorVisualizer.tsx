@@ -11,15 +11,58 @@ interface FloorVisualizerProps {
     floorName: string;
 }
 
+interface Door {
+    id: string | number;
+    name: string;
+    description?: string;
+    status: 'active' | 'maintenance' | 'inactive';
+    lock_status: 'open' | 'closed';
+}
+
+interface DoorCoordinate {
+    x_coordinate: number;
+    y_coordinate: number;
+}
+
+interface FloorData {
+    floor_plan_url?: string;
+    floor_plan_image?: string;
+    floor_plan?: string;
+    data?: {
+        floor_plan_url?: string;
+        floor_plan_image?: string;
+        floor_plan?: string;
+    };
+    [key: string]: string | number | boolean | object | undefined; // More specific index signature
+}
+
+interface FloorResponse {
+    data: FloorData;
+}
+
+interface DoorListResponse {
+    data: {
+        doors?: Door[];
+        data?: Door[];
+    } | Door[];
+}
+
+interface DoorCoordinateResponse {
+    doorId: string | number;
+    data: {
+        data?: DoorCoordinate[];
+    } | DoorCoordinate[];
+}
+
 const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, floorName}) => {
     console.log(`FloorVisualizer rendered with buildingId=${buildingId}, floorId=${floorId}, floorName=${floorName}`);
 
     // State for floor plan
     const [floorPlanUrl, setFloorPlanUrl] = useState<string | null>(null);
-    const [doors, setDoors] = useState<any[]>([]);
-    const [doorCoordinates, setDoorCoordinates] = useState<Record<string, any[]>>({});
+    const [doors, setDoors] = useState<Door[]>([]);
+    const [doorCoordinates, setDoorCoordinates] = useState<Record<string, DoorCoordinate[]>>({});
     const [isZoomed, setIsZoomed] = useState(false);
-    const [selectedDoor, setSelectedDoor] = useState<any | null>(null);
+    const [selectedDoor, setSelectedDoor] = useState<Door | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     // Refs
@@ -37,176 +80,94 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
         error: doorsError
     } = useGetDoors(buildingId, floorId, {limit: 100});
 
-    // Set floor plan URL when floor data is loaded
-    useEffect(() => {
-        console.log('Floor data:', JSON.stringify(floorData, null, 2));
-        
-        // Kiểm tra cấu trúc dữ liệu thực tế
-        if (floorData) {
-            console.log('Floor data structure check:');
-            console.log('- floorData.data exists:', !!floorData.data);
-            
-            if (floorData.data) {
-                console.log('- floorData.data keys:', Object.keys(floorData.data));
-                console.log('- floorData.data.data exists:', !!floorData.data.data);
-                
-                if (floorData.data.data) {
-                    console.log('- floorData.data.data keys:', Object.keys(floorData.data.data));
-                }
-            }
-        }
-        
-        // Kiểm tra tất cả các cấu trúc dữ liệu có thể
-        let foundFloorPlan = false;
-        
-        // Kiểm tra các trường cụ thể
-        const possibleFields = [
-            { path: 'data.floor_plan_url', value: floorData?.data?.floor_plan_url },
-            { path: 'data.floor_plan_image', value: floorData?.data?.floor_plan_image },
-            { path: 'data.floor_plan', value: floorData?.data?.floor_plan },
-            { path: 'data.floor.floor_plan_url', value: floorData?.data?.floor?.floor_plan_url },
-            { path: 'data.floor.floor_plan_image', value: floorData?.data?.floor?.floor_plan_image },
-            { path: 'data.floor.floor_plan', value: floorData?.data?.floor?.floor_plan },
-            { path: 'data.data.floor_plan_url', value: floorData?.data?.data?.floor_plan_url },
-            { path: 'data.data.floor_plan_image', value: floorData?.data?.data?.floor_plan_image },
-            { path: 'data.data.floor_plan', value: floorData?.data?.data?.floor_plan }
-        ];
-        
-        
-        for (const field of possibleFields) {
-            if (field.value) {
-                console.log(`Setting floor plan URL from ${field.path}:`, field.value);
-                setFloorPlanUrl(field.value);
-                foundFloorPlan = true;
-                break;
-            }
-        }
-        
-        // Nếu không tìm thấy trong các trường cụ thể, kiểm tra tất cả các trường
-        if (!foundFloorPlan && floorData?.data) {
-            console.log('Checking all fields in floorData.data for possible floor plan URL');
-            
-            // Kiểm tra tất cả các trường trong floorData.data
-            const dataObj = floorData.data;
-            const keys = Object.keys(dataObj);
-            
-            for (const key of keys) {
-                const value = dataObj[key];
-                
-                // Kiểm tra nếu trường có chứa từ khóa liên quan đến floor plan
-                if (typeof value === 'string' && 
-                    (key.includes('floor_plan') || 
-                     key.includes('floorPlan') || 
-                     key.includes('plan') || 
-                     key.includes('image') || 
-                     key.includes('url'))) {
-                    
-                    console.log(`Found potential floor plan URL in field '${key}':`, value);
-                    
-                    // Kiểm tra nếu giá trị có vẻ như là URL
-                    if (value.startsWith('http') || value.startsWith('/') || value.includes('.jpg') || 
-                        value.includes('.png') || value.includes('.jpeg') || value.includes('.svg')) {
-                        
-                        console.log(`Setting floor plan URL from field '${key}':`, value);
-                        setFloorPlanUrl(value);
-                        foundFloorPlan = true;
-                        break;
-                    }
-                }
-            }
-            
-            // Nếu vẫn không tìm thấy, kiểm tra trong data.data nếu có
-            if (!foundFloorPlan && dataObj.data && typeof dataObj.data === 'object') {
-                console.log('Checking all fields in floorData.data.data for possible floor plan URL');
-                
-                const nestedDataObj = dataObj.data;
-                const nestedKeys = Object.keys(nestedDataObj);
-                
-                for (const key of nestedKeys) {
-                    const value = nestedDataObj[key];
-                    
-                    if (typeof value === 'string' && 
-                        (key.includes('floor_plan') || 
-                         key.includes('floorPlan') || 
-                         key.includes('plan') || 
-                         key.includes('image') || 
-                         key.includes('url'))) {
-                        
-                        console.log(`Found potential floor plan URL in nested field '${key}':`, value);
-                        
-                        if (value.startsWith('http') || value.startsWith('/') || value.includes('.jpg') || 
-                            value.includes('.png') || value.includes('.jpeg') || value.includes('.svg')) {
-                            
-                            console.log(`Setting floor plan URL from nested field '${key}':`, value);
-                            setFloorPlanUrl(value);
-                            foundFloorPlan = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (!foundFloorPlan) {
-            console.error('No floor plan URL found in any location');
-            console.log('Full data structure:', JSON.stringify(floorData, null, 2));
-        }
-    }, [floorData]);
-
-    // Set doors when doors data is loaded
-    useEffect(() => {
-        console.log('Doors data:', doorsData);
-        if (doorsData?.data?.doors) {
-            console.log('Setting doors from doors field:', doorsData.data.doors);
-            setDoors(doorsData.data.doors);
-        } else if (Array.isArray(doorsData?.data)) {
-            console.log('Setting doors from data array:', doorsData.data);
-            setDoors(doorsData.data);
-        } else if (doorsData?.data?.data && Array.isArray(doorsData.data.data)) {
-            console.log('Setting doors from data.data array:', doorsData.data.data);
-            setDoors(doorsData.data.data);
-        }
-    }, [doorsData]);
-
     // Sử dụng hook useGetMultipleDoorCoordinates để lấy tọa độ cửa
     const doorIds = doors.map(door => door.id.toString());
     const {data: doorCoordinatesData, isLoading: isLoadingCoordinates, error: coordinatesError} =
         useGetMultipleDoorCoordinates(buildingId, floorId, doorIds);
 
+    // Set floor plan URL when floor data is loaded
+    useEffect(() => {
+        if (!floorData) return;
+
+        const floorResponse = floorData as unknown as FloorResponse;
+        
+        try {
+            let foundFloorPlan = false;
+            const data = floorResponse.data;
+
+            // Check direct properties
+            if (data.floor_plan_url) {
+                setFloorPlanUrl(data.floor_plan_url);
+                foundFloorPlan = true;
+            } else if (data.floor_plan_image) {
+                setFloorPlanUrl(data.floor_plan_image);
+                foundFloorPlan = true;
+            } else if (data.floor_plan) {
+                setFloorPlanUrl(data.floor_plan);
+                foundFloorPlan = true;
+            }
+
+            // Check nested data properties
+            if (!foundFloorPlan && data.data) {
+                if (data.data.floor_plan_url) {
+                    setFloorPlanUrl(data.data.floor_plan_url);
+                    foundFloorPlan = true;
+                } else if (data.data.floor_plan_image) {
+                    setFloorPlanUrl(data.data.floor_plan_image);
+                    foundFloorPlan = true;
+                } else if (data.data.floor_plan) {
+                    setFloorPlanUrl(data.data.floor_plan);
+                    foundFloorPlan = true;
+                }
+            }
+
+            if (!foundFloorPlan) {
+                console.error('No floor plan URL found in any location');
+                console.log('Full data structure:', JSON.stringify(floorData, null, 2));
+            }
+        } catch (error) {
+            console.error('Error processing floor data:', error);
+            setError('Lỗi khi xử lý dữ liệu tầng');
+        }
+    }, [floorData]);
+
+    // Set doors when doors data is loaded
+    useEffect(() => {
+        if (!doorsData) return;
+
+        const doorResponse = doorsData as unknown as DoorListResponse;
+        if (Array.isArray(doorResponse.data)) {
+            setDoors(doorResponse.data);
+        } else if (doorResponse.data.doors) {
+            setDoors(doorResponse.data.doors);
+        } else if (doorResponse.data.data) {
+            setDoors(doorResponse.data.data);
+        }
+    }, [doorsData]);
+
     // Xử lý dữ liệu tọa độ cửa khi có dữ liệu
     useEffect(() => {
-        if (doorCoordinatesData) {
-            console.log('Door coordinates data:', doorCoordinatesData);
+        if (!doorCoordinatesData) return;
 
-            try {
-                const coordinatesMap: Record<string, any[]> = {};
+        try {
+            const coordinatesMap: Record<string, DoorCoordinate[]> = {};
 
-                doorCoordinatesData.forEach(item => {
-                    const doorId = item.doorId.toString();
+            doorCoordinatesData.forEach((item: DoorCoordinateResponse) => {
+                const doorId = item.doorId.toString();
 
-                    if (item.data?.data && Array.isArray(item.data.data)) {
-                        coordinatesMap[doorId] = item.data.data;
-                    } else if (Array.isArray(item.data)) {
-                        coordinatesMap[doorId] = item.data;
-                    }
-                });
+                if (Array.isArray(item.data)) {
+                    coordinatesMap[doorId] = item.data;
+                } else if (item.data?.data && Array.isArray(item.data.data)) {
+                    coordinatesMap[doorId] = item.data.data;
+                }
+            });
 
-                console.log('Setting door coordinates:', coordinatesMap);
-                setDoorCoordinates(coordinatesMap);
-            } catch (error) {
-                console.error('Error processing door coordinates:', error);
-                setError('Lỗi khi xử lý dữ liệu tọa độ cửa');
-            }
+            setDoorCoordinates(coordinatesMap);
+        } catch (error) {
+            console.error('Error processing door coordinates:', error);
+            setError('Lỗi khi xử lý dữ liệu tọa độ cửa');
         }
     }, [doorCoordinatesData]);
-
-    // Xử lý lỗi khi lấy tọa độ cửa
-    useEffect(() => {
-        if (coordinatesError) {
-            console.error('Error fetching door coordinates:', coordinatesError);
-            setError('Lỗi khi lấy dữ liệu tọa độ cửa');
-        }
-    }, [coordinatesError]);
 
     // Draw floor plan and door coordinates on canvas
     useEffect(() => {
@@ -294,7 +255,7 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
                     // Draw door name with status icon
                     context.font = '12px Arial';
                     const nameWidth = context.measureText(door.name).width;
-                    const bgWidth = nameWidth + 30; // Extra space for icon
+                    const bgWidth = nameWidth + 10; // Reduced padding since we removed the icon
 
                     // Background for text
                     context.fillStyle = 'rgba(255, 255, 255, 0.8)';
@@ -303,17 +264,6 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
                     // Door name text
                     context.fillStyle = '#000000';
                     context.fillText(door.name, coordX + 15, coordY - 5);
-
-                    // Draw lock icon
-                    if (door.lock_status === 'open') {
-                        // Draw open lock icon
-                        context.fillStyle = '#10b981';
-                        context.fillRect(coordX + 15 + nameWidth, coordY - 17, 10, 14);
-                    } else {
-                        // Draw closed lock icon
-                        context.fillStyle = '#ef4444';
-                        context.fillRect(coordX + 15 + nameWidth, coordY - 17, 10, 14);
-                    }
                 });
             });
         };
@@ -393,7 +343,7 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
                             // Draw door name with status icon
                             context.font = '12px Arial';
                             const nameWidth = context.measureText(door.name).width;
-                            const bgWidth = nameWidth + 30; // Extra space for icon
+                            const bgWidth = nameWidth + 10; // Reduced padding since we removed the icon
 
                             // Background for text
                             context.fillStyle = 'rgba(255, 255, 255, 0.8)';
@@ -402,17 +352,6 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
                             // Door name text
                             context.fillStyle = '#000000';
                             context.fillText(door.name, coordX + 15, coordY - 5);
-
-                            // Draw lock icon
-                            if (door.lock_status === 'open') {
-                                // Draw open lock icon
-                                context.fillStyle = '#10b981';
-                                context.fillRect(coordX + 15 + nameWidth, coordY - 17, 10, 14);
-                            } else {
-                                // Draw closed lock icon
-                                context.fillStyle = '#ef4444';
-                                context.fillRect(coordX + 15 + nameWidth, coordY - 17, 10, 14);
-                            }
                         });
                     });
                 }
@@ -549,52 +488,8 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
                         
                         {floorData && (
                             <>
-                                <strong>Các trường liên quan đến sơ đồ:</strong><br/>
-                                {floorData.data && (
-                                    <>
-                                        <strong>Trường trong floorData.data:</strong><br/>
-                                        {Object.keys(floorData.data).map(key => (
-                                            <React.Fragment key={key}>
-                                                - {key}: {typeof floorData.data[key] === 'object' 
-                                                    ? JSON.stringify(floorData.data[key]) 
-                                                    : String(floorData.data[key])}<br/>
-                                            </React.Fragment>
-                                        ))}
-                                        <br/>
-                                        data.floor_plan_url: {floorData.data.floor_plan_url || 'không có'}<br/>
-                                        data.floor_plan_image: {floorData.data.floor_plan_image || 'không có'}<br/>
-                                        data.floor_plan: {floorData.data.floor_plan || 'không có'}<br/>
-                                    </>
-                                )}
-                                
-                                {floorData.data && floorData.data.data && (
-                                    <>
-                                        <strong>Trường trong floorData.data.data:</strong><br/>
-                                        {Object.keys(floorData.data.data).map(key => (
-                                            <React.Fragment key={key}>
-                                                - {key}: {typeof floorData.data.data[key] === 'object' 
-                                                    ? JSON.stringify(floorData.data.data[key]) 
-                                                    : String(floorData.data.data[key])}<br/>
-                                            </React.Fragment>
-                                        ))}
-                                        <br/>
-                                        data.data.floor_plan_url: {floorData.data.data.floor_plan_url || 'không có'}<br/>
-                                        data.data.floor_plan_image: {floorData.data.data.floor_plan_image || 'không có'}<br/>
-                                        data.data.floor_plan: {floorData.data.data.floor_plan || 'không có'}<br/>
-                                    </>
-                                )}
-                                
-                                <br/>
-                                <strong>Dữ liệu đầy đủ:</strong><br/>
-                                <pre className="whitespace-pre-wrap text-xs">
-                                    {JSON.stringify(floorData, null, 2).substring(0, 300)}...
-                                </pre>
-                                
-                                <br/>
-                                <strong>Hướng dẫn khắc phục:</strong><br/>
-                                1. Kiểm tra xem tầng đã được tải lên sơ đồ chưa<br/>
-                                2. Kiểm tra API trả về có chứa trường floor_plan_url hoặc floor_plan_image không<br/>
-                                3. Nếu API trả về có chứa URL sơ đồ tầng nhưng không hiển thị, hãy kiểm tra console log để xem lỗi<br/>
+                                <strong>Dữ liệu tầng:</strong><br/>
+                                {JSON.stringify(floorData, null, 2)}
                             </>
                         )}
                     </p>
