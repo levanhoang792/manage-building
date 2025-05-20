@@ -26,6 +26,7 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
     const baseCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const imageRef = useRef<HTMLImageElement | null>(null);
+    const animationFrameRef = useRef<number>();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const [error, setError] = useState<string | null>(null);
@@ -202,6 +203,20 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
                     });
                 }
 
+                // Draw pulsing circle effect
+                const now = Date.now();
+                const pulseRadius = 6 + Math.sin(now / 500) * 2; // Pulse between 4 and 8 pixels
+                const pulseOpacity = 0.3 + Math.sin(now / 500) * 0.2; // Pulse opacity between 0.1 and 0.5
+
+                // Draw outer pulsing circle
+                context.beginPath();
+                context.arc(markerX, markerY, pulseRadius + 4, 0, 2 * Math.PI);
+                context.fillStyle = fillColor.replace(')', `, ${pulseOpacity})`).replace('rgb', 'rgba');
+                context.fill();
+
+                // Draw main marker
+                context.beginPath();
+                context.arc(markerX, markerY, 6, 0, 2 * Math.PI);
                 context.fillStyle = fillColor;
                 context.fill();
                 context.strokeStyle = '#ffffff';
@@ -214,11 +229,11 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
                 const textWidth = context.measureText(text).width;
                 
                 context.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                context.fillRect(markerX - textWidth/2 - 4, markerY - 24, textWidth + 8, 20);
+                context.fillRect(markerX - textWidth/2 - 4, markerY - 34, textWidth + 8, 20);
                 
                 context.fillStyle = fillColor;
                 context.textAlign = 'center';
-                context.fillText(text, markerX, markerY - 10);
+                context.fillText(text, markerX, markerY - 20);
 
                 if (doorStatus?.data?.hasPendingRequest === true) {
                     const indicatorText = "Đang chờ duyệt";
@@ -252,6 +267,24 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
             updateDoorMarkers();
         }
     }, [imageLoaded, doorStatuses, updateDoorMarkers]);
+
+    // Add animation frame update
+    useEffect(() => {
+        const animate = () => {
+            if (imageLoaded) {
+                updateDoorMarkers();
+            }
+            animationFrameRef.current = requestAnimationFrame(animate);
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+            }
+        };
+    }, [imageLoaded, updateDoorMarkers]);
 
     // Initialize canvases and load image
     useEffect(() => {
