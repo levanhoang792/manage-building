@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useCallback, useMemo} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import {cn} from "@/lib/utils";
 import {Dialog} from "@headlessui/react";
@@ -22,6 +22,7 @@ import {
     useGetGuestDoorCoordinates
 } from '@/hooks/guest/useGuestData';
 import {useCreateDoorRequest, useGetDoorRequestStatus} from '@/hooks/doorRequests/useDoorRequests';
+import FloorPlanVisualizer from '../door/components/FloorPlanVisualizer';
 
 interface GuestDoorRequestFormData {
     requesterName: string;
@@ -72,10 +73,75 @@ const DoorRequestStatus: React.FC<DoorStatusProps> = ({buildingId, floorId, door
             <div className="flex items-center gap-1 text-xs text-yellow-800">
                 <ClockIcon className="h-3 w-3" />
                 <span>Đang chờ duyệt</span>
+                {statusData.data.requestDetails && (
+                    <span className="ml-1">
+                        - {statusData.data.requestDetails.requester_name}
+                    </span>
+                )}
             </div>
         </div>
     );
 };
+
+// Add MemoizedFloorPlanVisualizer before the GuestDoorRequest component
+const MemoizedFloorPlanVisualizer = React.memo(FloorPlanVisualizer, (prevProps, nextProps) => {
+    // Check primitive props first
+    if (
+        prevProps.floorPlanImage !== nextProps.floorPlanImage ||
+        prevProps.buildingId !== nextProps.buildingId ||
+        prevProps.floorId !== nextProps.floorId ||
+        prevProps.onDoorSelect !== nextProps.onDoorSelect
+    ) {
+        return false;
+    }
+
+    // Check doors array length first
+    if (prevProps.doors.length !== nextProps.doors.length) {
+        return false;
+    }
+
+    // Check door coordinates array length
+    const prevCoordinates = prevProps.doorCoordinates || [];
+    const nextCoordinates = nextProps.doorCoordinates || [];
+    
+    if (prevCoordinates.length !== nextCoordinates.length) {
+        return false;
+    }
+
+    // Deep compare doors only if needed
+    const doorsChanged = prevProps.doors.some((door, index) => {
+        const nextDoor = nextProps.doors[index];
+        return (
+            door.id !== nextDoor.id ||
+            door.name !== nextDoor.name ||
+            door.lock_status !== nextDoor.lock_status
+        );
+    });
+
+    if (doorsChanged) {
+        return false;
+    }
+
+    // Deep compare coordinates only if needed
+    const coordinatesChanged = prevCoordinates.some((item, index) => {
+        const nextItem = nextCoordinates[index];
+        if (item.door.id !== nextItem.door.id) {
+            return true;
+        }
+        if (item.coordinates.length !== nextItem.coordinates.length) {
+            return true;
+        }
+        return item.coordinates.some((coord, coordIndex) => {
+            const nextCoord = nextItem.coordinates[coordIndex];
+            return (
+                coord.x_coordinate !== nextCoord.x_coordinate ||
+                coord.y_coordinate !== nextCoord.y_coordinate
+            );
+        });
+    });
+
+    return !coordinatesChanged;
+});
 
 function GuestDoorRequest() {
     const navigate = useNavigate();
@@ -141,6 +207,13 @@ function GuestDoorRequest() {
         isLoading: isLoadingCoordinates
     } = useGetGuestDoorCoordinates(selectedBuildingId, selectedFloorId, doorIds);
 
+    // Get door request status
+    useGetDoorRequestStatus(
+        selectedBuildingId,
+        selectedFloorId,
+        selectedDoor?.id?.toString()
+    );
+
     // Set floors data when it's loaded
     useEffect(() => {
         if (floorsData?.data) {
@@ -157,21 +230,8 @@ function GuestDoorRequest() {
 
     // Update door coordinates when data changes
     useEffect(() => {
-        console.log('Debug - Loading States:', {
-            selectedBuildingId,
-            selectedFloorId,
-            isLoadingDoors,
-            isLoadingCoordinates,
-            doorsDataExists: !!doorsData?.data?.data,
-            doorCount: doorsData?.data?.data?.length || 0,
-            doorIds,
-            doorCoordinatesDataExists: !!doorCoordinatesData,
-            doorCoordinatesCount: doorCoordinates.length
-        });
-
         // Skip if no building or floor selected
         if (!selectedBuildingId || !selectedFloorId) {
-            console.log('Debug - No building or floor selected');
             if (doorCoordinates.length > 0) {
                 setDoorCoordinates([]);
             }
@@ -180,38 +240,16 @@ function GuestDoorRequest() {
 
         // Skip if data is not ready
         if (!doorsData?.data?.data || !doorCoordinatesData) {
-            console.log('Debug - Missing Data:', {
-                hasDoorsData: !!doorsData?.data?.data,
-                hasCoordinatesData: !!doorCoordinatesData,
-                doorsData,
-                doorCoordinatesData
-            });
             return;
         }
 
         const doors = doorsData.data.data;
-        console.log('Debug - Doors:', doors);
-
         const coordinates = doorCoordinatesData
             .map(item => {
                 const door = doors.find(d => d.id === Number(item.doorId));
                 const coordinateData = item.data;
                 
-                console.log('Debug - Processing Door:', {
-                    doorId: item.doorId,
-                    foundDoor: !!door,
-                    door,
-                    coordinateData,
-                    rawItem: item
-                });
-
                 if (!door || !Array.isArray(coordinateData) || coordinateData.length === 0) {
-                    console.log('Debug - Invalid Door or Coordinate Data:', {
-                        door,
-                        coordinateData,
-                        isArray: Array.isArray(coordinateData),
-                        length: coordinateData?.length
-                    });
                     return null;
                 }
 
@@ -222,24 +260,18 @@ function GuestDoorRequest() {
             })
             .filter((item): item is NonNullable<typeof item> => item !== null);
 
-        console.log('Debug - Final Coordinates:', {
-            totalDoors: doors.length,
-            processedCoordinates: coordinates.length,
-            coordinates,
-            rawDoorCoordinatesData: doorCoordinatesData
-        });
-
         // Only update if coordinates have changed
-        if (JSON.stringify(coordinates) !== JSON.stringify(doorCoordinates)) {
+        const newCoordinatesString = JSON.stringify(coordinates);
+        const currentCoordinatesString = JSON.stringify(doorCoordinates);
+        
+        if (newCoordinatesString !== currentCoordinatesString) {
             setDoorCoordinates(coordinates);
         }
     }, [
         selectedBuildingId,
         selectedFloorId,
-        doorsData,
-        doorCoordinatesData,
-        doorIds,
-        doorCoordinates
+        doorsData?.data?.data,
+        doorCoordinatesData
     ]);
 
     // Add debug log for render conditions
@@ -298,14 +330,15 @@ function GuestDoorRequest() {
     };
 
     // Handle door selection and open form
-    const handleDoorSelect = (door: Door) => {
+    const handleDoorSelect = useCallback((door: Door) => {
         if (door.lock_status === 'open') {
-            toast.warning(`Door ${door.name} is already open`);
+            toast.warning(`Cửa ${door.name} đang mở`);
             return;
         }
+
         setSelectedDoor(door);
         setIsFormOpen(true);
-    };
+    }, []);
 
     const onSubmit = handleSubmit(async (data) => {
         if (!selectedDoor) {
@@ -346,95 +379,6 @@ function GuestDoorRequest() {
         }
     });
 
-    // Render floor plan content
-    const renderFloorPlan = () => {
-        const floorPlanImage = floors.find(f => String(f.id) === selectedFloorId)?.floor_plan_image;
-        console.log('Debug - FloorPlanVisualizer Props:', {
-            floorPlanImage,
-            doors: doorsData?.data?.data || [],
-            doorCoordinates,
-            hasImage: !!floorPlanImage,
-            hasDoors: !!(doorsData?.data?.data?.length),
-            hasCoordinates: doorCoordinates.length > 0
-        });
-        
-        if (!floorPlanImage) {
-            return (
-                <div className="h-full flex flex-col items-center justify-center text-center p-4">
-                    <MapIcon className="h-12 w-12 text-gray-400 mb-4"/>
-                    <p className="text-gray-500 text-lg mb-2">Chọn tầng để xem sơ đồ</p>
-                </div>
-            );
-        }
-
-        // Ensure the image path is absolute
-        let fullImagePath = floorPlanImage;
-        if (!floorPlanImage.startsWith('http') && !floorPlanImage.startsWith('blob:')) {
-            // Remove leading slash if exists
-            const cleanPath = floorPlanImage.startsWith('/') ? floorPlanImage.slice(1) : floorPlanImage;
-            
-            // Get base URL from environment or window.location
-            const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
-            
-            // Ensure baseUrl doesn't end with slash and cleanPath doesn't start with slash
-            fullImagePath = `${baseUrl}/${cleanPath}`;
-        }
-
-        console.log('Debug - Final Image Path:', {
-            original: floorPlanImage,
-            processed: fullImagePath,
-            baseUrl: import.meta.env.VITE_API_URL || window.location.origin
-        });
-
-        return (
-            <div className="relative w-full h-full">
-                <img
-                    src={fullImagePath}
-                    alt="Floor Plan"
-                    className="w-full h-full object-contain"
-                />
-                {doorCoordinates.map(({door, coordinates}) => {
-                    // Kiểm tra nếu door hoặc coordinates không tồn tại
-                    if (!door || !coordinates || coordinates.length === 0) return null;
-
-                    // Kiểm tra nếu tọa độ đầu tiên không hợp lệ
-                    const firstCoordinate = coordinates[0];
-                    if (!firstCoordinate?.x_coordinate || !firstCoordinate?.y_coordinate) return null;
-
-                    return (
-                        <div
-                            key={door.id}
-                            className="absolute"
-                            style={{
-                                left: `${firstCoordinate.x_coordinate}%`,
-                                top: `${firstCoordinate.y_coordinate}%`,
-                            }}
-                        >
-                            <button
-                                onClick={() => handleDoorSelect(door)}
-                                className={cn(
-                                    "w-4 h-4 rounded-full transform -translate-x-1/2 -translate-y-1/2",
-                                    "transition-colors duration-200 ease-in-out",
-                                    "hover:ring-2 hover:ring-offset-2 hover:ring-indigo-500",
-                                    door.lock_status === 'open' ? 'bg-green-500' :
-                                    door.lock_status === 'closed' ? 'bg-red-500' : 'bg-blue-500'
-                                )}
-                                title={door.name}
-                            />
-                            {selectedBuildingId && selectedFloorId && (
-                                <DoorRequestStatus
-                                    buildingId={selectedBuildingId}
-                                    floorId={selectedFloorId}
-                                    doorId={door.id.toString()}
-                                />
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
-
     // Update URL when building or floor changes
     useEffect(() => {
         if (selectedBuildingId && selectedFloorId) {
@@ -458,6 +402,22 @@ function GuestDoorRequest() {
             setSelectedFloorId(floorIdParam);
         }
     }, [buildingIdParam, floorIdParam]);
+
+    // Memoize values for FloorPlanVisualizer
+    const memoizedFloorPlanImage = useMemo(() => {
+        return floors.find(f => String(f.id) === selectedFloorId)?.floor_plan_image || '';
+    }, [floors, selectedFloorId]);
+
+    const memoizedDoors = useMemo(() => {
+        return doorsData?.data?.data || [];
+    }, [doorsData?.data?.data]);
+
+    // Memoize the current floor
+    const currentFloor = useMemo(() => {
+        return floors.find(f => String(f.id) === selectedFloorId);
+    }, [floors, selectedFloorId]);
+
+    const isDataReady = !isLoading && !hasNoData && currentFloor;
 
     return (
         <div className="h-screen flex flex-col bg-gray-100 overflow-hidden">
@@ -678,7 +638,7 @@ function GuestDoorRequest() {
                                             <p className="mt-2 text-sm text-gray-500">Đang tải thông tin cửa và tọa độ...</p>
                                         </div>
                                     </div>
-                                ) : hasNoData ? (
+                                ) : !isDataReady ? (
                                     <div className="flex-1 flex items-center justify-center">
                                         <div className="text-center max-w-sm mx-auto">
                                             <MapIcon className="h-12 w-12 text-gray-400 mx-auto mb-4"/>
@@ -693,7 +653,37 @@ function GuestDoorRequest() {
                                 ) : (
                                     <div className="w-full h-full relative">
                                         <div className="absolute inset-0">
-                                            {renderFloorPlan()}
+                                            <MemoizedFloorPlanVisualizer
+                                                floorPlanImage={memoizedFloorPlanImage}
+                                                doors={memoizedDoors}
+                                                onDoorSelect={handleDoorSelect}
+                                                doorCoordinates={doorCoordinates}
+                                                buildingId={selectedBuildingId}
+                                                floorId={selectedFloorId}
+                                            />
+                                            {doorCoordinates.map(({door, coordinates}) => {
+                                                if (!coordinates || coordinates.length === 0) return null;
+                                                const firstCoordinate = coordinates[0];
+                                                if (!firstCoordinate?.x_coordinate || !firstCoordinate?.y_coordinate) return null;
+
+                                                return (
+                                                    <div
+                                                        key={`status-${door.id}`}
+                                                        className="absolute"
+                                                        style={{
+                                                            left: `${firstCoordinate.x_coordinate}%`,
+                                                            top: `${firstCoordinate.y_coordinate}%`,
+                                                            transform: 'translate(-50%, -50%)'
+                                                        }}
+                                                    >
+                                                        <DoorRequestStatus
+                                                            buildingId={selectedBuildingId}
+                                                            floorId={selectedFloorId}
+                                                            doorId={door.id.toString()}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 )}

@@ -1,5 +1,6 @@
 const DoorRequest = require('../models/doorRequest');
 const { validationResult } = require('express-validator');
+const { handleSuccess, handleError } = require('../utils/responseHandler');
 
 // Lấy trạng thái yêu cầu mở cửa hiện tại
 exports.getDoorRequestStatus = async (req, res) => {
@@ -44,6 +45,35 @@ exports.getDoorRequestStatus = async (req, res) => {
             message: 'Internal server error',
             error: error.message
         });
+    }
+};
+
+/**
+ * Check if a door has any pending request
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.checkDoorRequestStatus = async (req, res) => {
+    try {
+        const { buildingId, floorId, doorId } = req.params;
+
+        // Find any pending request for the door
+        const pendingRequest = await DoorRequest.findOne({
+            door_id: doorId,
+            status: 'pending',
+            deleted_at: null
+        });
+
+        return handleSuccess(res, {
+            hasPendingRequest: !!pendingRequest,
+            requestDetails: pendingRequest ? {
+                id: pendingRequest.id,
+                requester_name: pendingRequest.requester_name,
+                created_at: pendingRequest.created_at
+            } : null
+        });
+    } catch (error) {
+        return handleError(res, error);
     }
 };
 

@@ -47,7 +47,8 @@ const getDoorRequestStatus = async (req, res) => {
                 id: latestRequest.id,
                 requester_name: latestRequest.requester_name,
                 created_at: latestRequest.created_at
-            } : null
+            } : null,
+            door_status: door.lock_status
         });
     } catch (err) {
         console.error('Error getting door request status:', err);

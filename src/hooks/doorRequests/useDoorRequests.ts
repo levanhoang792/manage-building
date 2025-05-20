@@ -159,30 +159,36 @@ export const useGetDoorRequestsByDoor = (
     });
 };
 
-// Hook lấy trạng thái yêu cầu mở cửa hiện tại
-export const useGetDoorRequestStatus = (
-    buildingId: number | string,
-    floorId: number | string,
-    doorId: number | string
-) => {
-    return useQuery({
+interface DoorRequestStatusResponse {
+    success: boolean;
+    data: {
+        hasPendingRequest: boolean;
+        requestDetails: {
+            id: number;
+            requester_name: string;
+            created_at: string;
+        } | null;
+    };
+}
+
+export const useGetDoorRequestStatus = (buildingId?: string, floorId?: string, doorId?: string) => {
+    return useQuery<DoorRequestStatusResponse>({
         queryKey: ['doorRequestStatus', buildingId, floorId, doorId],
         queryFn: async () => {
             try {
                 const uri = replaceParams(API_ROUTES.DOOR_REQUEST_STATUS, {
-                    buildingId,
-                    floorId,
-                    doorId
+                    buildingId: buildingId || '',
+                    floorId: floorId || '',
+                    doorId: doorId || ''
                 });
                 const resp = await httpGet({uri});
                 return await resp.json();
             } catch (error) {
-                console.error('Error fetching door request status:', error);
+                console.error('Error checking door request status:', error);
                 throw error;
             }
         },
         enabled: !!buildingId && !!floorId && !!doorId,
-        refetchInterval: 10000, // Tự động refresh mỗi 10 giây
-        refetchOnWindowFocus: true
+        refetchInterval: 5000, // Refetch every 5 seconds
     });
 };
