@@ -111,6 +111,7 @@ export const API_ROUTES = {
     DOOR_REQUEST_CREATE: "/door-requests",
     DOOR_REQUEST_UPDATE_STATUS: "/door-requests/:id/status",
     DOOR_REQUEST_BY_DOOR: "/buildings/:buildingId/floors/:floorId/doors/:id/requests",
+    DOOR_REQUEST_STATUS: '/door-requests/door/:buildingId/:floorId/:doorId/status',
     
     // Door Lock endpoints
     DOOR_LOCK_UPDATE: "/buildings/:buildingId/floors/:floorId/doors/:id/lock",

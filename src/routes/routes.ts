@@ -7,6 +7,11 @@ export const ROUTES = {
     CONFIRM_OTP: "/confirm-otp",
     CHANGE_PASSWORD: "/change-password",
     SIGN_UP: "/sign-up",
+    
+    // Guest routes
+    GUEST_DOOR_REQUEST: "/guest-door-request",
+    GUEST_DOOR_REQUEST_BUILDING: "/guest-door-request/buildings/:id",
+    GUEST_DOOR_REQUEST_BUILDING_FLOOR: "/guest-door-request/buildings/:id/floors/:floorId",
 
     MODELS: "/models",
     MODELS_CREATE: "/models/create",

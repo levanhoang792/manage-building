@@ -3,6 +3,7 @@ const floorModel = require('@models/floor.model');
 const buildingModel = require('@models/building.model');
 const { success, error } = require('@utils/responseHandler');
 const responseCodes = require('@utils/responseCodes');
+const { Op } = require('sequelize');
 
 /**
  * Get all doors for a floor with pagination and filtering
@@ -21,10 +22,11 @@ const getDoors = async (req, res) => {
             return error(res, 'Building not found', responseCodes.NOT_FOUND);
         }
 
-        // Check if floor exists
+        // Validate building and floor exist
         const floor = await floorModel.getById(buildingId, floorId);
 
         if (!floor) {
+            console.log('Floor not found');
             return error(res, 'Floor not found', responseCodes.NOT_FOUND);
         }
 

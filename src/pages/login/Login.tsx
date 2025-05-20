@@ -11,7 +11,6 @@ import {ROUTES} from "@/routes/routes";
 import FieldError from "@/components/FieldError";
 import Checkbox from "@/components/commons/Checkbox";
 import {useAuth} from "@/hooks/useAuth";
-import LocationSelect from "./components/LocationSelect";
 import {useState} from "react";
 
 const FormSchema: z.ZodType<LoginFormData> = z.object({
@@ -184,19 +183,30 @@ function Login() {
                             </Button>
                         </div>
 
-                        <p className={cn("mt-5 text-center text-sm/6 text-white")}>
-                            Don't have an account?{" "}
+                        <div className={cn("mt-5 flex flex-col gap-3 text-center")}>
+                            <p className={cn("text-sm/6 text-white")}>
+                                Don't have an account?{" "}
+                                <Link
+                                    to={ROUTES.SIGN_UP}
+                                    className={cn("text-purple-300 hover:text-purple-400 transition-all")}
+                                >
+                                    Sign up
+                                </Link>
+                            </p>
+                            
                             <Link
-                                to={ROUTES.SIGN_UP}
-                                className={cn("text-purple-300 hover:text-purple-400 transition-all")}
+                                to={ROUTES.GUEST_DOOR_REQUEST}
+                                className={cn(
+                                    "inline-flex items-center justify-center gap-2 bg-purple-500/20 py-1.5 px-3 text-sm/6 w-full rounded-full",
+                                    "font-semibold text-white border border-purple-500/30 focus:outline-none transition-all",
+                                    "hover:bg-purple-500/30"
+                                )}
                             >
-                                Sign up
+                                Request Door Access
                             </Link>
-                        </p>
+                        </div>
                     </form>
                 </div>
-
-                <LocationSelect/>
             </div>
         </div>
     );

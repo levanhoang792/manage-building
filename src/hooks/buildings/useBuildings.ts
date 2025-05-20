@@ -1,4 +1,4 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useMutation, useQuery, useInfiniteQuery} from "@tanstack/react-query";
 import {httpDelete, httpGet, httpPatch, httpPost, httpPut} from "@/utils/api";
 import {API_ROUTES} from "@/routes/api";
 import {BuildingFormData, BuildingQueryParams, BuildingStatusData, ResBuilding, ResBuildingList} from "./model";
@@ -12,7 +12,7 @@ const replaceParams = (url: string, params: Record<string, string | number>) => 
     return result;
 };
 
-// Hook lấy danh sách tòa nhà
+// Hook lấy danh sách tòa nhà với phân trang thông thường
 export const useGetBuildings = (params?: BuildingQueryParams) => {
     return useQuery({
         queryKey: ['buildings', params],
@@ -23,6 +23,31 @@ export const useGetBuildings = (params?: BuildingQueryParams) => {
             });
             return await resp.json() as ResBuildingList;
         }
+    });
+};
+
+// Hook lấy danh sách tòa nhà với infinite scroll
+export const useGetBuildingsInfinite = (params?: BuildingQueryParams) => {
+    return useInfiniteQuery({
+        queryKey: ['buildings-infinite', params],
+        queryFn: async ({pageParam = 1}) => {
+            const queryParams = {
+                ...params,
+                page: pageParam,
+                limit: params?.limit || 20
+            };
+            const resp = await httpGet({
+                uri: API_ROUTES.BUILDINGS,
+                options: {body: JSON.stringify(queryParams)}
+            });
+            return await resp.json() as ResBuildingList;
+        },
+        getNextPageParam: (lastPage) => {
+            if (!lastPage.data) return undefined;
+            const totalPages = Math.ceil(lastPage.data.total / (lastPage.data.limit || 20));
+            return lastPage.data.page < totalPages ? lastPage.data.page + 1 : undefined;
+        },
+        initialPageParam: 1
     });
 };
 

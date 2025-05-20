@@ -41,7 +41,14 @@ import {CreateUser, EditUser, PendingUsers, UserManagement} from "@/pages/users"
 import {CreateRole, EditRole, RoleManagement, RolePermissions} from "@/pages/roles";
 
 // Door Request pages
-import {DoorRequestManagement, DoorRequestDetail, CreateDoorRequest, DoorLockManagement, CreateDoorLockRequest} from "@/pages/door-request";
+import {
+    DoorRequestManagement,
+    DoorRequestDetail,
+    CreateDoorRequest,
+    DoorLockManagement,
+    CreateDoorLockRequest,
+    GuestDoorRequest
+} from "@/pages/door-request";
 
 // Door Monitoring Dashboard
 import DoorMonitoring from "@/pages/door-monitoring";
@@ -60,6 +67,9 @@ function App() {
                             <Route path={ROUTES.CONFIRM_OTP} element={<ConfirmOtp/>}/>
                             <Route path={ROUTES.CHANGE_PASSWORD} element={<ChangePassword/>}/>
                             <Route path={ROUTES.SIGN_UP} element={<SignUp/>}/>
+                            <Route path={ROUTES.GUEST_DOOR_REQUEST} element={<GuestDoorRequest/>}/>
+                            <Route path={ROUTES.GUEST_DOOR_REQUEST_BUILDING} element={<GuestDoorRequest/>}/>
+                            <Route path={ROUTES.GUEST_DOOR_REQUEST_BUILDING_FLOOR} element={<GuestDoorRequest/>}/>
 
                             {/* Private routes */}
                             <Route element={<PrivateRoute/>}>

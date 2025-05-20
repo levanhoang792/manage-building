@@ -158,3 +158,31 @@ export const useGetDoorRequestsByDoor = (
         staleTime: 30000 // 30 giây
     });
 };
+
+// Hook lấy trạng thái yêu cầu mở cửa hiện tại
+export const useGetDoorRequestStatus = (
+    buildingId: number | string,
+    floorId: number | string,
+    doorId: number | string
+) => {
+    return useQuery({
+        queryKey: ['doorRequestStatus', buildingId, floorId, doorId],
+        queryFn: async () => {
+            try {
+                const uri = replaceParams(API_ROUTES.DOOR_REQUEST_STATUS, {
+                    buildingId,
+                    floorId,
+                    doorId
+                });
+                const resp = await httpGet({uri});
+                return await resp.json();
+            } catch (error) {
+                console.error('Error fetching door request status:', error);
+                throw error;
+            }
+        },
+        enabled: !!buildingId && !!floorId && !!doorId,
+        refetchInterval: 10000, // Tự động refresh mỗi 10 giây
+        refetchOnWindowFocus: true
+    });
+};

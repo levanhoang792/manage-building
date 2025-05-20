@@ -47,7 +47,22 @@ export default function BuildingManagement() {
 
     // Handle filter change
     const handleFilterChange = (filters: Partial<BuildingQueryParams>) => {
-        setQueryParams(prev => ({...prev, ...filters, page: 1}));
+        setQueryParams(prev => {
+            // Only reset page to 1 if filters actually changed (excluding the page parameter)
+            const hasFilterChanged = Object.entries(filters).some(([key, value]) => {
+                if (key === 'page') return false;
+                return prev[key as keyof BuildingQueryParams] !== value;
+            });
+
+            const newParams: BuildingQueryParams = {
+                ...prev,
+                ...filters,
+                // Only reset page if filters changed and page wasn't explicitly set
+                page: hasFilterChanged && !filters.page ? 1 : (filters.page || prev.page)
+            };
+
+            return newParams;
+        });
     };
 
     // Navigate to create building page
@@ -135,7 +150,10 @@ export default function BuildingManagement() {
 
             {/* Filter Section */}
             <div className="bg-white p-4 rounded-lg shadow mb-6">
-                <BuildingFilter onFilterChange={handleFilterChange}/>
+                <BuildingFilter 
+                    onFilterChange={handleFilterChange}
+                    currentPage={queryParams.page}
+                />
             </div>
 
             {/* Buildings List */}

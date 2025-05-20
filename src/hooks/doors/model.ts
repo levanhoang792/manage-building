@@ -2,12 +2,13 @@ import {ResRequest} from "../model";
 
 export interface Door {
     id: number;
+    building_id: number;
     floor_id: number;
     name: string;
     description?: string;
     door_type_id: number;
     status: 'active' | 'inactive' | 'maintenance';
-    lock_status?: 'open' | 'closed';
+    lock_status: 'open' | 'closed' | 'unknown';
     created_at: string;
     updated_at: string;
 }

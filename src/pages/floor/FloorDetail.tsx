@@ -168,7 +168,7 @@ export default function FloorDetail() {
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900 mb-3">Floor Plan</h3>
                                 {floor.floor_plan_image ? (
-                                    <div className="border rounded-lg overflow-hidden">
+                                    <div className="rounded-lg overflow-hidden">
                                         <div className="relative">
                                             <CoordinateVisualizer
                                                 floorPlanImage={floor.floor_plan_image}

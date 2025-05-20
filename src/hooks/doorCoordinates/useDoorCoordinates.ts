@@ -1,7 +1,8 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {httpDelete, httpGet, httpPost, httpPut} from "@/utils/api";
 import {API_ROUTES} from "@/routes/api";
-import {DoorCoordinateFormData, ResDoorCoordinate, ResDoorCoordinateList, ResMultipleDoorCoordinates} from "./model";
+import {DoorCoordinateFormData, ResDoorCoordinate} from "./model";
+import { DoorCoordinate } from './model';
 
 // Hàm helper để thay thế các tham số trong URL
 const replaceParams = (url: string, params: Record<string, string | number>) => {
@@ -12,20 +13,33 @@ const replaceParams = (url: string, params: Record<string, string | number>) => 
     return result;
 };
 
+interface DoorCoordinatesResponse {
+    data: {
+        data: DoorCoordinate[];
+    };
+}
+
 // Hook lấy danh sách tọa độ của cửa
-export const useGetDoorCoordinates = (
-    buildingId: number | string,
-    floorId: number | string,
-    doorId: number | string
-) => {
+export const useGetDoorCoordinates = (buildingId?: string | number, floorId?: string | number, doorId?: string | number) => {
+    const isEnabled = Boolean(buildingId && floorId && doorId);
+
     return useQuery({
         queryKey: ['doorCoordinates', buildingId, floorId, doorId],
-        queryFn: async () => {
-            const uri = replaceParams(API_ROUTES.DOOR_COORDINATES, {buildingId, floorId, doorId});
-            const resp = await httpGet({uri});
-            return await resp.json() as ResDoorCoordinateList;
+        queryFn: async (): Promise<DoorCoordinatesResponse | null> => {
+            try {
+                if (!isEnabled) return null;
+                
+                const resp = await httpGet({
+                    uri: `/buildings/${buildingId}/floors/${floorId}/doors/${doorId}/coordinates`
+                });
+                const data = await resp.json() as DoorCoordinatesResponse;
+                return data;
+            } catch (error) {
+                console.error('Error fetching door coordinates:', error);
+                throw new Error('Failed to fetch door coordinates');
+            }
         },
-        enabled: !!buildingId && !!floorId && !!doorId
+        enabled: isEnabled,
     });
 };
 
@@ -125,40 +139,28 @@ export const useDeleteDoorCoordinate = (
     });
 };
 
-// Hook lấy tọa độ của nhiều cửa cùng lúc
-export const useGetMultipleDoorCoordinates = (
-    buildingId: number | string,
-    floorId: number | string,
-    doorIds: (number | string)[]
-) => {
-    const queryClient = useQueryClient();
-
-    return useQuery<ResMultipleDoorCoordinates>({
-        queryKey: ['multipleDoorCoordinates', buildingId, floorId, doorIds],
+// Hook lấy danh sách tọa độ của nhiều cửa cùng lúc
+export const useGetMultipleDoorCoordinates = (buildingId?: string | number, floorId?: string | number, doorIds: (string | number)[] = []) => {
+    return useQuery({
+        queryKey: ['doorCoordinates', buildingId, floorId, doorIds],
         queryFn: async () => {
-            // Lấy tọa độ cho từng cửa
-            const promises = doorIds.map(async (doorId) => {
-                // Kiểm tra xem dữ liệu đã có trong cache chưa
-                const cachedData = queryClient.getQueryData<ResDoorCoordinateList>(['doorCoordinates', buildingId, floorId, doorId]);
-                if (cachedData) {
-                    return {doorId, data: cachedData};
-                }
-
-                // Nếu chưa có trong cache, gọi API
-                const uri = replaceParams(API_ROUTES.DOOR_COORDINATES, {buildingId, floorId, doorId});
-                console.log(`Calling API for door ${doorId} with URI: ${uri}`);
-                console.log(`Parameters: buildingId=${buildingId}, floorId=${floorId}, doorId=${doorId}`);
-                const resp = await httpGet({uri});
-                const data = await resp.json() as ResDoorCoordinateList;
-
-                // Lưu vào cache
-                queryClient.setQueryData(['doorCoordinates', buildingId, floorId, doorId], data);
-
-                return {doorId, data};
-            });
-
-            return Promise.all(promises);
+            if (!buildingId || !floorId || doorIds.length === 0) return [];
+            
+            const responses = await Promise.all(
+                doorIds.map(async doorId => {
+                    const resp = await httpGet({
+                        uri: `/buildings/${buildingId}/floors/${floorId}/doors/${doorId}/coordinates`
+                    });
+                    const data = await resp.json() as DoorCoordinatesResponse;
+                    return {
+                        doorId,
+                        data
+                    };
+                })
+            );
+            
+            return responses;
         },
-        enabled: !!buildingId && !!floorId && doorIds.length > 0
+        enabled: !!buildingId && !!floorId && doorIds.length > 0,
     });
 };

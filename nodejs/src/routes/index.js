@@ -43,4 +43,7 @@ router.use('/buildings/:buildingId/floors/:floorId/doors/:id/requests', require(
 // Door requests routes
 router.use('/door-requests', require('@routes/doorRequest'));
 
+// Guest routes (public access)
+router.use('/guest', require('@routes/guest'));
+
 module.exports = router;

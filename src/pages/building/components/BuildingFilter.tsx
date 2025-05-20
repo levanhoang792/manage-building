@@ -56,6 +56,7 @@ export default function BuildingFilter({onFilterChange}: BuildingFilterProps) {
             status: undefined,
             sortBy: 'created_at',
             sortOrder: 'desc',
+            page: 1 // Only set page: 1 when explicitly resetting all filters
         });
     };
 

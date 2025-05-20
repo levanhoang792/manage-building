@@ -4,6 +4,8 @@ import {useGetDoors} from '@/hooks/doors';
 import {useGetMultipleDoorCoordinates} from '@/hooks/doorCoordinates';
 import {AnimatePresence, motion} from 'framer-motion';
 import {ArrowsPointingInIcon, ArrowsPointingOutIcon, MapIcon} from '@heroicons/react/24/outline';
+import {useUpdateDoorLockStatus} from '@/hooks/doors';
+import {toast} from 'sonner';
 
 interface FloorVisualizerProps {
     buildingId: string;
@@ -33,7 +35,7 @@ interface FloorData {
         floor_plan_image?: string;
         floor_plan?: string;
     };
-    [key: string]: string | number | boolean | object | undefined; // More specific index signature
+    [key: string]: string | number | boolean | object | undefined;
 }
 
 interface FloorResponse {
@@ -64,6 +66,7 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
     const [isZoomed, setIsZoomed] = useState(false);
     const [selectedDoor, setSelectedDoor] = useState<Door | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isToggling, setIsToggling] = useState(false);
 
     // Refs
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -77,13 +80,21 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
     const {
         data: doorsData,
         isLoading: isLoadingDoors,
-        error: doorsError
+        error: doorsError,
+        refetch: refetchDoors
     } = useGetDoors(buildingId, floorId, {limit: 100});
 
     // Sử dụng hook useGetMultipleDoorCoordinates để lấy tọa độ cửa
     const doorIds = doors.map(door => door.id.toString());
     const {data: doorCoordinatesData, isLoading: isLoadingCoordinates, error: coordinatesError} =
         useGetMultipleDoorCoordinates(buildingId, floorId, doorIds);
+
+    // Add mutation for updating door lock status
+    const updateDoorLockStatusMutation = useUpdateDoorLockStatus(
+        buildingId,
+        floorId,
+        selectedDoor?.id || ''
+    );
 
     // Set floor plan URL when floor data is loaded
     useEffect(() => {
@@ -419,6 +430,48 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
         setIsZoomed(!isZoomed);
     };
 
+    // Add function to handle door lock status toggle
+    const handleToggleDoorLock = async () => {
+        if (!selectedDoor || isToggling) return;
+
+        const newStatus = selectedDoor.lock_status === 'open' ? 'closed' : 'open';
+        
+        try {
+            setIsToggling(true);
+            
+            // Update door status
+            await updateDoorLockStatusMutation.mutateAsync({
+                lock_status: newStatus,
+                reason: `Door ${newStatus} from floor visualizer`
+            });
+            
+            // Update the selected door with the new status
+            setSelectedDoor(prev => prev ? {
+                ...prev,
+                lock_status: newStatus
+            } : null);
+            
+            // Update the doors state to reflect the change
+            setDoors(prevDoors => 
+                prevDoors.map(door => 
+                    door.id === selectedDoor.id 
+                        ? {...door, lock_status: newStatus}
+                        : door
+                )
+            );
+            
+            // Refetch doors to ensure we have the latest data
+            await refetchDoors();
+            
+            toast.success(`Cửa đã được ${newStatus === 'open' ? 'mở' : 'đóng'} thành công`);
+        } catch (error) {
+            console.error('Error toggling door lock status:', error);
+            toast.error(`Có lỗi xảy ra khi ${newStatus === 'open' ? 'mở' : 'đóng'} cửa`);
+        } finally {
+            setIsToggling(false);
+        }
+    };
+
     // Loading state
     if (isLoadingFloor || isLoadingDoors || isLoadingCoordinates) {
         return (
@@ -605,7 +658,29 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
                                 </button>
                             </div>
 
-                            <div className="mt-3 flex justify-end">
+                            <div className="mt-3 flex justify-end space-x-3">
+                                {selectedDoor.status === 'active' && (
+                                    <button
+                                        onClick={handleToggleDoorLock}
+                                        disabled={isToggling}
+                                        className={`inline-flex items-center px-3 py-1.5 border rounded-md shadow-sm text-sm font-medium ${
+                                            isToggling 
+                                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                                : selectedDoor.lock_status === 'open'
+                                                    ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100'
+                                                    : 'border-green-300 text-green-700 bg-green-50 hover:bg-green-100'
+                                        } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-w-[100px] justify-center`}
+                                    >
+                                        {isToggling ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+                                                Đang xử lý...
+                                            </>
+                                        ) : (
+                                            selectedDoor.lock_status === 'open' ? 'Đóng cửa' : 'Mở cửa'
+                                        )}
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => {
                                         window.open(`/buildings/${buildingId}/floors/${floorId}/doors/${selectedDoor.id}`, '_blank');

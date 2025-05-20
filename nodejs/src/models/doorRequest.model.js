@@ -231,10 +231,36 @@ const updateStatus = async (id, status, userId, reason) => {
         });
 };
 
+/**
+ * Get latest pending request for a door
+ * @param {number} doorId - Door ID
+ * @returns {Promise<Object|null>} Latest pending request or null if none exists
+ */
+const getLatestPendingByDoorId = async (doorId) => {
+    return knex(TABLE_NAME)
+        .select([
+            `${TABLE_NAME}.*`,
+            'd.name as door_name',
+            'f.name as floor_name',
+            'f.floor_number',
+            'b.name as building_name'
+        ])
+        .leftJoin('doors as d', `${TABLE_NAME}.door_id`, 'd.id')
+        .leftJoin('floors as f', 'd.floor_id', 'f.id')
+        .leftJoin('buildings as b', 'f.building_id', 'b.id')
+        .where({
+            [`${TABLE_NAME}.door_id`]: doorId,
+            [`${TABLE_NAME}.status`]: 'pending'
+        })
+        .orderBy(`${TABLE_NAME}.created_at`, 'desc')
+        .first();
+};
+
 module.exports = {
     getAll,
     getById,
     getByDoorId,
     create,
-    updateStatus
+    updateStatus,
+    getLatestPendingByDoorId
 };

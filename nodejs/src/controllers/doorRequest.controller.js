@@ -9,6 +9,53 @@ const activityLogger = require('@utils/activityLogger');
 const socketService = require('@services/socket.service');
 
 /**
+ * Get door request status for a specific door
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getDoorRequestStatus = async (req, res) => {
+    try {
+        const { buildingId, floorId, doorId } = req.params;
+
+        // Check if building exists
+        const building = await buildingModel.getById(buildingId);
+
+        if (!building) {
+            return error(res, 'Building not found', responseCodes.NOT_FOUND);
+        }
+
+        // Check if floor exists
+        const floor = await floorModel.getById(buildingId, floorId);
+
+        if (!floor) {
+            return error(res, 'Floor not found', responseCodes.NOT_FOUND);
+        }
+
+        // Check if door exists
+        const door = await doorModel.getById(floorId, doorId);
+
+        if (!door) {
+            return error(res, 'Door not found', responseCodes.NOT_FOUND);
+        }
+
+        // Get latest pending request for this door
+        const latestRequest = await doorRequestModel.getLatestPendingByDoorId(doorId);
+
+        return success(res, 'Door request status retrieved successfully', responseCodes.SUCCESS, {
+            hasPendingRequest: !!latestRequest,
+            request: latestRequest ? {
+                id: latestRequest.id,
+                requester_name: latestRequest.requester_name,
+                created_at: latestRequest.created_at
+            } : null
+        });
+    } catch (err) {
+        console.error('Error getting door request status:', err);
+        return error(res, 'Failed to get door request status', responseCodes.SERVER_ERROR);
+    }
+};
+
+/**
  * Get all door requests
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -310,5 +357,6 @@ module.exports = {
     getRequestById,
     createRequest,
     updateRequestStatus,
-    getDoorRequests
+    getDoorRequests,
+    getDoorRequestStatus
 };

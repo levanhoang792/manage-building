@@ -47,4 +47,13 @@ router.put('/:id/status',
     doorRequestController.updateRequestStatus
 );
 
+/**
+ * @route GET /api/door-requests/door/:buildingId/:floorId/:doorId/status
+ * @desc Get door request status for a specific door
+ * @access Public
+ */
+router.get('/door/:buildingId/:floorId/:doorId/status',
+    doorRequestController.getDoorRequestStatus
+);
+
 module.exports = router;
