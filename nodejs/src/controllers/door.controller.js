@@ -103,6 +103,9 @@ const createDoor = async (req, res) => {
         if (!doorData.status) {
             doorData.status = 'active';
         }
+        if (!doorData.lock_status) {
+            doorData.lock_status = 'closed';
+        }
 
         // Create door in database
         const id = await doorModel.create(doorData);
@@ -112,7 +115,11 @@ const createDoor = async (req, res) => {
             const deviceData = {
                 name: doorData.name,
                 type: 'door',
-                label: `${building.name} - ${floor.name} - ${doorData.name}`
+                label: `${building.name} - ${floor.name} - ${doorData.name}`,
+                additionalInfo: {
+                    description: doorData.description,
+                    active: doorData.status === 'active'
+                }
             };
             
             // Create device in ThingsBoard
@@ -130,9 +137,19 @@ const createDoor = async (req, res) => {
                 floorId: parseInt(floorId),
                 doorId: id,
                 status: doorData.status,
-                lockStatus: doorData.lock_status || 'closed',
+                lockStatus: doorData.lock_status,
                 doorType: doorData.door_type_id
             });
+
+            // Send initial telemetry
+            await thingsBoardService.sendTelemetry(device.id.id, {
+                lockStatus: doorData.lock_status,
+                ts: Date.now(),
+                reason: 'Initial setup'
+            });
+
+            // Update device activity state
+            await thingsBoardService.updateDeviceActivity(device.id.id, doorData.status === 'active');
         } catch (thingsboardError) {
             console.error('Error creating ThingsBoard device:', thingsboardError);
             // Continue without ThingsBoard integration if it fails
@@ -187,19 +204,23 @@ const updateDoor = async (req, res) => {
         if (existingDoor.thingsboard_device_id) {
             try {
                 // Update device attributes
-                const attributes = {
+                await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, {
                     status: doorData.status || existingDoor.status,
                     lockStatus: doorData.lock_status || existingDoor.lock_status,
                     doorType: doorData.door_type_id || existingDoor.door_type_id
-                };
-                
-                await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, attributes);
+                });
 
-                // If lock_status changed, send telemetry data
+                // If status changed, update device activity
+                if (doorData.status && doorData.status !== existingDoor.status) {
+                    await thingsBoardService.updateDeviceActivity(existingDoor.thingsboard_device_id, doorData.status === 'active');
+                }
+
+                // If lock_status changed, send telemetry
                 if (doorData.lock_status && doorData.lock_status !== existingDoor.lock_status) {
                     await thingsBoardService.sendTelemetry(existingDoor.thingsboard_device_id, {
                         lockStatus: doorData.lock_status,
-                        ts: Date.now()
+                        ts: Date.now(),
+                        reason: 'Manual update'
                     });
                 }
             } catch (thingsboardError) {
@@ -257,17 +278,21 @@ const updateDoorStatus = async (req, res) => {
         // Update ThingsBoard device if it exists
         if (existingDoor.thingsboard_device_id) {
             try {
-                // Update device attributes with new status
+                // Update device attributes
                 await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, {
                     status,
-                    lockStatus: existingDoor.lock_status // Include current lock status
+                    lockStatus: existingDoor.lock_status
                 });
 
-                // Send telemetry data with current lock status
+                // Update device activity state
+                await thingsBoardService.updateDeviceActivity(existingDoor.thingsboard_device_id, status === 'active');
+
+                // Send telemetry for status change
                 await thingsBoardService.sendTelemetry(existingDoor.thingsboard_device_id, {
                     status,
                     lockStatus: existingDoor.lock_status,
-                    ts: Date.now()
+                    ts: Date.now(),
+                    reason: `Door status changed to ${status}`
                 });
             } catch (thingsboardError) {
                 console.error('Error updating ThingsBoard device:', thingsboardError);
