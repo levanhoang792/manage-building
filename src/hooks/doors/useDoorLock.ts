@@ -75,17 +75,17 @@ export const useGetDoorLockHistory = (
             const filteredParams = params ? Object.fromEntries(
                 Object.entries(params).filter(([_, v]) => v !== undefined && v !== null && v !== '')
             ) : {};
-            
+
             // Chuyển đổi các tham số số thành số
             if (filteredParams.page) filteredParams.page = Number(filteredParams.page);
             if (filteredParams.limit) filteredParams.limit = Number(filteredParams.limit);
-            
+
             // Sử dụng URLSearchParams thay vì JSON
             const queryParams = new URLSearchParams();
             Object.entries(filteredParams).forEach(([key, value]) => {
                 queryParams.append(key, String(value));
             });
-            
+
             const baseUri = replaceParams(API_ROUTES.DOOR_LOCK_HISTORY, {
                 buildingId, 
                 floorId, 
@@ -93,10 +93,60 @@ export const useGetDoorLockHistory = (
             });
             const queryString = queryParams.toString();
             const uri = `${baseUri}${queryString ? `?${queryString}` : ''}`;
-            
+
             const resp = await httpGet({ uri });
             return await resp.json() as { data: DoorLockHistoryResponse };
         },
         enabled: !!buildingId && !!floorId && !!doorId
+    });
+};
+
+// Interface for door access report types
+export type DoorReportType = 'summary' | 'frequency' | 'user_activity' | 'time_analysis' | 'door_comparison';
+export type DoorReportGroupBy = 'hour' | 'day' | 'week' | 'month' | 'year';
+export type DoorReportFormat = 'json' | 'csv';
+
+// Interface for door access report parameters
+export interface DoorAccessReportParams {
+    report_type?: DoorReportType;
+    start_date?: string;
+    end_date?: string;
+    group_by?: DoorReportGroupBy;
+    format?: DoorReportFormat;
+}
+
+// Hook for fetching door access reports
+export const useGetDoorAccessReports = (
+    buildingId: number | string,
+    floorId: number | string,
+    doorId: number | string,
+    params?: DoorAccessReportParams
+) => {
+    return useQuery({
+        queryKey: ['doorAccessReports', buildingId, floorId, doorId, params],
+        queryFn: async () => {
+            // Lọc bỏ các tham số undefined hoặc null
+            const filteredParams = params ? Object.fromEntries(
+                Object.entries(params).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+            ) : {};
+
+            // Sử dụng URLSearchParams
+            const queryParams = new URLSearchParams();
+            Object.entries(filteredParams).forEach(([key, value]) => {
+                queryParams.append(key, String(value));
+            });
+
+            const baseUri = replaceParams(API_ROUTES.DOOR_LOCK_REPORTS, {
+                buildingId, 
+                floorId, 
+                id: doorId
+            });
+            const queryString = queryParams.toString();
+            const uri = `${baseUri}${queryString ? `?${queryString}` : ''}`;
+
+            const resp = await httpGet({ uri });
+            return await resp.json();
+        },
+        enabled: !!buildingId && (!!floorId || floorId === 'all') && (!!doorId || doorId === 'all')
     });
 };

@@ -53,6 +53,9 @@ import {
 // Door Monitoring Dashboard
 import DoorMonitoring from "@/pages/door-monitoring";
 
+// Door Reports
+import DoorAccessReports from "@/pages/door-reports/DoorAccessReports";
+
 function App() {
     return (
         <Router>
@@ -116,25 +119,31 @@ function App() {
                                     <Route path={ROUTES.ROLE_CREATE} element={<CreateRole/>}/>
                                     <Route path={ROUTES.ROLE_EDIT} element={<EditRole/>}/>
                                     <Route path={ROUTES.ROLE_PERMISSIONS} element={<RolePermissions/>}/>
-                                    
+
                                     {/* Door Request routes */}
                                     <Route path={ROUTES.DOOR_REQUESTS} element={<DoorRequestManagement/>}/>
                                     <Route path={ROUTES.DOOR_REQUEST_DETAIL} element={<DoorRequestDetail/>}/>
                                     <Route path={ROUTES.DOOR_REQUEST_CREATE} element={<CreateDoorRequest/>}/>
                                     <Route path={ROUTES.DOOR_REQUEST_BUILDING_FLOOR_DOOR} element={<DoorRequestManagement/>}/>
-                                    
+
                                     {/* Door Lock Management routes */}
                                     <Route path={ROUTES.DOOR_LOCK_MANAGEMENT} element={<DoorLockManagement/>}/>
                                     <Route path={ROUTES.DOOR_LOCK_BUILDING} element={<DoorLockManagement/>}/>
                                     <Route path={ROUTES.DOOR_LOCK_BUILDING_FLOOR} element={<DoorLockManagement/>}/>
-                                    
+
                                     {/* Door Lock Request routes */}
                                     <Route path={ROUTES.DOOR_LOCK_REQUEST} element={<CreateDoorLockRequest/>}/>
                                     <Route path={ROUTES.DOOR_LOCK_REQUEST_BUILDING} element={<CreateDoorLockRequest/>}/>
                                     <Route path={ROUTES.DOOR_LOCK_REQUEST_BUILDING_FLOOR} element={<CreateDoorLockRequest/>}/>
-                                    
+
                                     {/* Door Monitoring Dashboard */}
                                     <Route path={ROUTES.DOOR_MONITORING} element={<DoorMonitoring/>}/>
+
+                                    {/* Door Reports routes */}
+                                    <Route path={ROUTES.DOOR_REPORTS} element={<DoorAccessReports/>}/>
+                                    <Route path={ROUTES.DOOR_REPORTS_BUILDING} element={<DoorAccessReports/>}/>
+                                    <Route path={ROUTES.DOOR_REPORTS_BUILDING_FLOOR} element={<DoorAccessReports/>}/>
+                                    <Route path={ROUTES.DOOR_REPORTS_BUILDING_FLOOR_DOOR} element={<DoorAccessReports/>}/>
                                 </Route>
                             </Route>
 

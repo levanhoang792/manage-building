@@ -166,7 +166,112 @@ const getLockHistory = async (req, res) => {
     }
 };
 
+/**
+ * Get door access reports
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getDoorAccessReports = async (req, res) => {
+    try {
+        const { buildingId, floorId, id } = req.params;
+        const { 
+            report_type = 'summary', 
+            start_date, 
+            end_date, 
+            group_by = 'day',
+            format = 'json'
+        } = req.query;
+
+        // Validate report type
+        const validReportTypes = ['summary', 'frequency', 'user_activity', 'time_analysis', 'door_comparison'];
+        if (!validReportTypes.includes(report_type)) {
+            return error(res, `Invalid report type. Must be one of: ${validReportTypes.join(', ')}`, responseCodes.BAD_REQUEST);
+        }
+
+        // Validate group by
+        const validGroupBy = ['hour', 'day', 'week', 'month', 'year'];
+        if (!validGroupBy.includes(group_by)) {
+            return error(res, `Invalid group by parameter. Must be one of: ${validGroupBy.join(', ')}`, responseCodes.BAD_REQUEST);
+        }
+
+        // Validate format
+        const validFormats = ['json', 'csv'];
+        if (!validFormats.includes(format)) {
+            return error(res, `Invalid format. Must be one of: ${validFormats.join(', ')}`, responseCodes.BAD_REQUEST);
+        }
+
+        // Check if building exists
+        const building = await buildingModel.getById(buildingId);
+        if (!building) {
+            return error(res, 'Building not found', responseCodes.NOT_FOUND);
+        }
+
+        // Check if floor exists (only if floor ID is provided)
+        let floor = null;
+        if (floorId !== 'all') {
+            floor = await floorModel.getById(buildingId, floorId);
+            if (!floor) {
+                return error(res, 'Floor not found', responseCodes.NOT_FOUND);
+            }
+        }
+
+        // Check if door exists (only if door ID is provided)
+        let door = null;
+        if (id !== 'all') {
+            // Only pass floorId if it's not 'all'
+            const actualFloorId = floorId !== 'all' ? floorId : null;
+            door = await doorModel.getById(actualFloorId, id);
+            if (!door) {
+                return error(res, 'Door not found', responseCodes.NOT_FOUND);
+            }
+        }
+
+        // Generate report based on type
+        let reportData;
+        const reportOptions = {
+            start_date,
+            end_date,
+            group_by,
+            format
+        };
+
+        switch (report_type) {
+            case 'summary':
+                reportData = await doorLockModel.generateSummaryReport(buildingId, floorId, id, reportOptions);
+                break;
+            case 'frequency':
+                reportData = await doorLockModel.generateFrequencyReport(buildingId, floorId, id, reportOptions);
+                break;
+            case 'user_activity':
+                reportData = await doorLockModel.generateUserActivityReport(buildingId, floorId, id, reportOptions);
+                break;
+            case 'time_analysis':
+                reportData = await doorLockModel.generateTimeAnalysisReport(buildingId, floorId, id, reportOptions);
+                break;
+            case 'door_comparison':
+                reportData = await doorLockModel.generateDoorComparisonReport(buildingId, floorId, reportOptions);
+                break;
+            default:
+                reportData = await doorLockModel.generateSummaryReport(buildingId, floorId, id, reportOptions);
+        }
+
+        // Handle CSV format
+        if (format === 'csv') {
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename=door_access_report_${report_type}_${new Date().toISOString().split('T')[0]}.csv`);
+            return res.send(reportData);
+        }
+
+        // Return JSON response
+        return success(res, 'Door access report generated successfully', responseCodes.SUCCESS, reportData);
+    } catch (err) {
+        console.error('Error generating door access report:', err);
+        return error(res, 'Failed to generate door access report', responseCodes.SERVER_ERROR);
+    }
+};
+
 module.exports = {
     updateLockStatus,
-    getLockHistory
+    getLockHistory,
+    getDoorAccessReports
 };

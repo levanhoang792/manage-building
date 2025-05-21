@@ -26,4 +26,15 @@ router.get('/history',
     doorLockController.getLockHistory
 );
 
+/**
+ * @route GET /api/buildings/:buildingId/floors/:floorId/doors/:id/lock-reports
+ * @desc Get door lock access reports
+ * @access Private
+ */
+router.get('/reports', 
+    authMiddleware.verifyToken, 
+    permissionMiddleware.hasPermission('door.lock.view'),
+    doorLockController.getDoorAccessReports
+);
+
 module.exports = router;

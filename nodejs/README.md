@@ -38,6 +38,69 @@ npm start
 - `GET /api/info/project`: Project information
 - `GET /api/info/paths`: Project paths
 
+### Door Lock API Endpoints
+
+- `GET /api/buildings/:buildingId/floors/:floorId/doors/:id/lock-history`: Get door lock history
+  - **Description**: Retrieves the history of door lock status changes
+  - **Authentication**: Required (JWT token)
+  - **Permission**: `door.lock.view`
+  - **URL Parameters**:
+    - `buildingId`: ID of the building
+    - `floorId`: ID of the floor
+    - `id`: ID of the door
+  - **Query Parameters**:
+    - `page`: Page number (default: 1)
+    - `limit`: Items per page (default: 10)
+    - `startDate`: Filter by start date (ISO format)
+    - `endDate`: Filter by end date (ISO format)
+    - `sortBy`: Field to sort by (default: 'created_at')
+    - `sortOrder`: Sort order (asc/desc, default: 'desc')
+  - **Response**: JSON object containing:
+    - `data`: Array of door lock history records
+    - `total`: Total number of records
+    - `page`: Current page number
+    - `limit`: Items per page
+    - `door`: Detailed door information
+
+- `PUT /api/buildings/:buildingId/floors/:floorId/doors/:id/lock`: Update door lock status
+  - **Description**: Changes the lock status of a door
+  - **Authentication**: Required (JWT token)
+  - **Permission**: `door.lock.manage`
+  - **URL Parameters**:
+    - `buildingId`: ID of the building
+    - `floorId`: ID of the floor
+    - `id`: ID of the door
+  - **Request Body**:
+    - `lock_status`: New lock status ('open' or 'closed')
+    - `reason`: Optional reason for the status change
+    - `request_id`: Optional request ID if the change is due to a request
+  - **Response**: JSON object containing the updated door information
+
+- `GET /api/buildings/:buildingId/floors/:floorId/doors/:id/lock-reports`: Get door access reports
+  - **Description**: Generates reports about door access patterns
+  - **Authentication**: Required (JWT token)
+  - **Permission**: `door.lock.view`
+  - **URL Parameters**:
+    - `buildingId`: ID of the building
+    - `floorId`: ID of the floor (can be 'all' to include all floors)
+    - `id`: ID of the door (can be 'all' to include all doors)
+  - **Query Parameters**:
+    - `report_type`: Type of report to generate (default: 'summary')
+      - `summary`: General summary of door access events
+      - `frequency`: Frequency of door access events over time
+      - `user_activity`: Door access events by user
+      - `time_analysis`: Analysis of door access patterns by time of day
+      - `door_comparison`: Comparison of access patterns across different doors
+    - `start_date`: Filter by start date (ISO format)
+    - `end_date`: Filter by end date (ISO format)
+    - `group_by`: Group frequency data by time period (default: 'day')
+      - Options: 'hour', 'day', 'week', 'month', 'year'
+    - `format`: Output format (default: 'json')
+      - Options: 'json', 'csv'
+  - **Response**: 
+    - For JSON format: JSON object containing the report data
+    - For CSV format: CSV file download with the report data
+
 ## Project Structure
 
 ```
