@@ -70,13 +70,14 @@ const getAllByFloor = async (floorId, options = {}) => {
  * @returns {Promise<Object>}
  */
 const getById = async (floorId, id) => {
-    const query = knex(TABLE_NAME).where('id', id);
-    
-    // Only add floor_id condition if it's provided
+    const query = knex(TABLE_NAME)
+        .select('*')
+        .where('id', id);
+
     if (floorId) {
         query.where('floor_id', floorId);
     }
-    
+
     return query.first();
 };
 
@@ -104,15 +105,18 @@ const create = async (door) => {
  * @returns {Promise<number>} - Number of updated rows
  */
 const update = async (floorId, id, door) => {
-    return knex(TABLE_NAME)
-        .where({
-            'floor_id': floorId,
-            'id': id
-        })
+    const query = knex(TABLE_NAME)
+        .where('id', id)
         .update({
             ...door,
             updated_at: knex.fn.now()
         });
+
+    if (floorId) {
+        query.where('floor_id', floorId);
+    }
+
+    return query;
 };
 
 /**
@@ -123,13 +127,33 @@ const update = async (floorId, id, door) => {
  * @returns {Promise<number>} - Number of updated rows
  */
 const updateStatus = async (floorId, id, status) => {
-    return knex(TABLE_NAME)
-        .where({
-            'floor_id': floorId,
-            'id': id
-        })
+    const query = knex(TABLE_NAME)
+        .where('id', id)
         .update({
             status,
+            updated_at: knex.fn.now()
+        });
+
+    if (floorId) {
+        query.where('floor_id', floorId);
+    }
+
+    return query;
+};
+
+/**
+ * Update door ThingsBoard information
+ * @param {number} id - Door ID
+ * @param {string} deviceId - ThingsBoard device ID
+ * @param {string} accessToken - ThingsBoard access token
+ * @returns {Promise<void>}
+ */
+const updateThingsBoardInfo = async (id, deviceId, accessToken) => {
+    return knex(TABLE_NAME)
+        .where('id', id)
+        .update({
+            thingsboard_device_id: deviceId,
+            thingsboard_access_token: accessToken,
             updated_at: knex.fn.now()
         });
 };
@@ -141,12 +165,15 @@ const updateStatus = async (floorId, id, status) => {
  * @returns {Promise<number>} - Number of deleted rows
  */
 const remove = async (floorId, id) => {
-    return knex(TABLE_NAME)
-        .where({
-            'floor_id': floorId,
-            'id': id
-        })
+    const query = knex(TABLE_NAME)
+        .where('id', id)
         .del();
+
+    if (floorId) {
+        query.where('floor_id', floorId);
+    }
+
+    return query;
 };
 
 module.exports = {
@@ -155,5 +182,6 @@ module.exports = {
     create,
     update,
     updateStatus,
+    updateThingsBoardInfo,
     remove
 };

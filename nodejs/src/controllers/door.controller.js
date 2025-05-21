@@ -1,19 +1,19 @@
-const doorModel = require('@models/door.model');
-const floorModel = require('@models/floor.model');
-const buildingModel = require('@models/building.model');
-const { success, error } = require('@utils/responseHandler');
-const responseCodes = require('@utils/responseCodes');
-const { Op } = require('sequelize');
+const doorModel = require('../models/door.model');
+const floorModel = require('../models/floor.model');
+const buildingModel = require('../models/building.model');
+const thingsBoardService = require('../services/thingsboard.service');
+const { success, error } = require('../utils/responseHandler');
+const responseCodes = require('../utils/responseCodes');
 
 /**
- * Get all doors for a floor with pagination and filtering
+ * Get all doors in a floor
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
 const getDoors = async (req, res) => {
     try {
         const {buildingId, floorId} = req.params;
-        const {page, limit, search, type, status, sortBy, sortOrder} = req.query;
+        const {status} = req.query;
 
         // Check if building exists
         const building = await buildingModel.getById(buildingId);
@@ -22,25 +22,16 @@ const getDoors = async (req, res) => {
             return error(res, 'Building not found', responseCodes.NOT_FOUND);
         }
 
-        // Validate building and floor exist
+        // Check if floor exists
         const floor = await floorModel.getById(buildingId, floorId);
 
         if (!floor) {
-            console.log('Floor not found');
             return error(res, 'Floor not found', responseCodes.NOT_FOUND);
         }
 
-        const result = await doorModel.getAllByFloor(floorId, {
-            page,
-            limit,
-            search,
-            type,
-            status,
-            sortBy,
-            sortOrder
-        });
+        const doors = await doorModel.getAllByFloor(floorId, {status});
 
-        return success(res, 'Doors retrieved successfully', responseCodes.SUCCESS, result);
+        return success(res, 'Doors retrieved successfully', responseCodes.SUCCESS, doors);
     } catch (err) {
         console.error('Error getting doors:', err);
         return error(res, 'Failed to retrieve doors', responseCodes.SERVER_ERROR);
@@ -113,7 +104,39 @@ const createDoor = async (req, res) => {
             doorData.status = 'active';
         }
 
+        // Create door in database
         const id = await doorModel.create(doorData);
+        
+        // Create device in ThingsBoard
+        try {
+            const deviceData = {
+                name: doorData.name,
+                type: 'door',
+                label: `${building.name} - ${floor.name} - ${doorData.name}`
+            };
+            
+            // Create device in ThingsBoard
+            const device = await thingsBoardService.createDevice(deviceData);
+            
+            // Get device credentials
+            const credentials = await thingsBoardService.getDeviceCredentials(device.id.id);
+            
+            // Update door with ThingsBoard information
+            await doorModel.updateThingsBoardInfo(id, device.id.id, credentials.credentialsId);
+            
+            // Set initial attributes
+            await thingsBoardService.updateDeviceAttributes(device.id.id, {
+                buildingId: parseInt(buildingId),
+                floorId: parseInt(floorId),
+                doorId: id,
+                status: doorData.status,
+                lockStatus: doorData.lock_status || 'closed',
+                doorType: doorData.door_type_id
+            });
+        } catch (thingsboardError) {
+            console.error('Error creating ThingsBoard device:', thingsboardError);
+            // Continue without ThingsBoard integration if it fails
+        }
 
         const newDoor = await doorModel.getById(floorId, id);
 
@@ -159,6 +182,20 @@ const updateDoor = async (req, res) => {
         delete doorData.floor_id;
 
         await doorModel.update(floorId, id, doorData);
+
+        // Update ThingsBoard device if it exists
+        if (existingDoor.thingsboard_device_id) {
+            try {
+                await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, {
+                    status: doorData.status || existingDoor.status,
+                    lockStatus: doorData.lock_status || existingDoor.lock_status,
+                    doorType: doorData.door_type_id || existingDoor.door_type_id
+                });
+            } catch (thingsboardError) {
+                console.error('Error updating ThingsBoard device:', thingsboardError);
+                // Continue without ThingsBoard update if it fails
+            }
+        }
 
         const updatedDoor = await doorModel.getById(floorId, id);
 
@@ -206,6 +243,18 @@ const updateDoorStatus = async (req, res) => {
 
         await doorModel.updateStatus(floorId, id, status);
 
+        // Update ThingsBoard device if it exists
+        if (existingDoor.thingsboard_device_id) {
+            try {
+                await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, {
+                    status
+                });
+            } catch (thingsboardError) {
+                console.error('Error updating ThingsBoard device:', thingsboardError);
+                // Continue without ThingsBoard update if it fails
+            }
+        }
+
         const updatedDoor = await doorModel.getById(floorId, id);
 
         return success(res, 'Door status updated successfully', responseCodes.SUCCESS, updatedDoor);
@@ -243,6 +292,16 @@ const deleteDoor = async (req, res) => {
 
         if (!existingDoor) {
             return error(res, 'Door not found', responseCodes.NOT_FOUND);
+        }
+
+        // Delete ThingsBoard device if it exists
+        if (existingDoor.thingsboard_device_id) {
+            try {
+                await thingsBoardService.deleteDevice(existingDoor.thingsboard_device_id);
+            } catch (thingsboardError) {
+                console.error('Error deleting ThingsBoard device:', thingsboardError);
+                // Continue with door deletion even if ThingsBoard deletion fails
+            }
         }
 
         await doorModel.remove(floorId, id);
