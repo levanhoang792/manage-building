@@ -83,10 +83,10 @@ function LeftToolbar() {
                 </Link>
 
                 {/* Door Lock Management */}
-                <Link to={ROUTES.DOOR_LOCK_MANAGEMENT} className={menuItemClass(isActive(ROUTES.DOOR_LOCK_MANAGEMENT))}>
-                    <LockOpenIcon className="size-5"/>
-                    <span>Door Lock Management</span>
-                </Link>
+                {/*<Link to={ROUTES.DOOR_LOCK_MANAGEMENT} className={menuItemClass(isActive(ROUTES.DOOR_LOCK_MANAGEMENT))}>*/}
+                {/*    <LockOpenIcon className="size-5"/>*/}
+                {/*    <span>Door Lock Management</span>*/}
+                {/*</Link>*/}
 
                 {/* Door Lock Request */}
                 <Link to={ROUTES.DOOR_LOCK_REQUEST} className={menuItemClass(isActive(ROUTES.DOOR_LOCK_REQUEST))}>
