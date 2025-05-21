@@ -2,6 +2,7 @@ const doorLockModel = require('@models/doorLock.model');
 const doorModel = require('@models/door.model');
 const floorModel = require('@models/floor.model');
 const buildingModel = require('@models/building.model');
+const thingsBoardService = require('@services/thingsboard.service');
 const { success, error } = require('@utils/responseHandler');
 const responseCodes = require('@utils/responseCodes');
 const activityLogger = require('@utils/activityLogger');
@@ -55,6 +56,31 @@ const updateLockStatus = async (req, res) => {
 
         // Update lock status
         await doorLockModel.updateLockStatus(floorId, id, lock_status, userId, request_id, reason);
+
+        // Update ThingsBoard device if it exists
+        if (door.thingsboard_device_id) {
+            try {
+                // Update device attributes
+                await thingsBoardService.updateDeviceAttributes(door.thingsboard_device_id, {
+                    lockStatus: lock_status,
+                    status: door.status,
+                    lastUpdatedBy: userId,
+                    lastUpdateReason: reason || 'Manual update'
+                });
+
+                // Send telemetry data
+                await thingsBoardService.sendTelemetry(door.thingsboard_device_id, {
+                    lockStatus: lock_status,
+                    ts: Date.now(),
+                    userId,
+                    requestId: request_id || null,
+                    reason: reason || 'Manual update'
+                });
+            } catch (thingsboardError) {
+                console.error('Error updating ThingsBoard device:', thingsboardError);
+                // Continue without ThingsBoard update if it fails
+            }
+        }
 
         // Log activity
         await activityLogger.log({

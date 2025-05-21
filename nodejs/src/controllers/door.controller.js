@@ -186,11 +186,22 @@ const updateDoor = async (req, res) => {
         // Update ThingsBoard device if it exists
         if (existingDoor.thingsboard_device_id) {
             try {
-                await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, {
+                // Update device attributes
+                const attributes = {
                     status: doorData.status || existingDoor.status,
                     lockStatus: doorData.lock_status || existingDoor.lock_status,
                     doorType: doorData.door_type_id || existingDoor.door_type_id
-                });
+                };
+                
+                await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, attributes);
+
+                // If lock_status changed, send telemetry data
+                if (doorData.lock_status && doorData.lock_status !== existingDoor.lock_status) {
+                    await thingsBoardService.sendTelemetry(existingDoor.thingsboard_device_id, {
+                        lockStatus: doorData.lock_status,
+                        ts: Date.now()
+                    });
+                }
             } catch (thingsboardError) {
                 console.error('Error updating ThingsBoard device:', thingsboardError);
                 // Continue without ThingsBoard update if it fails
@@ -246,8 +257,17 @@ const updateDoorStatus = async (req, res) => {
         // Update ThingsBoard device if it exists
         if (existingDoor.thingsboard_device_id) {
             try {
+                // Update device attributes with new status
                 await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, {
-                    status
+                    status,
+                    lockStatus: existingDoor.lock_status // Include current lock status
+                });
+
+                // Send telemetry data with current lock status
+                await thingsBoardService.sendTelemetry(existingDoor.thingsboard_device_id, {
+                    status,
+                    lockStatus: existingDoor.lock_status,
+                    ts: Date.now()
                 });
             } catch (thingsboardError) {
                 console.error('Error updating ThingsBoard device:', thingsboardError);
@@ -261,6 +281,72 @@ const updateDoorStatus = async (req, res) => {
     } catch (err) {
         console.error('Error updating door status:', err);
         return error(res, 'Failed to update door status', responseCodes.SERVER_ERROR);
+    }
+};
+
+/**
+ * Update door lock status
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const updateDoorLockStatus = async (req, res) => {
+    try {
+        const {buildingId, floorId, id} = req.params;
+        const {lock_status} = req.body;
+
+        if (!lock_status || !['open', 'closed', 'locked'].includes(lock_status)) {
+            return error(res, 'Invalid lock status. Status must be one of: "open", "closed", "locked"', responseCodes.BAD_REQUEST);
+        }
+
+        // Check if building exists
+        const building = await buildingModel.getById(buildingId);
+
+        if (!building) {
+            return error(res, 'Building not found', responseCodes.NOT_FOUND);
+        }
+
+        // Check if floor exists
+        const floor = await floorModel.getById(buildingId, floorId);
+
+        if (!floor) {
+            return error(res, 'Floor not found', responseCodes.NOT_FOUND);
+        }
+
+        // Check if door exists
+        const existingDoor = await doorModel.getById(floorId, id);
+
+        if (!existingDoor) {
+            return error(res, 'Door not found', responseCodes.NOT_FOUND);
+        }
+
+        // Update lock status in database
+        await doorModel.updateLockStatus(floorId, id, lock_status);
+
+        // Update ThingsBoard device if it exists
+        if (existingDoor.thingsboard_device_id) {
+            try {
+                // Update device attributes in ThingsBoard
+                await thingsBoardService.updateDeviceAttributes(existingDoor.thingsboard_device_id, {
+                    lockStatus: lock_status
+                });
+
+                // Send telemetry data to ThingsBoard
+                await thingsBoardService.sendTelemetry(existingDoor.thingsboard_device_id, {
+                    lockStatus: lock_status,
+                    ts: Date.now()
+                });
+            } catch (thingsboardError) {
+                console.error('Error updating ThingsBoard device:', thingsboardError);
+                // Continue without ThingsBoard update if it fails
+            }
+        }
+
+        const updatedDoor = await doorModel.getById(floorId, id);
+
+        return success(res, 'Door lock status updated successfully', responseCodes.SUCCESS, updatedDoor);
+    } catch (err) {
+        console.error('Error updating door lock status:', err);
+        return error(res, 'Failed to update door lock status', responseCodes.SERVER_ERROR);
     }
 };
 
@@ -319,5 +405,6 @@ module.exports = {
     createDoor,
     updateDoor,
     updateDoorStatus,
+    updateDoorLockStatus,
     deleteDoor
 };

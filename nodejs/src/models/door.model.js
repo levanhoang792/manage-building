@@ -142,6 +142,28 @@ const updateStatus = async (floorId, id, status) => {
 };
 
 /**
+ * Update door lock status
+ * @param {number} floorId - Floor ID
+ * @param {number} id - Door ID
+ * @param {string} lockStatus - New lock status
+ * @returns {Promise<number>} - Number of updated rows
+ */
+const updateLockStatus = async (floorId, id, lockStatus) => {
+    const query = knex(TABLE_NAME)
+        .where('id', id)
+        .update({
+            lock_status: lockStatus,
+            updated_at: knex.fn.now()
+        });
+
+    if (floorId) {
+        query.where('floor_id', floorId);
+    }
+
+    return query;
+};
+
+/**
  * Update door ThingsBoard information
  * @param {number} id - Door ID
  * @param {string} deviceId - ThingsBoard device ID
@@ -182,6 +204,7 @@ module.exports = {
     create,
     update,
     updateStatus,
+    updateLockStatus,
     updateThingsBoardInfo,
     remove
 };

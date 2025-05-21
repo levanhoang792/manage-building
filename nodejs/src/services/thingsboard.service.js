@@ -47,7 +47,15 @@ class ThingsBoardService {
     async createDevice(deviceData) {
         try {
             const headers = await this.getAuthHeader();
-            const response = await axios.post(`${this.baseUrl}/api/device`, deviceData, { headers });
+            // Add active state to device
+            const device = {
+                ...deviceData,
+                additionalInfo: {
+                    ...deviceData.additionalInfo,
+                    active: true
+                }
+            };
+            const response = await axios.post(`${this.baseUrl}/api/device`, device, { headers });
             return response.data;
         } catch (error) {
             console.error('Error creating device:', error);
@@ -86,6 +94,25 @@ class ThingsBoardService {
     }
 
     /**
+     * Update device activity state
+     * @param {string} deviceId - Device ID
+     * @param {boolean} active - Whether device is active
+     */
+    async updateDeviceActivity(deviceId, active) {
+        try {
+            const headers = await this.getAuthHeader();
+            await axios.post(
+                `${this.baseUrl}/api/plugins/telemetry/DEVICE/${deviceId}/SERVER_SCOPE`,
+                { active },
+                { headers }
+            );
+        } catch (error) {
+            console.error('Error updating device activity:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Update device attributes
      * @param {string} deviceId - Device ID
      * @param {Object} attributes - Device attributes
@@ -93,12 +120,54 @@ class ThingsBoardService {
     async updateDeviceAttributes(deviceId, attributes) {
         try {
             const headers = await this.getAuthHeader();
-            await axios.post(`${this.baseUrl}/api/plugins/telemetry/DEVICE/${deviceId}/attributes/SERVER_SCOPE`, 
-                attributes, 
+            // Convert keys to lowercase
+            const formattedAttributes = {
+                lock_status: attributes.lockStatus,
+                status: attributes.status,
+                last_updated_by: attributes.lastUpdatedBy,
+                last_update_reason: attributes.lastUpdateReason
+            };
+            
+            // Update shared attributes
+            await axios.post(
+                `${this.baseUrl}/api/plugins/telemetry/DEVICE/${deviceId}/SHARED_SCOPE`, 
+                formattedAttributes, 
+                { headers }
+            );
+
+            // Update device activity based on status
+            await this.updateDeviceActivity(deviceId, attributes.status === 'active');
+
+        } catch (error) {
+            console.error('Error updating device attributes:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Send telemetry data to device
+     * @param {string} deviceId - Device ID
+     * @param {Object} telemetry - Telemetry data
+     */
+    async sendTelemetry(deviceId, telemetry) {
+        try {
+            const headers = await this.getAuthHeader();
+            // Format telemetry data according to ThingsBoard API requirements
+            const formattedData = {
+                lock_status: telemetry.lockStatus,
+                user_id: telemetry.userId,
+                request_id: telemetry.requestId,
+                reason: telemetry.reason,
+                timestamp: telemetry.ts
+            };
+            
+            await axios.post(
+                `${this.baseUrl}/api/v1/${deviceId}/telemetry`,
+                formattedData,
                 { headers }
             );
         } catch (error) {
-            console.error('Error updating device attributes:', error);
+            console.error('Error sending telemetry data:', error);
             throw error;
         }
     }
