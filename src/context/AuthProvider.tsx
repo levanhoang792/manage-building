@@ -37,7 +37,10 @@ const AuthProvider = ({children}: { children: ReactNode }) => {
     const initializeToken = useCallback((user: ResLoginUser, token: string) => {
         dispatch(setUser({
             token: token,
-            user: user
+            user: {
+                ...user,
+                fullName: user.fullName || user.name
+            }
         }));
         Cookies.set(COOKIES.TOKEN, token);
     }, [dispatch]);

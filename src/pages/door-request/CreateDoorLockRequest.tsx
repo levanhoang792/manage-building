@@ -1,6 +1,6 @@
-import React, {Fragment, useEffect, useRef, useState} from 'react';
+import React, {Fragment, useEffect, useMemo, useRef, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {ArrowLeftIcon, DocumentTextIcon, BuildingOffice2Icon, MapIcon} from '@heroicons/react/24/outline';
+import {ArrowLeftIcon, BuildingOffice2Icon, DocumentTextIcon, MapIcon} from '@heroicons/react/24/outline';
 import {useGetBuildingsInfinite} from '@/hooks/buildings';
 import {useGetFloors} from '@/hooks/floors';
 import {useGetDoors} from '@/hooks/doors';
@@ -18,22 +18,36 @@ import {
     Dialog,
     DialogPanel,
     DialogTitle,
+    Field,
+    Input,
+    Label,
+    Textarea,
     Transition,
     TransitionChild
 } from '@headlessui/react';
 import {useCreateDoorRequest} from "@/hooks/doorRequests/useDoorRequests";
 import {DoorRequestFormData} from "@/hooks/doorRequests/model";
-import {motion, AnimatePresence} from 'framer-motion';
+import {AnimatePresence, motion} from 'framer-motion';
 import {cn} from "@/lib/utils";
 import type {Floor} from '@/hooks/floors/model';
-import {ExclamationTriangleIcon} from '@heroicons/react/24/solid';
+import {z} from "zod";
+import {Controller, useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import FieldError from "@/components/FieldError.tsx";
 
-interface FormData {
+type FormData = {
     requesterName: string;
     requesterPhone: string;
     requesterEmail: string;
     purpose: string;
 }
+
+const Schema: z.ZodType<FormData> = z.object({
+    requesterName: z.string().nonempty("Request name is required"),
+    requesterPhone: z.string(),
+    requesterEmail: z.string(),
+    purpose: z.string().nonempty("Purpose is required")
+});
 
 // Helper function to format current time
 const getCurrentTimeString = () => {
@@ -66,15 +80,52 @@ const CreateDoorLockRequest: React.FC = () => {
     const [selectedDoor, setSelectedDoor] = useState<Door | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showPurposeWarning, setShowPurposeWarning] = useState(!authUser);
-    const [formData, setFormData] = useState<FormData>({
-        requesterName: authUser?.user?.fullName || '',
-        requesterPhone: '',
-        requesterEmail: authUser?.user?.email || '',
-        purpose: authUser 
-            ? `Yêu cầu mở cửa - Thời gian: ${getCurrentTimeString()} ${getCurrentDateString()} - ${authUser.user.fullName}`
-            : `Yêu cầu mở cửa - Thời gian: ${getCurrentTimeString()} ${getCurrentDateString()}`
-    });
     const [doorCoordinates, setDoorCoordinates] = useState<{ door: Door, coordinates: DoorCoordinate[] }[]>([]);
+
+    const {control, handleSubmit, formState: {errors}, reset} = useForm<FormData>({
+        resolver: zodResolver(Schema),
+        defaultValues: {
+            requesterName: "",
+            requesterPhone: "",
+            requesterEmail: "",
+            purpose: ""
+        }
+    });
+
+    console.log("authUser: ", authUser)
+
+    useEffect(() => {
+        if (authUser) {
+            reset({
+                requesterName: authUser.user?.fullName || '',
+                requesterPhone: "",
+                requesterEmail: authUser.user?.email || '',
+                purpose: `Yêu cầu mở cửa - Thời gian: ${getCurrentTimeString()} ${getCurrentDateString()} - ${authUser.user?.email}`
+            })
+            setShowPurposeWarning(false);
+        } else {
+            reset({
+                requesterName: '',
+                requesterPhone: "",
+                requesterEmail: '',
+                purpose: `Yêu cầu mở cửa - Thời gian: ${getCurrentTimeString()} ${getCurrentDateString()}`
+            })
+            setShowPurposeWarning(true);
+        }
+    }, [authUser, reset]);
+
+    // // Add effect to update purpose when auth state changes
+    // useEffect(() => {
+    //     if (authUser) {
+    //         setFormData(prev => ({
+    //             ...prev,
+    //             requesterName: authUser.user.fullName || prev.requesterName,
+    //             requesterEmail: authUser.user.email || prev.requesterEmail,
+    //             purpose: `Yêu cầu mở cửa - Thời gian: ${getCurrentTimeString()} ${getCurrentDateString()} - ${authUser.user.fullName}`
+    //         }));
+    //     } else {
+    //     }
+    // }, [authUser]);
 
     // References for virtualization
     const buildingListRef = useRef<HTMLDivElement>(null);
@@ -120,7 +171,7 @@ const CreateDoorLockRequest: React.FC = () => {
     useEffect(() => {
         console.log('Raw doors data:', doorsData?.data?.data);
         console.log('Raw coordinates data:', doorCoordinatesData);
-        
+
         if (!doorCoordinatesData || !doorsData?.data?.data) {
             console.log('No data available - coordinates or doors missing');
             setDoorCoordinates([]);
@@ -134,16 +185,16 @@ const CreateDoorLockRequest: React.FC = () => {
             .filter((item) => {
                 // Log the entire item structure
                 console.log('Processing coordinate item:', JSON.stringify(item, null, 2));
-                
+
                 // Check if we have valid coordinate data
                 const coordinateData = item.data?.data?.data || item.data?.data;
                 const hasValidData = coordinateData && Array.isArray(coordinateData) && coordinateData.length > 0;
-                
+
                 console.log(`Door ${item.doorId} coordinates:`, {
                     hasValidData,
                     coordinateData
                 });
-                
+
                 return hasValidData;
             })
             .map((item) => {
@@ -153,9 +204,9 @@ const CreateDoorLockRequest: React.FC = () => {
                     door,
                     coordinates: item.data?.data?.data || item.data?.data
                 });
-                
+
                 if (!door) return null;
-                
+
                 return {
                     door,
                     coordinates: item.data?.data?.data || item.data?.data
@@ -262,32 +313,30 @@ const CreateDoorLockRequest: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    // Handle form input changes
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = e.target;
-        
-        if (name === 'purpose' && !authUser) {
-            // For unauthenticated users, always ensure the time template is present
-            const timeTemplate = `Yêu cầu mở cửa - Thời gian: ${getCurrentTimeString()} ${getCurrentDateString()}`;
-            if (!value.includes(timeTemplate)) {
-                setFormData(prev => ({
-                    ...prev,
-                    [name]: timeTemplate
-                }));
-                return;
-            }
-        }
-        
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    // // Handle form input changes
+    // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    //     const {name, value} = e.target;
+    //
+    //     if (name === 'purpose' && !authUser) {
+    //         // For unauthenticated users, always ensure the time template is present
+    //         const timeTemplate = `Yêu cầu mở cửa - Thời gian: ${getCurrentTimeString()} ${getCurrentDateString()}`;
+    //         if (!value.includes(timeTemplate)) {
+    //             setFormData(prev => ({
+    //                 ...prev,
+    //                 [name]: timeTemplate
+    //             }));
+    //             return;
+    //         }
+    //     }
+    //
+    //     setFormData(prev => ({
+    //         ...prev,
+    //         [name]: value
+    //     }));
+    // };
 
     // Handle form submission
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
+    const onSubmit = handleSubmit(async (formData) => {
         if (!selectedDoor) {
             toast.error('Vui lòng chọn cửa từ sơ đồ tầng');
             return;
@@ -320,7 +369,7 @@ const CreateDoorLockRequest: React.FC = () => {
             };
 
             await createDoorRequestMutation.mutateAsync(requestData);
-            
+
             // Hiển thị thông báo thành công với thêm thông tin
             toast.success(
                 <div className="space-y-1">
@@ -335,12 +384,7 @@ const CreateDoorLockRequest: React.FC = () => {
             setIsModalOpen(false);
 
             // Reset form data
-            setFormData({
-                requesterName: '',
-                requesterEmail: '',
-                requesterPhone: '',
-                purpose: ''
-            });
+            reset();
 
             // Reset selected door
             setSelectedDoor(null);
@@ -349,22 +393,81 @@ const CreateDoorLockRequest: React.FC = () => {
             console.error('Error creating door request:', error);
             toast.error('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
         }
-    };
+    })
+    // const handleSubmit = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //
+    //     if (!selectedDoor) {
+    //         toast.error('Vui lòng chọn cửa từ sơ đồ tầng');
+    //         return;
+    //     }
+    //
+    //     try {
+    //         const doorId = selectedDoor.id;
+    //
+    //         // Validate required fields based on authentication status
+    //         if (!authUser) {
+    //             // For unauthenticated users, require name and phone
+    //             if (!formData.requesterName || !formData.requesterPhone) {
+    //                 toast.error('Vui lòng điền đầy đủ họ tên và số điện thoại');
+    //                 return;
+    //             }
+    //         }
+    //
+    //         // Validate purpose for all users
+    //         if (!formData.purpose) {
+    //             toast.error('Vui lòng điền mục đích yêu cầu');
+    //             return;
+    //         }
+    //
+    //         const requestData: DoorRequestFormData = {
+    //             door_id: doorId,
+    //             requester_name: formData.requesterName || authUser?.user?.fullName || '',
+    //             requester_phone: formData.requesterPhone || '',
+    //             requester_email: formData.requesterEmail || authUser?.user?.email,
+    //             purpose: formData.purpose
+    //         };
+    //
+    //         await createDoorRequestMutation.mutateAsync(requestData);
+    //
+    //         // Hiển thị thông báo thành công với thêm thông tin
+    //         toast.success(
+    //             <div className="space-y-1">
+    //                 <p>Yêu cầu đóng/mở cửa đã được gửi thành công</p>
+    //                 <p className="text-sm text-gray-500">
+    //                     Yêu cầu của bạn sẽ được xử lý bởi người quản lý. Vui lòng chờ phản hồi qua email.
+    //                 </p>
+    //             </div>
+    //         );
+    //
+    //         // Đóng modal.   Stringee2024$$
+    //         setIsModalOpen(false);
+    //
+    //         // Reset form data
+    //         setFormData({
+    //             requesterName: '',
+    //             requesterEmail: '',
+    //             requesterPhone: '',
+    //             purpose: ''
+    //         });
+    //
+    //         // Reset selected door
+    //         setSelectedDoor(null);
+    //
+    //     } catch (error) {
+    //         console.error('Error creating door request:', error);
+    //         toast.error('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
+    //     }
+    // };
 
-    // Add effect to update purpose when auth state changes
-    useEffect(() => {
-        if (authUser) {
-            setFormData(prev => ({
-                ...prev,
-                requesterName: authUser.user.fullName || prev.requesterName,
-                requesterEmail: authUser.user.email || prev.requesterEmail,
-                purpose: `Yêu cầu mở cửa - Thời gian: ${getCurrentTimeString()} ${getCurrentDateString()} - ${authUser.user.fullName}`
-            }));
-            setShowPurposeWarning(false);
-        } else {
-            setShowPurposeWarning(true);
-        }
-    }, [authUser]);
+    const floorPlanVirtual = useMemo(() => (
+        <FloorPlanVisualizer
+            floorPlanImage={floors.find(f => String(f.id) === selectedFloorId)?.floor_plan_image || ''}
+            doors={doorsData?.data?.data || []}
+            onDoorSelect={handleDoorSelect}
+            doorCoordinates={doorCoordinates}
+        />
+    ), [doorCoordinates, doorsData?.data?.data, floors, selectedFloorId])
 
     return (
         <div className="h-[calc(100vh-var(--header-height)-2rem)] flex flex-col p-4 gap-2">
@@ -395,10 +498,10 @@ const CreateDoorLockRequest: React.FC = () => {
                         {allBuildings.slice(0, 5).map((building) => (
                             <motion.div
                                 key={building.id}
-                                initial={{ scale: 0.98, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                                initial={{scale: 0.98, opacity: 0}}
+                                animate={{scale: 1, opacity: 1}}
+                                whileHover={{scale: 1.02}}
+                                whileTap={{scale: 0.98}}
                                 transition={{
                                     type: "spring",
                                     stiffness: 400,
@@ -453,10 +556,10 @@ const CreateDoorLockRequest: React.FC = () => {
                                 {allBuildings.slice(5).map((building) => (
                                     <motion.div
                                         key={building.id}
-                                        initial={{ scale: 0.98, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
+                                        initial={{scale: 0.98, opacity: 0}}
+                                        animate={{scale: 1, opacity: 1}}
+                                        whileHover={{scale: 1.02}}
+                                        whileTap={{scale: 0.98}}
                                         transition={{
                                             type: "spring",
                                             stiffness: 400,
@@ -597,7 +700,8 @@ const CreateDoorLockRequest: React.FC = () => {
                                 transition={{duration: 0.3}}
                                 className="bg-white rounded-lg shadow-md h-full flex flex-col"
                             >
-                                <div className="p-2 border-b border-gray-200 bg-indigo-50 flex-shrink-0 flex justify-between items-center">
+                                <div
+                                    className="p-2 border-b border-gray-200 bg-indigo-50 flex-shrink-0 flex justify-between items-center">
                                     <div className="flex items-center">
                                         <MapIcon className="h-4 w-4 text-indigo-600 mr-1.5"/>
                                         <h3 className="text-base font-medium text-gray-900">
@@ -610,31 +714,28 @@ const CreateDoorLockRequest: React.FC = () => {
                                     {isLoadingDoors || isLoadingCoordinates ? (
                                         <div className="flex-1 flex items-center justify-center">
                                             <div className="text-center">
-                                                <Spinner className="h-8 w-8 text-indigo-600 mx-auto" />
-                                                <p className="mt-2 text-sm text-gray-500">Đang tải thông tin cửa và tọa độ...</p>
+                                                <Spinner className="h-8 w-8 text-indigo-600 mx-auto"/>
+                                                <p className="mt-2 text-sm text-gray-500">Đang tải thông tin cửa và tọa
+                                                    độ...</p>
                                             </div>
                                         </div>
                                     ) : doorCoordinates.length === 0 ? (
                                         <div className="flex-1 flex items-center justify-center">
                                             <div className="text-center max-w-sm mx-auto">
-                                                <MapIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                                <MapIcon className="h-12 w-12 text-gray-400 mx-auto mb-4"/>
                                                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                                                     Chưa có tọa độ cửa
                                                 </h3>
                                                 <p className="text-sm text-gray-500">
-                                                    Tầng này chưa có tọa độ cửa nào được thiết lập. Vui lòng liên hệ quản trị viên để thêm tọa độ cửa.
+                                                    Tầng này chưa có tọa độ cửa nào được thiết lập. Vui lòng liên hệ
+                                                    quản trị viên để thêm tọa độ cửa.
                                                 </p>
                                             </div>
                                         </div>
                                     ) : (
                                         <div className="w-full h-full relative">
                                             <div className="absolute inset-0">
-                                                <FloorPlanVisualizer
-                                                    floorPlanImage={floors.find(f => String(f.id) === selectedFloorId)?.floor_plan_image || ''}
-                                                    doors={doorsData?.data?.data || []}
-                                                    onDoorSelect={handleDoorSelect}
-                                                    doorCoordinates={doorCoordinates}
-                                                />
+                                                {floorPlanVirtual}
                                             </div>
                                         </div>
                                     )}
@@ -660,7 +761,7 @@ const CreateDoorLockRequest: React.FC = () => {
                                 </motion.div>
                                 <div className="text-center">
                                     <h3 className="text-lg font-medium text-gray-700 mb-2">
-                                        {selectedBuildingId 
+                                        {selectedBuildingId
                                             ? 'Chọn tầng để xem sơ đồ'
                                             : 'Chọn tòa nhà và tầng để xem sơ đồ'}
                                     </h3>
@@ -717,133 +818,110 @@ const CreateDoorLockRequest: React.FC = () => {
                                         <div className="bg-indigo-50 rounded-lg p-3 mb-4">
                                             <p className="text-sm text-indigo-700 flex items-center">
                                                 <span className="flex h-2 w-2 rounded-full bg-indigo-600 mr-2"></span>
-                                                Bạn đang gửi yêu cầu cho cửa: <span className="font-medium ml-1">{selectedDoor?.name}</span>
+                                                Bạn đang gửi yêu cầu cho cửa: <span
+                                                className="font-medium ml-1">{selectedDoor?.name}</span>
                                             </p>
                                         </div>
                                     </div>
 
-                                    <form onSubmit={handleSubmit} className="mt-4 space-y-6">
+                                    <form onSubmit={onSubmit} className="mt-4 space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label htmlFor="requesterName"
-                                                       className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Họ tên người yêu cầu {!authUser && <span className="text-red-500">*</span>}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="requesterName"
-                                                    name="requesterName"
-                                                    value={formData.requesterName}
-                                                    onChange={handleInputChange}
-                                                    required={!authUser}
-                                                    className={cn(
-                                                        "block w-full rounded-md border-0 py-2.5 px-3",
-                                                        "text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300",
-                                                        "placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600",
-                                                        "sm:text-sm sm:leading-6 transition-all duration-200"
-                                                    )}
-                                                    placeholder="Nhập họ tên người yêu cầu"
-                                                />
-                                                {!authUser && (
-                                                    <p className="mt-1 text-sm text-gray-500">
-                                                        Bắt buộc đối với người dùng chưa đăng nhập
-                                                    </p>
+                                            <Controller
+                                                control={control}
+                                                name="requesterName"
+                                                render={({field}) => (
+                                                    <Field>
+                                                        <Label className="text-sm/6 font-medium">
+                                                            Họ tên người yêu cầu
+                                                            <span className="text-red-500">*</span>
+                                                        </Label>
+                                                        <div className={cn("relative mt-2")}>
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="Nhập họ tên người yêu cầu"
+                                                                className={cn(
+                                                                    "shadow appearance-none border rounded w-full py-2 px-3",
+                                                                    "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        <FieldError error={errors.requesterName}/>
+                                                    </Field>
                                                 )}
-                                            </div>
+                                            />
 
-                                            <div>
-                                                <label htmlFor="requesterEmail"
-                                                       className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Email
-                                                </label>
-                                                <input
-                                                    type="email"
-                                                    id="requesterEmail"
-                                                    name="requesterEmail"
-                                                    value={formData.requesterEmail}
-                                                    onChange={handleInputChange}
-                                                    className={cn(
-                                                        "block w-full rounded-md border-0 py-2.5 px-3",
-                                                        "text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300",
-                                                        "placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600",
-                                                        "sm:text-sm sm:leading-6 transition-all duration-200"
-                                                    )}
-                                                    placeholder="example@domain.com"
-                                                />
-                                                <p className="mt-1 text-sm text-gray-500">
-                                                    Không bắt buộc - dùng để nhận thông báo
-                                                </p>
-                                            </div>
-
-                                            <div>
-                                                <label htmlFor="requesterPhone"
-                                                       className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Số điện thoại {!authUser && <span className="text-red-500">*</span>}
-                                                </label>
-                                                <input
-                                                    type="tel"
-                                                    id="requesterPhone"
-                                                    name="requesterPhone"
-                                                    value={formData.requesterPhone}
-                                                    onChange={handleInputChange}
-                                                    required={!authUser}
-                                                    className={cn(
-                                                        "block w-full rounded-md border-0 py-2.5 px-3",
-                                                        "text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300",
-                                                        "placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600",
-                                                        "sm:text-sm sm:leading-6 transition-all duration-200"
-                                                    )}
-                                                    placeholder="0123456789"
-                                                />
-                                                {!authUser && (
-                                                    <p className="mt-1 text-sm text-gray-500">
-                                                        Bắt buộc đối với người dùng chưa đăng nhập
-                                                    </p>
+                                            <Controller
+                                                control={control}
+                                                name="requesterEmail"
+                                                render={({field}) => (
+                                                    <Field>
+                                                        <Label className="text-sm/6 font-medium">
+                                                            Email
+                                                        </Label>
+                                                        <div className={cn("relative mt-2")}>
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="Email"
+                                                                className={cn(
+                                                                    "shadow appearance-none border rounded w-full py-2 px-3",
+                                                                    "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        <FieldError error={errors.requesterEmail}/>
+                                                    </Field>
                                                 )}
-                                            </div>
+                                            />
+
+                                            <Controller
+                                                control={control}
+                                                name="requesterPhone"
+                                                render={({field}) => (
+                                                    <Field>
+                                                        <Label className="text-sm/6 font-medium">
+                                                            Số điện thoại
+                                                        </Label>
+                                                        <div className={cn("relative mt-2")}>
+                                                            <Input
+                                                                {...field}
+                                                                type="tel"
+                                                                placeholder="Số điện thoại"
+                                                                className={cn(
+                                                                    "shadow appearance-none border rounded w-full py-2 px-3",
+                                                                    "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        <FieldError error={errors.requesterPhone}/>
+                                                    </Field>
+                                                )}
+                                            />
                                         </div>
 
-                                        <div>
-                                            <label htmlFor="purpose"
-                                                   className="block text-sm font-medium text-gray-700 mb-1">
-                                                Mục đích <span className="text-red-500">*</span>
-                                            </label>
-                                            <div className="relative">
-                                                <textarea
-                                                    id="purpose"
-                                                    name="purpose"
-                                                    rows={3}
-                                                    value={formData.purpose}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                    className={cn(
-                                                        "block w-full rounded-md border-0 py-2.5 px-3",
-                                                        "text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300",
-                                                        "placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600",
-                                                        "sm:text-sm sm:leading-6 transition-all duration-200",
-                                                        showPurposeWarning && "pr-12" // Add padding for warning icon
-                                                    )}
-                                                    placeholder="Nhập mục đích yêu cầu đóng/mở cửa..."
-                                                />
-                                                {showPurposeWarning && (
-                                                    <div className="absolute right-2 top-2">
-                                                        <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+
+                                        <Controller
+                                            control={control}
+                                            name="purpose"
+                                            render={({field}) => (
+                                                <Field>
+                                                    <Label className="text-sm/6 font-medium">
+                                                        Mục đích <span className="text-red-500">*</span>
+                                                    </Label>
+                                                    <div className={cn("relative mt-2")}>
+                                                        <Textarea
+                                                            {...field}
+                                                            rows={5}
+                                                            placeholder="Nhập mục đích yêu cầu đóng/mở cửa..."
+                                                            className={cn(
+                                                                "shadow appearance-none border rounded w-full py-2 px-3",
+                                                                "text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                            )}
+                                                        />
                                                     </div>
-                                                )}
-                                            </div>
-                                            <div className="mt-1 text-sm">
-                                                {showPurposeWarning ? (
-                                                    <p className="text-yellow-600 flex items-center gap-1">
-                                                        <ExclamationTriangleIcon className="h-4 w-4 inline" />
-                                                        Vui lòng giữ nguyên thông tin thời gian ở đầu mục đích
-                                                    </p>
-                                                ) : (
-                                                    <p className="text-gray-500">
-                                                        Bắt buộc - vui lòng mô tả rõ mục đích yêu cầu
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
+                                                    <FieldError error={errors.purpose}/>
+                                                </Field>
+                                            )}
+                                        />
 
                                         <div className="mt-6 flex justify-end space-x-3 pt-4 border-t border-gray-200">
                                             <button

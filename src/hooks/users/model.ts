@@ -26,6 +26,7 @@ export type ResLoginUser = {
     username: string
     email: string
     fullName: string
+    name: string
     roles: Array<ResLoginUserRole>
 }
 
