@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Door } from '@/hooks/doors';
-import { DoorCoordinate } from '@/hooks/doorCoordinates';
-import { useQueries } from '@tanstack/react-query';
-import { httpGet } from '@/utils/api';
-import { API_ROUTES } from '@/routes/api';
-import { toast } from 'sonner';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Door} from '@/hooks/doors';
+import {DoorCoordinate} from '@/hooks/doorCoordinates';
+import {useQueries} from '@tanstack/react-query';
+import {httpGet} from '@/utils/api';
+import {API_ROUTES} from '@/routes/api';
+import {toast} from 'sonner';
 
 interface FloorPlanVisualizerProps {
     floorPlanImage: string;
@@ -30,7 +30,7 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const [error, setError] = useState<string | null>(null);
-    
+
     interface DoorStatus {
         message?: string;
         r?: number;
@@ -47,7 +47,7 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
             door_status?: string;
         };
     }
-    
+
     const [doorStatuses, setDoorStatuses] = useState<Record<string, DoorStatus>>({});
 
     // Get door request status for all doors
@@ -60,50 +60,49 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
                     .replace(':floorId', floorId || '')
                     .replace(':doorId', door.id.toString());
                 const resp = await httpGet({ uri });
-                const data = await resp.json();
-                console.log(`Door ${door.id} status update:`, {
-                    lockStatus: door.lock_status,
-                    responseData: data,
-                    currentStatus: doorStatuses[door.id]
-                });
-                return data;
+                // Removed console.log to prevent excessive logging
+                return await resp.json();
             },
             enabled: !!buildingId && !!floorId && !!door.id,
             refetchInterval: 5000,
-            staleTime: 0,
-            cacheTime: 0,
-            refetchOnWindowFocus: true,
+            staleTime: 2000, // Increased staleTime to reduce refetches
+            cacheTime: 5000, // Increased cacheTime to reduce refetches
+            refetchOnWindowFocus: false, // Disabled refetch on window focus
             retry: 0
         }))
     });
 
     // Update door statuses when queries change
     useEffect(() => {
-        const newStatuses: Record<string, DoorStatus> = {};
-        let hasChanges = false;
+        setDoorStatuses(prevStatuses => {
+            const newStatuses: Record<string, DoorStatus> = {};
+            let hasChanges = false;
 
-        queries.forEach((query, index) => {
-            if (query.data) {
-                const door = doorCoordinates[index].door;
-                const currentStatus = doorStatuses[door.id];
-                
-                // Chỉ cập nhật nếu dữ liệu thực sự thay đổi
-                if (!currentStatus || 
-                    JSON.stringify(currentStatus) !== JSON.stringify(query.data)) {
-                    newStatuses[door.id] = query.data;
-                    hasChanges = true;
-                } else {
-                    newStatuses[door.id] = currentStatus;
+            queries.forEach((query, index) => {
+                if (query.data) {
+                    const door = doorCoordinates[index].door;
+                    const currentStatus = prevStatuses[door.id];
+
+                    // Chỉ cập nhật nếu dữ liệu thực sự thay đổi
+                    if (!currentStatus || 
+                        JSON.stringify(currentStatus) !== JSON.stringify(query.data)) {
+                        newStatuses[door.id] = query.data;
+                        hasChanges = true;
+                    } else {
+                        newStatuses[door.id] = currentStatus;
+                    }
                 }
+            });
+
+            // Chỉ cập nhật state nếu có sự thay đổi thực sự
+            if (hasChanges) {
+                // Removed console.log to prevent excessive logging
+                return newStatuses;
             }
+
+            return prevStatuses;
         });
-        
-        // Chỉ cập nhật state nếu có sự thay đổi thực sự
-        if (hasChanges) {
-            console.log('Updating door statuses due to changes:', newStatuses);
-            setDoorStatuses(newStatuses);
-        }
-    }, [queries, doorCoordinates, doorStatuses]);
+    }, [queries, doorCoordinates]);
 
     // Function to setup canvas with correct size
     const setupCanvas = useCallback((
@@ -167,7 +166,7 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
 
         doorCoordinates.forEach(({ door, coordinates }) => {
             const doorStatus = doorStatuses[door.id];
-            
+
             coordinates.forEach(coord => {
                 const markerX = coord.x_coordinate * scale;
                 const markerY = coord.y_coordinate * scale;
@@ -182,25 +181,10 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
                     fillColor = '#f59e0b';
                 } else if (doorStatus?.data?.door_status === 'open') {
                     fillColor = '#10b981';
-                    console.log(`Door ${door.id} is open:`, {
-                        doorStatus: doorStatus?.data?.door_status,
-                        lockStatus: door.lock_status,
-                        fullStatus: doorStatus
-                    });
                 } else if (doorStatus?.data?.door_status === 'closed') {
                     fillColor = '#ef4444';
-                    console.log(`Door ${door.id} is closed:`, {
-                        doorStatus: doorStatus?.data?.door_status,
-                        lockStatus: door.lock_status,
-                        fullStatus: doorStatus
-                    });
                 } else {
                     fillColor = '#3b82f6';
-                    console.log(`Door ${door.id} status unknown:`, {
-                        doorStatus: doorStatus?.data?.door_status,
-                        lockStatus: door.lock_status,
-                        fullStatus: doorStatus
-                    });
                 }
 
                 // Draw pulsing circle effect
@@ -227,10 +211,10 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
                 context.font = '12px Arial';
                 const text = door.name;
                 const textWidth = context.measureText(text).width;
-                
+
                 context.fillStyle = 'rgba(255, 255, 255, 0.8)';
                 context.fillRect(markerX - textWidth/2 - 4, markerY - 34, textWidth + 8, 20);
-                
+
                 context.fillStyle = fillColor;
                 context.textAlign = 'center';
                 context.fillText(text, markerX, markerY - 20);
@@ -238,20 +222,20 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
                 if (doorStatus?.data?.hasPendingRequest === true) {
                     const indicatorText = "Đang chờ duyệt";
                     const indicatorWidth = context.measureText(indicatorText).width;
-                    
+
                     context.fillStyle = 'rgba(255, 255, 255, 0.8)';
                     context.fillRect(markerX - indicatorWidth/2 - 4, markerY - 44, indicatorWidth + 8, 20);
-                    
+
                     context.fillStyle = '#f59e0b';
                     context.fillText(indicatorText, markerX, markerY - 30);
 
                     if (doorStatus?.data?.request?.requester_name) {
                         const requesterText = doorStatus.data.request.requester_name;
                         const requesterWidth = context.measureText(requesterText).width;
-                        
+
                         context.fillStyle = 'rgba(255, 255, 255, 0.8)';
                         context.fillRect(markerX - requesterWidth/2 - 4, markerY - 64, requesterWidth + 8, 20);
-                        
+
                         context.fillStyle = '#f59e0b';
                         context.fillText(requesterText, markerX, markerY - 50);
                     }
@@ -262,7 +246,6 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
 
     // Update markers when door status changes
     useEffect(() => {
-        console.log('Door statuses changed:', doorStatuses);
         if (imageLoaded) {
             updateDoorMarkers();
         }
@@ -348,7 +331,7 @@ const FloorPlanVisualizer: React.FC<FloorPlanVisualizerProps> = ({
         if (!imageRef.current) {
             const image = new Image();
             image.crossOrigin = "anonymous";
-            
+
             image.onload = () => {
                 setImageSize({ width: image.width, height: image.height });
                 setImageLoaded(true);

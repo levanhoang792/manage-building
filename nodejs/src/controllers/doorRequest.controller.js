@@ -157,6 +157,7 @@ const createRequest = async (req, res) => {
             requester_email: requester_email || null,
             purpose,
             status: 'pending'
+            // status: 'approved'
         };
 
         const id = await doorRequestModel.create(requestData);
@@ -179,6 +180,15 @@ const createRequest = async (req, res) => {
             },
             ip_address: req.ip
         });
+
+        // console.log("newRequest: ", JSON.stringify(newRequest));
+        try {
+            await updateRequestStatusFunction(req, newRequest.id, "approved", userId, purpose);
+        } catch (e) {
+            console.error('Error updating request status:', e);
+            const errorData = JSON.parse(e.message);
+            return error(res, errorData.message, errorData.code);
+        }
 
         // Emit socket event for real-time notification
         socketService.emitEvent('new-door-request', {
@@ -207,93 +217,111 @@ const updateRequestStatus = async (req, res) => {
         const { status, reason } = req.body;
         const userId = req.user.id;
 
-        // Validate status
-        if (!status || !['approved', 'rejected'].includes(status)) {
-            return error(res, 'Invalid status. Must be "approved" or "rejected".', responseCodes.BAD_REQUEST);
-        }
+        try {
+            const updatedRequest = await updateRequestStatusFunction(req, id, status, userId, reason);
 
-        // Check if request exists
-        const request = await doorRequestModel.getById(id);
-
-        if (!request) {
-            return error(res, 'Door request not found', responseCodes.NOT_FOUND);
-        }
-
-        // Check if request is already processed
-        if (request.status !== 'pending') {
-            return error(res, `Door request is already ${request.status}`, responseCodes.BAD_REQUEST);
-        }
-
-        // Update request status with reason
-        await doorRequestModel.updateStatus(id, status, userId, reason);
-
-        // If approved, open the door
-        if (status === 'approved') {
-            // Get the door
-            const door = await doorModel.getById(null, request.door_id);
-
-            // Only update if door is currently closed
-            if (door && door.lock_status === 'closed') {
-                // Update door lock status
-                await doorLockModel.updateLockStatus(
-                    door.floor_id, 
-                    door.id, 
-                    'open', 
-                    userId, 
-                    id, 
-                    `Approved door request from ${request.requester_name}`
-                );
-
-                // Log activity for door lock change
-                await activityLogger.log({
-                    user_id: userId,
-                    action: 'Changed door lock status due to request approval',
-                    entity_type: 'door',
-                    entity_id: door.id,
-                    details: {
-                        door_name: door.name,
-                        previous_status: 'closed',
-                        new_status: 'open',
-                        request_id: id
-                    },
-                    ip_address: req.ip
-                });
-            }
-        }
-
-        // Log activity for request status change
-        await activityLogger.log({
-            user_id: userId,
-            action: `${status === 'approved' ? 'Approved' : 'Rejected'} door request`,
-            entity_type: 'door_request',
-            entity_id: id,
-            details: {
-                requester_name: request.requester_name,
+            // Emit socket event for real-time notification
+            socketService.emitEvent('door-request-status-updated', {
+                id,
                 door_id: request.door_id,
-                door_name: request.door_name,
-                reason: reason || null
-            },
-            ip_address: req.ip
-        });
+                status,
+                processed_by: userId,
+                processed_at: updatedRequest.processed_at
+            });
 
-        // Get updated request
-        const updatedRequest = await doorRequestModel.getById(id);
-
-        // Emit socket event for real-time notification
-        socketService.emitEvent('door-request-status-updated', {
-            id,
-            door_id: request.door_id,
-            status,
-            processed_by: userId,
-            processed_at: updatedRequest.processed_at
-        });
-
-        return success(res, `Door request ${status} successfully`, responseCodes.SUCCESS, updatedRequest);
+            return success(res, `Door request ${status} successfully`, responseCodes.SUCCESS, updatedRequest);
+        } catch (e) {
+            const errorData = JSON.parse(e.message);
+            return error(res, errorData.message, errorData.code);
+        }
     } catch (err) {
         console.error('Error updating door request status:', err);
         return error(res, 'Failed to update door request status', responseCodes.SERVER_ERROR);
     }
 };
+
+const updateRequestStatusFunction = async (req, id, status, userId, reason) => {
+    // Validate status
+    if (!status || !['approved', 'rejected'].includes(status)) {
+        throw new Error(JSON.stringify({
+            message: 'Invalid status. Must be "approved" or "rejected".',
+            code: responseCodes.BAD_REQUEST
+        }));
+    }
+
+    // Check if request exists
+    const request = await doorRequestModel.getById(id);
+
+    if (!request) {
+        throw new Error(JSON.stringify({
+            message: 'Door request not found',
+            code: responseCodes.NOT_FOUND
+        }))
+    }
+
+    // Check if request is already processed
+    if (request.status !== 'pending') {
+        throw new Error(JSON.stringify({
+            message: `Door request is already ${request.status}`,
+            code: responseCodes.BAD_REQUEST
+        }));
+    }
+
+    // Update request status with reason
+    await doorRequestModel.updateStatus(id, status, userId, reason);
+
+    // If approved, open the door
+    if (status === 'approved') {
+        // Get the door
+        const door = await doorModel.getById(null, request.door_id);
+
+        // Only update if door is currently closed
+        if (door && door.lock_status === 'closed') {
+            // Update door lock status
+            await doorLockModel.updateLockStatus(
+                door.floor_id,
+                door.id,
+                'open',
+                userId,
+                id,
+                `Approved door request from ${request.requester_name}`
+            );
+
+            // Log activity for door lock change
+            await activityLogger.log({
+                user_id: userId,
+                action: 'Changed door lock status due to request approval',
+                entity_type: 'door',
+                entity_id: door.id,
+                details: {
+                    door_name: door.name,
+                    previous_status: 'closed',
+                    new_status: 'open',
+                    request_id: id
+                },
+                ip_address: req.ip
+            });
+        }
+    }
+
+    // Log activity for request status change
+    await activityLogger.log({
+        user_id: userId,
+        action: `${status === 'approved' ? 'Approved' : 'Rejected'} door request`,
+        entity_type: 'door_request',
+        entity_id: id,
+        details: {
+            requester_name: request.requester_name,
+            door_id: request.door_id,
+            door_name: request.door_name,
+            reason: reason || null
+        },
+        ip_address: req.ip
+    });
+
+    // Get updated request
+    return await doorRequestModel.getById(id);
+}
 
 /**
  * Get door requests for a specific door

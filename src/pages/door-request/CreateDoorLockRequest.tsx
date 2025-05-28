@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect, useMemo, useRef, useState} from 'react';
+import {Fragment, useEffect, useMemo, useRef, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {ArrowLeftIcon, BuildingOffice2Icon, DocumentTextIcon, MapIcon} from '@heroicons/react/24/outline';
 import {useGetBuildingsInfinite} from '@/hooks/buildings';
@@ -66,7 +66,7 @@ const getCurrentDateString = () => {
     return `${day}/${month}/${year}`;
 };
 
-const CreateDoorLockRequest: React.FC = () => {
+export default function CreateDoorLockRequest() {
     const navigate = useNavigate();
     const {id: buildingIdParam, floorId: floorIdParam} = useParams<{ id: string; floorId: string }>();
     const authUser = useSelector((state: RootState) => state.auth.user);
@@ -460,14 +460,22 @@ const CreateDoorLockRequest: React.FC = () => {
     //     }
     // };
 
-    const floorPlanVirtual = useMemo(() => (
-        <FloorPlanVisualizer
-            floorPlanImage={floors.find(f => String(f.id) === selectedFloorId)?.floor_plan_image || ''}
-            doors={doorsData?.data?.data || []}
-            onDoorSelect={handleDoorSelect}
-            doorCoordinates={doorCoordinates}
-        />
-    ), [doorCoordinates, doorsData?.data?.data, floors, selectedFloorId])
+    const floorPlanVirtual = useMemo(() => {
+        const currentFloor = floors.find(f => String(f.id) === selectedFloorId);
+        const floorPlanImage = currentFloor?.floor_plan_image || '';
+        const currentDoors = doorsData?.data?.data || [];
+        console.log("doorCoordinates", doorCoordinates);
+        return (
+            <FloorPlanVisualizer
+                floorPlanImage={floorPlanImage}
+                doors={currentDoors}
+                onDoorSelect={handleDoorSelect}
+                doorCoordinates={doorCoordinates}
+                buildingId={selectedBuildingId}
+                floorId={selectedFloorId}
+            />
+        );
+    }, [floors, selectedFloorId, doorCoordinates, doorsData?.data?.data]);
 
     return (
         <div className="h-[calc(100vh-var(--header-height)-2rem)] flex flex-col p-4 gap-2">
@@ -968,6 +976,4 @@ const CreateDoorLockRequest: React.FC = () => {
             </Transition>
         </div>
     );
-};
-
-export default CreateDoorLockRequest;
+};;
