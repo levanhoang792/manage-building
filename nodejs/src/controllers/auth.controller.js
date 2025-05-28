@@ -76,6 +76,7 @@ exports.login = async (req, res) => {
         const payload = {
             id: user.id,
             username: user.username,
+            full_name: user.full_name,
             email: user.email,
             roles: roles.map(role => role.name),
             permissions: permissions.map(permission => permission.name)
@@ -238,6 +239,7 @@ exports.refreshToken = async (req, res) => {
             const payload = {
                 id: user.id,
                 username: user.username,
+                full_name: user.full_name,
                 email: user.email,
                 roles: roles.map(role => role.name),
                 permissions: permissions.map(permission => permission.name)

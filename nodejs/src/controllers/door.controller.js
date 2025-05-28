@@ -142,7 +142,7 @@ const createDoor = async (req, res) => {
             });
 
             // Send initial telemetry
-            await thingsBoardService.sendTelemetry(device.id.id, {
+            await thingsBoardService.sendTelemetry(credentials.credentialsId, {
                 lockStatus: doorData.lock_status,
                 ts: Date.now(),
                 reason: 'Initial setup'
@@ -217,7 +217,7 @@ const updateDoor = async (req, res) => {
 
                 // If lock_status changed, send telemetry
                 if (doorData.lock_status && doorData.lock_status !== existingDoor.lock_status) {
-                    await thingsBoardService.sendTelemetry(existingDoor.thingsboard_device_id, {
+                    await thingsBoardService.sendTelemetry(existingDoor.thingsboard_access_token, {
                         lockStatus: doorData.lock_status,
                         ts: Date.now(),
                         reason: 'Manual update'
@@ -288,7 +288,7 @@ const updateDoorStatus = async (req, res) => {
                 await thingsBoardService.updateDeviceActivity(existingDoor.thingsboard_device_id, status === 'active');
 
                 // Send telemetry for status change
-                await thingsBoardService.sendTelemetry(existingDoor.thingsboard_device_id, {
+                await thingsBoardService.sendTelemetry(existingDoor.thingsboard_access_token, {
                     status,
                     lockStatus: existingDoor.lock_status,
                     ts: Date.now(),
@@ -356,7 +356,7 @@ const updateDoorLockStatus = async (req, res) => {
                 });
 
                 // Send telemetry data to ThingsBoard
-                await thingsBoardService.sendTelemetry(existingDoor.thingsboard_device_id, {
+                await thingsBoardService.sendTelemetry(existingDoor.thingsboard_access_token, {
                     lockStatus: lock_status,
                     ts: Date.now()
                 });

@@ -3,7 +3,7 @@ const doorModel = require('@models/door.model');
 const floorModel = require('@models/floor.model');
 const buildingModel = require('@models/building.model');
 const thingsBoardService = require('@services/thingsboard.service');
-const { success, error } = require('@utils/responseHandler');
+const {success, error} = require('@utils/responseHandler');
 const responseCodes = require('@utils/responseCodes');
 const activityLogger = require('@utils/activityLogger');
 
@@ -14,8 +14,8 @@ const activityLogger = require('@utils/activityLogger');
  */
 const updateLockStatus = async (req, res) => {
     try {
-        const { buildingId, floorId, id } = req.params;
-        const { lock_status, reason, request_id } = req.body;
+        const {buildingId, floorId, id} = req.params;
+        const {lock_status, reason, request_id} = req.body;
         const userId = req.user.id;
 
         // Validate lock status
@@ -64,15 +64,19 @@ const updateLockStatus = async (req, res) => {
                 await thingsBoardService.updateDeviceAttributes(door.thingsboard_device_id, {
                     lockStatus: lock_status,
                     status: door.status,
-                    lastUpdatedBy: userId,
+                    lastUpdatedById: userId,
+                    lastUpdatedBy: req.user.full_name,
                     lastUpdateReason: reason || 'Manual update'
                 });
 
                 // Send telemetry data
-                await thingsBoardService.sendTelemetry(door.thingsboard_device_id, {
+                console.log(`Sending telemetry for door ${id} with lock status ${lock_status}`);
+                await thingsBoardService.sendTelemetry(door.thingsboard_access_token, {
                     lockStatus: lock_status,
+                    status: door.status,
                     ts: Date.now(),
                     userId,
+                    user_full_name: req.user.full_name,
                     requestId: request_id || null,
                     reason: reason || 'Manual update'
                 });
@@ -115,8 +119,8 @@ const updateLockStatus = async (req, res) => {
  */
 const getLockHistory = async (req, res) => {
     try {
-        const { buildingId, floorId, id } = req.params;
-        const { page, limit, startDate, endDate, sortBy, sortOrder } = req.query;
+        const {buildingId, floorId, id} = req.params;
+        const {page, limit, startDate, endDate, sortBy, sortOrder} = req.query;
 
         // Check if building exists
         const building = await buildingModel.getById(buildingId);
@@ -173,11 +177,11 @@ const getLockHistory = async (req, res) => {
  */
 const getDoorAccessReports = async (req, res) => {
     try {
-        const { buildingId, floorId, id } = req.params;
-        const { 
-            report_type = 'summary', 
-            start_date, 
-            end_date, 
+        const {buildingId, floorId, id} = req.params;
+        const {
+            report_type = 'summary',
+            start_date,
+            end_date,
             group_by = 'day',
             format = 'json'
         } = req.query;

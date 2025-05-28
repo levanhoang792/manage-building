@@ -3,10 +3,11 @@ const doorModel = require('@models/door.model');
 const doorLockModel = require('@models/doorLock.model');
 const floorModel = require('@models/floor.model');
 const buildingModel = require('@models/building.model');
-const { success, error } = require('@utils/responseHandler');
+const {success, error} = require('@utils/responseHandler');
 const responseCodes = require('@utils/responseCodes');
 const activityLogger = require('@utils/activityLogger');
 const socketService = require('@services/socket.service');
+const thingsBoardService = require("@services/thingsboard.service");
 
 /**
  * Get door request status for a specific door
@@ -15,7 +16,7 @@ const socketService = require('@services/socket.service');
  */
 const getDoorRequestStatus = async (req, res) => {
     try {
-        const { buildingId, floorId, doorId } = req.params;
+        const {buildingId, floorId, doorId} = req.params;
 
         // Check if building exists
         const building = await buildingModel.getById(buildingId);
@@ -63,18 +64,18 @@ const getDoorRequestStatus = async (req, res) => {
  */
 const getAllRequests = async (req, res) => {
     try {
-        const { 
-            page, 
-            limit, 
-            status, 
-            buildingId, 
-            floorId, 
-            doorId, 
-            search, 
-            startDate, 
-            endDate, 
-            sortBy, 
-            sortOrder 
+        const {
+            page,
+            limit,
+            status,
+            buildingId,
+            floorId,
+            doorId,
+            search,
+            startDate,
+            endDate,
+            sortBy,
+            sortOrder
         } = req.query;
 
         const result = await doorRequestModel.getAll({
@@ -105,7 +106,7 @@ const getAllRequests = async (req, res) => {
  */
 const getRequestById = async (req, res) => {
     try {
-        const { id } = req.params;
+        const {id} = req.params;
 
         const request = await doorRequestModel.getById(id);
 
@@ -127,7 +128,7 @@ const getRequestById = async (req, res) => {
  */
 const createRequest = async (req, res) => {
     try {
-        const { door_id, requester_name, requester_phone, requester_email, purpose } = req.body;
+        const {door_id, requester_name, requester_phone, requester_email, purpose} = req.body;
 
         // Validate required fields
         if (!door_id || !requester_name || !purpose) {
@@ -213,8 +214,8 @@ const createRequest = async (req, res) => {
  */
 const updateRequestStatus = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { status, reason } = req.body;
+        const {id} = req.params;
+        const {status, reason} = req.body;
         const userId = req.user.id;
 
         try {
@@ -276,16 +277,45 @@ const updateRequestStatusFunction = async (req, id, status, userId, reason) => {
         const door = await doorModel.getById(null, request.door_id);
 
         // Only update if door is currently closed
-        if (door && door.lock_status === 'closed') {
+        if (door) {
+            const newStatus = door.lock_status === 'closed' ? 'open' : 'closed';
+
             // Update door lock status
             await doorLockModel.updateLockStatus(
                 door.floor_id,
                 door.id,
-                'open',
+                newStatus,
                 userId,
                 id,
                 `Approved door request from ${request.requester_name}`
             );
+
+            if (door.thingsboard_device_id) {
+                try {
+                    // Update device attributes
+                    await thingsBoardService.updateDeviceAttributes(door.thingsboard_device_id, {
+                        lockStatus: newStatus,
+                        status: door.status,
+                        lastUpdatedById: userId,
+                        lastUpdatedBy: req.user?.full_name || request.requester_name,
+                        lastUpdateReason: reason || 'Manual update'
+                    });
+
+                    // Send telemetry data
+                    await thingsBoardService.sendTelemetry(door.thingsboard_access_token, {
+                        lockStatus: newStatus,
+                        status: door.status,
+                        ts: Date.now(),
+                        userId,
+                        user_full_name: req.user?.full_name || request.requester_name,
+                        requestId: req.body.request_id || null,
+                        reason: reason || 'Manual update'
+                    });
+                } catch (thingsboardError) {
+                    console.error('Error updating ThingsBoard device:', thingsboardError);
+                    // Continue without ThingsBoard update if it fails
+                }
+            }
 
             // Log activity for door lock change
             await activityLogger.log({
@@ -295,8 +325,8 @@ const updateRequestStatusFunction = async (req, id, status, userId, reason) => {
                 entity_id: door.id,
                 details: {
                     door_name: door.name,
-                    previous_status: 'closed',
-                    new_status: 'open',
+                    previous_status: door.lock_status,
+                    new_status: newStatus,
                     request_id: id
                 },
                 ip_address: req.ip
@@ -330,8 +360,8 @@ const updateRequestStatusFunction = async (req, id, status, userId, reason) => {
  */
 const getDoorRequests = async (req, res) => {
     try {
-        const { buildingId, floorId, id } = req.params;
-        const { page, limit, status, startDate, endDate, sortBy, sortOrder } = req.query;
+        const {buildingId, floorId, id} = req.params;
+        const {page, limit, status, startDate, endDate, sortBy, sortOrder} = req.query;
 
         // Check if building exists
         const building = await buildingModel.getById(buildingId);

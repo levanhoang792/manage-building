@@ -331,10 +331,10 @@ function GuestDoorRequest() {
 
     // Handle door selection and open form
     const handleDoorSelect = useCallback((door: Door) => {
-        if (door.lock_status === 'open') {
-            toast.warning(`Cửa ${door.name} đang mở`);
-            return;
-        }
+        // if (door.lock_status === 'open') {
+        //     toast.warning(`Cửa ${door.name} đang mở`);
+        //     return;
+        // }
 
         setSelectedDoor(door);
         setIsFormOpen(true);
