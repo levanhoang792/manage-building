@@ -5,13 +5,101 @@ import DoorList from './components/DoorList';
 import DoorForm from './components/DoorForm';
 import DoorFilter from './components/DoorFilter';
 import Pagination from '@/components/commons/Pagination';
-import {PlusIcon} from '@heroicons/react/24/outline';
+import {ArrowDownTrayIcon, PlusIcon} from '@heroicons/react/24/outline';
 import {useGetFloorDetail} from '@/hooks/floors';
 import {useGetBuildingDetail} from '@/hooks/buildings';
 
-const DoorManagement: React.FC = () => {
+export const DoorManagement: React.FC = () => {
     const {id, floorId} = useParams<{ id: string; floorId: string }>();
     const navigate = useNavigate();
+
+    const generateDoorScript = (door: Door, buildingId: string, floorId: string) => {
+        return `#!/usr/bin/env node
+/**
+ * Door Control Script
+ * Door ID: ${door.id}
+ * Door Name: ${door.name}
+ * Building ID: ${buildingId}
+ * Floor ID: ${floorId}
+ *
+ * Hướng dẫn sử dụng:
+ * 1. Cài đặt Node.js phiên bản >= 18 từ https://nodejs.org/
+ * 2. Thêm token xác thực vào biến AUTH_TOKEN bên dưới (không bắt buộc)
+ * 3. Để yêu cầu truy cập cửa: node door_${door.id}_control.js "Tên người yêu cầu" "Số điện thoại" "Email" "Lý do"
+ */
+
+const API_URL = '${window.location.origin}';
+const DOOR_ID = ${door.id};
+const AUTH_TOKEN = ''; // Token không bắt buộc vì API hỗ trợ guest access
+
+async function requestDoorAccess(requesterName, requesterPhone, requesterEmail = '', purpose) {
+    if (!requesterName || !requesterPhone || !purpose) {
+        console.error('Thiếu thông tin. Vui lòng cung cấp đầy đủ tên, số điện thoại và lý do.');
+        console.log('Cách sử dụng: node door_${door.id}_control.js "Tên" "SĐT" "Email" "Lý do"');
+        return;
+    }
+
+    try {
+        const response = await fetch(\`\${API_URL}/api/door-requests\`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...AUTH_TOKEN ? {'Authorization': \`Bearer \${AUTH_TOKEN}\`} : {}
+            },
+            body: JSON.stringify({
+                door_id: DOOR_ID,
+                requester_name: requesterName,
+                requester_phone: requesterPhone,
+                requester_email: requesterEmail,
+                purpose: purpose
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(\`Lỗi khi gửi yêu cầu: \${response.statusText}\`);
+        }
+
+        const result = await response.json();
+        console.log('[SUCCESS] Đã gửi yêu cầu truy cập cửa thành công');
+        console.log('Chi tiết:', result);
+        return result;
+    } catch (error) {
+        console.error('[ERROR] Lỗi khi gửi yêu cầu:', error.message);
+        throw error;
+    }
+}
+
+// Xử lý tham số dòng lệnh
+const [requesterName, requesterPhone, requesterEmail, ...purposeParts] = process.argv.slice(2);
+const purpose = purposeParts.join(' ');
+
+if (!requesterName || !requesterPhone || !purpose) {
+    console.log('Cách sử dụng:');
+    console.log('  node door_${door.id}_control.js "Tên người yêu cầu" "Số điện thoại" "Email" "Lý do truy cập"');
+    console.log('');
+    console.log('Ví dụ:');
+    console.log('  node door_${door.id}_control.js "Nguyễn Văn A" "0123456789" "email@example.com" "Gặp khách hàng"');
+    process.exit(1);
+}
+
+requestDoorAccess(requesterName, requesterPhone, requesterEmail, purpose)
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));`;
+    };
+
+    const handleDownloadScript = (door: Door) => {
+        if (!id || !floorId) return;
+        const script = generateDoorScript(door, id, floorId);
+        const blob = new Blob([script], { type: 'text/javascript' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `door_${door.id}_control.js`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     // Kiểm tra nếu không có id hoặc floorId, chuyển hướng về trang buildings
     useEffect(() => {
@@ -146,6 +234,7 @@ const DoorManagement: React.FC = () => {
                     onEdit={handleEditDoor}
                     onDelete={handleDeleteDoor}
                     onView={handleViewDoor}
+                    onDownloadScript={handleDownloadScript}
                     isLoading={isLoading}
                 />
 
@@ -172,3 +261,20 @@ const DoorManagement: React.FC = () => {
 };
 
 export default DoorManagement;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

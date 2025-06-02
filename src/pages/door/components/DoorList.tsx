@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Door} from '@/hooks/doors';
-import {EyeIcon, PencilIcon, TrashIcon} from '@heroicons/react/24/outline';
+import {ArrowDownTrayIcon, EyeIcon, PencilIcon, TrashIcon} from '@heroicons/react/24/outline';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 import {PlusIcon} from "@heroicons/react/20/solid";
 import {useDoorTypes} from '@/hooks/doorTypes';
@@ -10,6 +10,7 @@ interface DoorListProps {
     onEdit: (door: Door) => void;
     onDelete: (id: number) => void;
     onView: (door: Door) => void;
+    onDownloadScript: (door: Door) => void;
     isLoading: boolean;
 }
 
@@ -18,6 +19,7 @@ const DoorList: React.FC<DoorListProps> = ({
                                                onEdit,
                                                onDelete,
                                                onView,
+                                               onDownloadScript,
                                                isLoading
                                            }) => {
     const [doorToDelete, setDoorToDelete] = useState<Door | null>(null);
@@ -141,6 +143,14 @@ const DoorList: React.FC<DoorListProps> = ({
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                             <div className="flex justify-end space-x-2">
                                 <button
+                                    onClick={() => onDownloadScript(door)}
+                                    className="text-blue-600 hover:text-blue-900"
+                                    title="Tải script điều khiển cửa"
+                                >
+                                    <ArrowDownTrayIcon className="h-5 w-5" aria-hidden="true"/>
+                                    <span className="sr-only">Tải script</span>
+                                </button>
+                                <button
                                     onClick={() => onView(door)}
                                     className="text-indigo-600 hover:text-indigo-900"
                                 >
@@ -180,3 +190,4 @@ const DoorList: React.FC<DoorListProps> = ({
 };
 
 export default DoorList;
+
