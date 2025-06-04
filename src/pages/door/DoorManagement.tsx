@@ -5,13 +5,106 @@ import DoorList from './components/DoorList';
 import DoorForm from './components/DoorForm';
 import DoorFilter from './components/DoorFilter';
 import Pagination from '@/components/commons/Pagination';
-import {ArrowDownTrayIcon, PlusIcon} from '@heroicons/react/24/outline';
+import {PlusIcon} from '@heroicons/react/24/outline';
 import {useGetFloorDetail} from '@/hooks/floors';
 import {useGetBuildingDetail} from '@/hooks/buildings';
 
 export const DoorManagement: React.FC = () => {
     const {id, floorId} = useParams<{ id: string; floorId: string }>();
     const navigate = useNavigate();
+
+    const generateDoorHtml = (door: Door, buildingId: string, floorId: string) => {
+        const apiUrl = 'http://localhost:3000/api/door-requests';
+        return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Yêu cầu truy cập cửa ${door.name}</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        label { display: block; margin-top: 10px; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 4px; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+        #result { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Yêu cầu truy cập cửa: ${door.name}</h1>
+    <p><strong>Toà nhà:</strong> ${buildingId} | <strong>Tầng:</strong> ${floorId}</p>
+    <form id="door-access-form">
+        <label>Họ tên người yêu cầu
+            <input type="text" name="requester_name" required />
+        </label>
+        <label>Số điện thoại
+            <input type="text" name="requester_phone" required />
+        </label>
+        <label>Email (không bắt buộc)
+            <input type="email" name="requester_email" />
+        </label>
+        <label>Lý do truy cập
+            <textarea name="purpose" rows="3" required></textarea>
+        </label>
+        <button type="submit" id="submit-btn">Gửi yêu cầu</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        // Thiết lập mặc định nội dung lý do
+        window.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.querySelector('textarea[name="purpose"]');
+            const now = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            const timeStr = \`\${pad(now.getHours())}:\${pad(now.getMinutes())} \${pad(now.getDate())}/\${pad(now.getMonth()+1)}/\${now.getFullYear()}\`;
+            textarea.value = "Yêu cầu mở cửa ${door.name}. Thời gian " + timeStr;
+        });
+
+        const form = document.getElementById('door-access-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Đang gửi...';
+            resultDiv.textContent = '';
+
+            const data = {
+                door_id: ${door.id},
+                requester_name: form.requester_name.value,
+                requester_phone: form.requester_phone.value,
+                requester_email: form.requester_email.value,
+                purpose: form.purpose.value
+            };
+
+            try {
+                const response = await fetch('${apiUrl}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    resultDiv.innerText = '✔️ Yêu cầu thành công!';
+                    setTimeout(() => window.close(), 1500);
+                } else {
+                    resultDiv.innerText = '❌ Lỗi: ' + (result.message || 'Không xác định');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Gửi yêu cầu';
+                }
+            } catch (error) {
+                resultDiv.innerText = '❌ Lỗi khi gửi yêu cầu: ' + error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Gửi yêu cầu';
+            }
+        });
+    </script>
+</body>
+</html>`;
+    };
 
     const generateDoorScript = (door: Door, buildingId: string, floorId: string) => {
         return `#!/usr/bin/env node
@@ -90,11 +183,25 @@ requestDoorAccess(requesterName, requesterPhone, requesterEmail, purpose)
     const handleDownloadScript = (door: Door) => {
         if (!id || !floorId) return;
         const script = generateDoorScript(door, id, floorId);
-        const blob = new Blob([script], { type: 'text/javascript' });
+        const blob = new Blob([script], {type: 'text/javascript'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `door_${door.id}_control.js`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const handleDownloadHtml = (door: Door) => {
+        if (!id || !floorId) return;
+        const htmlContent = generateDoorHtml(door, id, floorId);
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `door_${door.id}_access_form.html`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -234,7 +341,10 @@ requestDoorAccess(requesterName, requesterPhone, requesterEmail, purpose)
                     onEdit={handleEditDoor}
                     onDelete={handleDeleteDoor}
                     onView={handleViewDoor}
-                    onDownloadScript={handleDownloadScript}
+                    onDownloadScript={(door) => {
+                        handleDownloadHtml(door);
+                        handleDownloadScript(door);
+                    }}
                     isLoading={isLoading}
                 />
 
