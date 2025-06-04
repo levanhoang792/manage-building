@@ -7,14 +7,12 @@ import {
     ChartBarIcon,
     ChartPieIcon,
     ClockIcon,
-    Cog6ToothIcon,
+    DocumentTextIcon,
+    EyeIcon,
     KeyIcon,
     ShieldCheckIcon,
     UserGroupIcon,
-    UserIcon,
-    DocumentTextIcon,
-    LockOpenIcon,
-    EyeIcon
+    UserIcon
 } from "@heroicons/react/24/outline";
 import {Disclosure, DisclosureButton, DisclosurePanel} from "@headlessui/react";
 import {ChevronDownIcon} from "@heroicons/react/20/solid";
@@ -58,12 +56,6 @@ function LeftToolbar() {
             </div>
 
             <div className={cn("menu text-black px-2 w-full flex-grow overflow-auto flex flex-col gap-1")}>
-                {/* Dashboard */}
-                <Link to={ROUTES.DASHBOARD} className={menuItemClass(isActive(ROUTES.DASHBOARD))}>
-                    <ChartBarIcon className="size-5"/>
-                    <span>Dashboard</span>
-                </Link>
-
                 {/* Buildings */}
                 <Link to={ROUTES.BUILDINGS} className={menuItemClass(isActive(ROUTES.BUILDINGS))}>
                     <BuildingOffice2Icon className="size-5"/>
@@ -98,6 +90,12 @@ function LeftToolbar() {
                 <Link to={ROUTES.DOOR_MONITORING} className={menuItemClass(isActive(ROUTES.DOOR_MONITORING))}>
                     <EyeIcon className="size-5"/>
                     <span>Giám sát cửa</span>
+                </Link>
+
+                {/* Dashboard */}
+                <Link to={ROUTES.DASHBOARD} className={menuItemClass(isActive(ROUTES.DASHBOARD))}>
+                    <ChartBarIcon className="size-5"/>
+                    <span>Dashboard</span>
                 </Link>
 
                 {/* Door Access Reports */}
