@@ -1,4 +1,3 @@
-import {useEffect, useState} from 'react';
 import {
     ArcElement,
     BarElement,
@@ -14,38 +13,8 @@ import {
 } from 'chart.js';
 import BarChart, {BarChartData} from "@/pages/dashboard/components/BarChart";
 import LineChart, {LineChartData} from "@/pages/dashboard/components/LineChart";
-import PieChart, {PieChartData} from "@/pages/dashboard/components/PieChart";
 import DoughnutChart, {DoughnutChartData} from "@/pages/dashboard/components/DoughnutChart";
-
-// Mock data for dashboard statistics (replace with API call later)
-const mockStats = {
-    buildingCount: 3,
-    floorCount: 12,
-    userCount: 45,
-    doorCount: 36,
-    openDoorCount: 15,
-    closedDoorCount: 21,
-    peopleInBuilding: 28,
-    entryExitHistory: [
-        {date: '2023-01-01', entries: 42, exits: 38},
-        {date: '2023-01-02', entries: 35, exits: 40},
-        {date: '2023-01-03', entries: 50, exits: 45},
-        {date: '2023-01-04', entries: 38, exits: 42},
-        {date: '2023-01-05', entries: 45, exits: 40},
-        {date: '2023-01-06', entries: 55, exits: 52},
-        {date: '2023-01-07', entries: 30, exits: 35},
-    ],
-    doorStatusByBuilding: [
-        {building: 'Building A', open: 8, closed: 12},
-        {building: 'Building B', open: 5, closed: 7},
-        {building: 'Building C', open: 2, closed: 2},
-    ],
-    peopleByBuilding: [
-        {building: 'Building A', count: 15},
-        {building: 'Building B', count: 10},
-        {building: 'Building C', count: 3},
-    ]
-};
+import {useDashboard} from "@/hooks/dashboard/useDashboard";
 
 ChartJS.register(
     CategoryScale,
@@ -61,26 +30,16 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
-    const [stats, setStats] = useState(mockStats);
-    const [loading, setLoading] = useState(true);
+    const {data: response, isLoading, error} = useDashboard();
+    const data = response?.data;
 
-    useEffect(() => {
-        // Simulate API call
-        const fetchStats = async () => {
-            try {
-                // Replace with actual API call later
-                // const response = await fetch('/api/dashboard/stats');
-                // const data = await response.json();
-                setStats(mockStats);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching dashboard stats:', error);
-                setLoading(false);
-            }
-        };
-
-        fetchStats();
-    }, []);
+    if (error) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <p className="text-lg text-red-600">Error: {error.message}</p>
+            </div>
+        );
+    }
 
     // Data for door status chart
     const doorStatusData: DoughnutChartData = {
@@ -88,7 +47,10 @@ export default function Dashboard() {
         datasets: [
             {
                 label: 'Door Status',
-                data: [stats.openDoorCount, stats.closedDoorCount],
+                data: data ? [
+                    data.doorStatusStats.find(stat => stat.lock_status === 'open')?.count || 0,
+                    data.doorStatusStats.find(stat => stat.lock_status === 'closed')?.count || 0
+                ] : [0, 0],
                 backgroundColor: [
                     'rgba(75, 192, 192, 0.6)',
                     'rgba(255, 99, 132, 0.6)',
@@ -102,21 +64,61 @@ export default function Dashboard() {
         ],
     };
 
-    // Data for entry/exit history chart
-    const entryExitData: LineChartData = {
-        labels: stats.entryExitHistory.map(item => item.date),
+    // Transform building data for charts
+    const buildingData = data ? Object.values(
+        data.doorStatusByBuilding.reduce((acc, curr) => {
+            if (!acc[curr.building_name]) {
+                acc[curr.building_name] = {
+                    building: curr.building_name,
+                    open: 0,
+                    closed: 0
+                };
+            }
+            if (curr.lock_status === 'open') {
+                acc[curr.building_name].open = curr.count;
+            } else {
+                acc[curr.building_name].closed = curr.count;
+            }
+            return acc;
+        }, {} as Record<string, { building: string; open: number; closed: number }>)
+    ) : [];
+
+    // Data for door status by building chart
+    const doorStatusByBuildingData: BarChartData = {
+        labels: buildingData.map(item => item.building),
         datasets: [
             {
-                label: 'Entries',
-                data: stats.entryExitHistory.map(item => item.entries),
+                label: 'Open Doors',
+                data: buildingData.map(item => item.open),
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+            },
+            {
+                label: 'Closed Doors',
+                data: buildingData.map(item => item.closed),
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    // Data for weekly activity chart
+    const weeklyActivityData: LineChartData = {
+        labels: data ? data.weeklyDoorActivity.map(item => item.date) : [],
+        datasets: [
+            {
+                label: 'Total Requests',
+                data: data ? data.weeklyDoorActivity.map(item => item.total_requests) : [],
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 tension: 0.4,
                 fill: true,
             },
             {
-                label: 'Exits',
-                data: stats.entryExitHistory.map(item => item.exits),
+                label: 'Approved Requests',
+                data: data ? data.weeklyDoorActivity.map(item => item.approved_requests) : [],
                 borderColor: 'rgba(255, 99, 132, 1)',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 tension: 0.4,
@@ -125,34 +127,64 @@ export default function Dashboard() {
         ],
     };
 
-    // Data for people by building chart
-    const peopleByBuildingData: PieChartData = {
-        labels: stats.peopleByBuilding.map(item => item.building),
+    // Data for hourly activity chart
+    const hourlyActivityData: LineChartData = {
+        labels: data ? data.hourlyActivity.map(item => `${item.hour}:00`) : [],
         datasets: [
             {
-                label: 'People Count',
-                data: stats.peopleByBuilding.map(item => item.count),
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                label: 'Total Requests',
+                data: data ? data.hourlyActivity.map(item => item.total_requests) : [],
                 borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.4,
+                fill: true,
+            },
+            {
+                label: 'Approved Requests',
+                data: data ? data.hourlyActivity.map(item => item.approved_requests) : [],
+                borderColor: 'rgba(255, 206, 86, 1)',
+                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                tension: 0.4,
+                fill: true,
+            },
+        ],
+    };
+
+    // Data for top active buildings chart
+    const topBuildingsData: BarChartData = {
+        labels: data ? data.topActiveBuildings.map(item => item.building_name) : [],
+        datasets: [
+            {
+                label: 'Total Requests',
+                data: data ? data.topActiveBuildings.map(item => item.total_requests) : [],
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1,
+            },
+            {
+                label: 'Total Doors',
+                data: data ? data.topActiveBuildings.map(item => item.total_doors) : [],
+                backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                borderColor: 'rgba(255, 159, 64, 1)',
                 borderWidth: 1,
             },
         ],
     };
 
-    // Data for door status by building chart
-    const doorStatusByBuildingData: BarChartData = {
-        labels: stats.doorStatusByBuilding.map(item => item.building),
+    // Data for building approval rates chart
+    const approvalRatesData: BarChartData = {
+        labels: data ? data.buildingApprovalRates.map(item => item.building_name) : [],
         datasets: [
             {
-                label: 'Open Doors',
-                data: stats.doorStatusByBuilding.map(item => item.open),
+                label: 'Approved Requests',
+                data: data ? data.buildingApprovalRates.map(item => item.approved_requests) : [],
                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1,
             },
             {
-                label: 'Closed Doors',
-                data: stats.doorStatusByBuilding.map(item => item.closed),
+                label: 'Rejected Requests',
+                data: data ? data.buildingApprovalRates.map(item => item.rejected_requests) : [],
                 backgroundColor: 'rgba(255, 99, 132, 0.6)',
                 borderColor: 'rgba(255, 99, 132, 1)',
                 borderWidth: 1,
@@ -164,7 +196,7 @@ export default function Dashboard() {
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
-            {loading ? (
+            {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                     <p className="text-lg">Loading dashboard statistics...</p>
                 </div>
@@ -174,19 +206,19 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-lg font-semibold text-gray-700">Buildings</h2>
-                            <p className="text-3xl font-bold text-blue-600">{stats.buildingCount}</p>
+                            <p className="text-3xl font-bold text-blue-600">{data?.basicStats.total_buildings || 0}</p>
                         </div>
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-lg font-semibold text-gray-700">Floors</h2>
-                            <p className="text-3xl font-bold text-green-600">{stats.floorCount}</p>
+                            <p className="text-3xl font-bold text-green-600">{data?.basicStats.total_floors || 0}</p>
                         </div>
                         <div className="bg-white p-4 rounded-lg shadow-md">
                             <h2 className="text-lg font-semibold text-gray-700">Users</h2>
-                            <p className="text-3xl font-bold text-purple-600">{stats.userCount}</p>
+                            <p className="text-3xl font-bold text-purple-600">{data?.basicStats.total_users || 0}</p>
                         </div>
                         <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-semibold text-gray-700">People in Buildings</h2>
-                            <p className="text-3xl font-bold text-orange-600">{stats.peopleInBuilding}</p>
+                            <h2 className="text-lg font-semibold text-gray-700">Total Doors</h2>
+                            <p className="text-3xl font-bold text-orange-600">{data?.basicStats.total_doors || 0}</p>
                         </div>
                     </div>
 
@@ -206,19 +238,35 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Entry/Exit History */}
-                    <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-4">Entry/Exit History</h2>
-                        <div className="h-96">
-                            <LineChart data={entryExitData}/>
+                    {/* Activity Charts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4">Weekly Activity</h2>
+                            <div className="h-64">
+                                <LineChart data={weeklyActivityData}/>
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4">Hourly Activity</h2>
+                            <div className="h-64">
+                                <LineChart data={hourlyActivityData}/>
+                            </div>
                         </div>
                     </div>
 
-                    {/* People by Building */}
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-4">People by Building</h2>
-                        <div className="h-64">
-                            <PieChart data={peopleByBuildingData}/>
+                    {/* Building Statistics */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4">Top Active Buildings</h2>
+                            <div className="h-64">
+                                <BarChart data={topBuildingsData}/>
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4">Building Approval Rates</h2>
+                            <div className="h-64">
+                                <BarChart data={approvalRatesData}/>
+                            </div>
                         </div>
                     </div>
                 </>

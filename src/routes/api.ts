@@ -117,6 +117,9 @@ export const API_ROUTES = {
     DOOR_LOCK_UPDATE: "/buildings/:buildingId/floors/:floorId/doors/:id/lock",
     DOOR_LOCK_HISTORY: "/buildings/:buildingId/floors/:floorId/doors/:id/lock-history",
     DOOR_LOCK_REPORTS: "/buildings/:buildingId/floors/:floorId/doors/:id/lock/reports",
+
+    // Dashboard routes
+    DASHBOARD_STATS: '/dashboard/stats',
 }
 
 export const API_RESPONSE_CODE = {

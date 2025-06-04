@@ -46,4 +46,10 @@ router.use('/door-requests', require('@routes/doorRequest'));
 // Guest routes (public access)
 router.use('/guest', require('@routes/guest'));
 
+// Import routes
+const dashboardRoutes = require('./dashboard.route');
+
+// Use routes
+router.use('/dashboard', dashboardRoutes);
+
 module.exports = router;
