@@ -198,6 +198,17 @@ const remove = async (floorId, id) => {
     return query;
 };
 
+/**
+ * Get all doors with ThingsBoard integration
+ * @returns {Promise<Array>} List of doors with ThingsBoard integration
+ */
+const getAllWithThingsBoard = () => {
+    return knex(TABLE_NAME)
+        .select('*')
+        .whereNotNull('thingsboard_device_id')
+        .whereNotNull('thingsboard_access_token');
+};
+
 module.exports = {
     getAllByFloor,
     getById,
@@ -206,5 +217,6 @@ module.exports = {
     updateStatus,
     updateLockStatus,
     updateThingsBoardInfo,
-    remove
+    remove,
+    getAllWithThingsBoard,
 };

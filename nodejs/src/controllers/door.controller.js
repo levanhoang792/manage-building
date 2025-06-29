@@ -2,6 +2,7 @@ const doorModel = require('../models/door.model');
 const floorModel = require('../models/floor.model');
 const buildingModel = require('../models/building.model');
 const thingsBoardService = require('../services/thingsboard.service');
+const socketService = require('../services/socket.service');
 const { success, error } = require('../utils/responseHandler');
 const responseCodes = require('../utils/responseCodes');
 
@@ -150,6 +151,9 @@ const createDoor = async (req, res) => {
 
             // Update device activity state
             await thingsBoardService.updateDeviceActivity(device.id.id, doorData.status === 'active');
+
+            // Initialize WebSocket connection for the new device
+            await socketService.addDeviceConnection(device.id.id, credentials.credentialsId);
         } catch (thingsboardError) {
             console.error('Error creating ThingsBoard device:', thingsboardError);
             // Continue without ThingsBoard integration if it fails
@@ -408,6 +412,10 @@ const deleteDoor = async (req, res) => {
         // Delete ThingsBoard device if it exists
         if (existingDoor.thingsboard_device_id) {
             try {
+                // Remove WebSocket connection first
+                socketService.removeDeviceConnection(existingDoor.thingsboard_device_id);
+                
+                // Then delete the device from ThingsBoard
                 await thingsBoardService.deleteDevice(existingDoor.thingsboard_device_id);
             } catch (thingsboardError) {
                 console.error('Error deleting ThingsBoard device:', thingsboardError);
