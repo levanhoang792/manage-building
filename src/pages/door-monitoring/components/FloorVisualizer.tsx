@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 import {useGetFloorDetail} from '@/hooks/floors';
 import {useGetDoors} from '@/hooks/doors';
 import {useGetMultipleDoorCoordinates} from '@/hooks/doorCoordinates';
@@ -95,6 +95,60 @@ const FloorVisualizer: React.FC<FloorVisualizerProps> = ({buildingId, floorId, f
         floorId,
         selectedDoor?.id || ''
     );
+
+    // Add ref for auto refresh interval
+    const autoRefreshIntervalRef = useRef<NodeJS.Timeout>();
+
+    // Add function to fetch only doors data
+    const fetchDoorsStatus = useCallback(async () => {
+        try {
+            await refetchDoors();
+            
+            if (doorsData) {
+                const doorResponse = doorsData as unknown as DoorListResponse;
+                let newDoors: Door[] = [];
+                
+                if (Array.isArray(doorResponse.data)) {
+                    newDoors = doorResponse.data;
+                } else if (doorResponse.data.doors) {
+                    newDoors = doorResponse.data.doors;
+                } else if (doorResponse.data.data) {
+                    newDoors = doorResponse.data.data;
+                }
+
+                // Update only if door status has changed
+                setDoors(prevDoors => {
+                    const hasChanges = newDoors.some(newDoor => {
+                        const prevDoor = prevDoors.find(d => d.id === newDoor.id);
+                        return prevDoor && (
+                            prevDoor.status !== newDoor.status || 
+                            prevDoor.lock_status !== newDoor.lock_status
+                        );
+                    });
+
+                    return hasChanges ? newDoors : prevDoors;
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching doors status:', error);
+        }
+    }, [doorsData, refetchDoors]);
+
+    // Setup auto refresh for doors status
+    useEffect(() => {
+        // Initial fetch
+        fetchDoorsStatus();
+
+        // Setup interval for auto refresh
+        autoRefreshIntervalRef.current = setInterval(fetchDoorsStatus, 5000);
+
+        // Cleanup on unmount
+        return () => {
+            if (autoRefreshIntervalRef.current) {
+                clearInterval(autoRefreshIntervalRef.current);
+            }
+        };
+    }, [fetchDoorsStatus]);
 
     // Set floor plan URL when floor data is loaded
     useEffect(() => {
