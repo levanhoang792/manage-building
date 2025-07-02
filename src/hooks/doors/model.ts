@@ -11,6 +11,8 @@ export interface Door {
     lock_status: 'open' | 'closed' | 'unknown';
     created_at: string;
     updated_at: string;
+    thingsboard_device_id?: string;
+    thingsboard_access_token?: string;
 }
 
 export interface DoorFormData {

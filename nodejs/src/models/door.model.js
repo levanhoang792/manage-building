@@ -209,6 +209,18 @@ const getAllWithThingsBoard = () => {
         .whereNotNull('thingsboard_access_token');
 };
 
+/**
+ * Get door by ThingsBoard device ID
+ * @param {string} deviceId - ThingsBoard device ID
+ * @returns {Promise<Object>}
+ */
+const getByThingsBoardDeviceId = async (deviceId) => {
+    return knex(TABLE_NAME)
+        .select('*')
+        .where('thingsboard_device_id', deviceId)
+        .first();
+};
+
 module.exports = {
     getAllByFloor,
     getById,
@@ -219,4 +231,5 @@ module.exports = {
     updateThingsBoardInfo,
     remove,
     getAllWithThingsBoard,
+    getByThingsBoardDeviceId
 };

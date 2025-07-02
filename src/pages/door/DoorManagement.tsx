@@ -117,67 +117,235 @@ export const DoorManagement: React.FC = () => {
  *
  * Hướng dẫn sử dụng:
  * 1. Cài đặt Node.js phiên bản >= 18 từ https://nodejs.org/
- * 2. Thêm token xác thực vào biến AUTH_TOKEN bên dưới (không bắt buộc)
- * 3. Để yêu cầu truy cập cửa: node door_${door.id}_control.js "Tên người yêu cầu" "Số điện thoại" "Email" "Lý do"
+ * 2. Script này sẽ tự động sử dụng access token của thiết bị
+ * 3. Chạy script: node door_${door.id}_control.js và làm theo hướng dẫn
  */
 
-const API_URL = '${window.location.origin}';
+const THINGSBOARD_URL = 'https://thingsboard.cloud'; // URL của ThingsBoard Cloud
+const DEVICE_TOKEN = '${door.thingsboard_access_token}'; // Access token của thiết bị
 const DOOR_ID = ${door.id};
-const AUTH_TOKEN = ''; // Token không bắt buộc vì API hỗ trợ guest access
+const DOOR_NAME = '${door.name}';
+const CURRENT_LOCK_STATUS = '${door.lock_status}';
 
-async function requestDoorAccess(requesterName, requesterPhone, requesterEmail = '', purpose) {
-    if (!requesterName || !requesterPhone || !purpose) {
-        console.error('Thiếu thông tin. Vui lòng cung cấp đầy đủ tên, số điện thoại và lý do.');
-        console.log('Cách sử dụng: node door_${door.id}_control.js "Tên" "SĐT" "Email" "Lý do"');
-        return;
-    }
+const readline = require('readline');
 
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+// Hàm tạo thanh tiến trình
+function createProgressBar(length) {
+    let current = 0;
+    const total = length;
+    const progressChar = '█';
+    const emptyChar = '░';
+    let intervalId = null;
+    
+    return {
+        start() {
+            current = Math.floor(total * 0.1);
+            this.draw();
+            intervalId = setInterval(() => {
+                if (current < Math.floor(total * 0.9)) {
+                    current++;
+                    this.draw();
+                }
+            }, 200);
+        },
+        draw() {
+            const percentage = Math.floor((current / total) * 100);
+            const filled = Math.floor((current / total) * length);
+            const empty = length - filled;
+            const bar = progressChar.repeat(filled) + emptyChar.repeat(empty);
+            process.stdout.write(\`\\r[\${bar}] \${percentage}%\`);
+        },
+        complete() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            current = total;
+            this.draw();
+            process.stdout.write('\\n');
+        },
+        stop() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+    };
+}
+
+function question(prompt) {
+    return new Promise((resolve) => {
+        rl.question(prompt, (answer) => {
+            resolve(answer);
+        });
+    });
+}
+
+async function checkCurrentDoorStatus() {
     try {
-        const response = await fetch(\`\${API_URL}/api/door-requests\`, {
+        console.log('\\n📡 Đang kiểm tra trạng thái cửa từ ThingsBoard...');
+        
+        const response = await fetch(\`\${THINGSBOARD_URL}/api/v1/\${DEVICE_TOKEN}/attributes\`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(\`Lỗi khi lấy trạng thái cửa: [\${response.status}] \${response.statusText}\`);
+        }
+
+        const data = await response.json();
+        // Lấy trạng thái từ last_request trong client attributes
+        const currentStatus = data?.client?.last_request?.lock_status || CURRENT_LOCK_STATUS;
+        console.log('\\n📊 Trạng thái cửa hiện tại:', currentStatus);
+        console.log('\\n📝 Thông tin yêu cầu gần nhất:', data?.client?.last_request || 'Chưa có yêu cầu nào');
+        return currentStatus;
+    } catch (error) {
+        console.error('\\n❌ Lỗi khi kiểm tra trạng thái cửa:', error.message);
+        console.log('\\n⚠️ Sử dụng trạng thái mặc định:', CURRENT_LOCK_STATUS);
+        return CURRENT_LOCK_STATUS;
+    }
+}
+
+async function sendToThingsBoard(requesterName, requesterPhone, requesterEmail = '', purpose) {
+    const progressBar = createProgressBar(30);
+    
+    try {
+        // Kiểm tra trạng thái cửa hiện tại từ ThingsBoard
+        const currentStatus = await checkCurrentDoorStatus();
+        
+        console.log('\\n📡 Đang gửi yêu cầu đến ThingsBoard...');
+        progressBar.start();
+
+        // Đảo trạng thái khóa dựa trên trạng thái thực tế từ ThingsBoard
+        const newLockStatus = currentStatus === 'closed' ? 'open' : 'closed';
+
+        // Chuẩn bị dữ liệu telemetry
+        const telemetryData = {
+            ts: Date.now(),
+            door_id: DOOR_ID,
+            requester_name: requesterName,
+            requester_phone: requesterPhone,
+            requester_email: requesterEmail,
+            purpose: purpose,
+            request_type: 'access',
+            status: 'pending',
+            lock_status: newLockStatus
+        };
+
+        // Gửi telemetry data
+        const telemetryResponse = await fetch(\`\${THINGSBOARD_URL}/api/v1/\${DEVICE_TOKEN}/telemetry\`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                ...AUTH_TOKEN ? {'Authorization': \`Bearer \${AUTH_TOKEN}\`} : {}
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
+            body: JSON.stringify(telemetryData)
+        });
+
+        if (!telemetryResponse.ok) {
+            throw new Error(\`Lỗi khi gửi telemetry: [\${telemetryResponse.status}] \${await telemetryResponse.text()}\`);
+        }
+
+        // Chuẩn bị dữ liệu attributes
+        const attributesData = {
+            last_request: {
                 door_id: DOOR_ID,
                 requester_name: requesterName,
                 requester_phone: requesterPhone,
                 requester_email: requesterEmail,
-                purpose: purpose
-            })
+                purpose: purpose,
+                timestamp: new Date().toISOString(),
+                lock_status: newLockStatus
+            }
+        };
+
+        // Cập nhật attributes
+        const attributesResponse = await fetch(\`\${THINGSBOARD_URL}/api/v1/\${DEVICE_TOKEN}/attributes\`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(attributesData)
         });
 
-        if (!response.ok) {
-            throw new Error(\`Lỗi khi gửi yêu cầu: \${response.statusText}\`);
+        if (!attributesResponse.ok) {
+            throw new Error(\`Lỗi khi cập nhật attributes: [\${attributesResponse.status}] \${await attributesResponse.text()}\`);
         }
 
-        const result = await response.json();
-        console.log('[SUCCESS] Đã gửi yêu cầu truy cập cửa thành công');
-        console.log('Chi tiết:', result);
-        return result;
+        progressBar.complete();
+        
+        console.log('\\n✅ Yêu cầu đã được gửi thành công đến ThingsBoard!');
+        console.log('📝 Chi tiết yêu cầu:');
+        console.log('   - Cửa:', DOOR_NAME);
+        console.log('   - Thay đổi trạng thái:', \`\${currentStatus} → \${newLockStatus}\`);
+        console.log('   - Thời gian:', new Date().toLocaleString('vi-VN'));
+        console.log('   - Người yêu cầu:', requesterName);
+        console.log('   - Số điện thoại:', requesterPhone);
+        if (requesterEmail) console.log('   - Email:', requesterEmail);
+        console.log('   - Lý do:', purpose);
+        console.log('\\n📱 Bạn sẽ nhận được thông báo khi yêu cầu được phê duyệt.');
+        
+        return true;
     } catch (error) {
-        console.error('[ERROR] Lỗi khi gửi yêu cầu:', error.message);
+        progressBar.stop();
+        console.error('\\n❌ Lỗi xử lý yêu cầu:');
+        console.error(\`   \${error.message}\`);
+        
+        // Log thông tin debug
+        console.error('\\n🔍 Thông tin debug:');
+        console.error(\`   URL: \${THINGSBOARD_URL}\`);
+        console.error(\`   Door ID: \${DOOR_ID}\`);
+        console.error(\`   Device Token length: \${DEVICE_TOKEN ? DEVICE_TOKEN.length : 0}\`);
+        
         throw error;
     }
 }
 
-// Xử lý tham số dòng lệnh
-const [requesterName, requesterPhone, requesterEmail, ...purposeParts] = process.argv.slice(2);
-const purpose = purposeParts.join(' ');
+async function main() {
+    console.log('╔════════════════════════════════════════╗');
+    console.log(\`║  Yêu cầu truy cập cửa: \${DOOR_NAME.padEnd(16)}║\`);
+    console.log('╚════════════════════════════════════════╝\\n');
+    
+    if (!DEVICE_TOKEN) {
+        console.error('❌ Lỗi: Thiết bị chưa được cấu hình access token trên ThingsBoard');
+        rl.close();
+        return;
+    }
 
-if (!requesterName || !requesterPhone || !purpose) {
-    console.log('Cách sử dụng:');
-    console.log('  node door_${door.id}_control.js "Tên người yêu cầu" "Số điện thoại" "Email" "Lý do truy cập"');
-    console.log('');
-    console.log('Ví dụ:');
-    console.log('  node door_${door.id}_control.js "Nguyễn Văn A" "0123456789" "email@example.com" "Gặp khách hàng"');
-    process.exit(1);
+    try {
+        const requesterName = await question('👤 Nhập tên người yêu cầu: ');
+        if (!requesterName.trim()) {
+            throw new Error('Tên không được để trống');
+        }
+
+        const requesterPhone = await question('📱 Nhập số điện thoại: ');
+        if (!requesterPhone.trim()) {
+            throw new Error('Số điện thoại không được để trống');
+        }
+
+        const requesterEmail = await question('📧 Nhập email (có thể bỏ qua bằng cách nhấn Enter): ');
+
+        const purpose = await question('📝 Nhập lý do truy cập: ');
+        if (!purpose.trim()) {
+            throw new Error('Lý do không được để trống');
+        }
+
+        await sendToThingsBoard(requesterName, requesterPhone, requesterEmail, purpose);
+    } catch (error) {
+        console.error('\\n❌ Lỗi:', error.message);
+    } finally {
+        rl.close();
+    }
 }
 
-requestDoorAccess(requesterName, requesterPhone, requesterEmail, purpose)
-    .then(() => process.exit(0))
-    .catch(() => process.exit(1));`;
+main();`;
     };
 
     const handleDownloadScript = (door: Door) => {
