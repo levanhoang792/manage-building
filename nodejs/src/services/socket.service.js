@@ -255,6 +255,7 @@ const processTelemetryData = async (deviceId, data) => {
                         null, // requestId
                         'Status update from ThingsBoard'
                     );
+                    console.log(`Updated lock status for device ${deviceId} to ${status}`);
 
                     // Emit event to connected clients
                     if (io) {
